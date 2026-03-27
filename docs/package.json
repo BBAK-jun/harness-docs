@@ -1,0 +1,14 @@
+{
+  "name": "@harness-docs/docs",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vitepress dev . --configLoader runner",
+    "build": "vitepress build . --configLoader runner",
+    "preview": "vitepress preview . --configLoader runner"
+  },
+  "devDependencies": {
+    "vitepress": "^1.6.4"
+  }
+}

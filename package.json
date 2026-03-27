@@ -3,12 +3,26 @@
   "private": true,
   "packageManager": "pnpm@10.25.0",
   "scripts": {
+    "db:up": "docker compose up -d db",
+    "db:down": "docker compose down",
+    "db:logs": "docker compose logs -f db",
+    "db:generate": "pnpm --filter @harness-docs/db db:generate",
+    "db:migrate": "pnpm --filter @harness-docs/db db:migrate",
+    "check:db": "pnpm --filter @harness-docs/db check",
     "dev:desktop": "pnpm --filter @harness-docs/desktop dev",
     "build:desktop": "pnpm --filter @harness-docs/desktop build",
     "tauri:build": "pnpm --filter @harness-docs/desktop tauri build --debug",
     "dev:api": "pnpm --filter @harness-docs/api dev",
     "start:api": "pnpm --filter @harness-docs/api start",
     "check:api": "pnpm --filter @harness-docs/api build",
-    "build": "pnpm build:desktop && pnpm check:api"
+    "docs:dev": "pnpm --filter @harness-docs/docs dev",
+    "docs:build": "pnpm --filter @harness-docs/docs build",
+    "docs:preview": "pnpm --filter @harness-docs/docs preview",
+    "format": "prettier . --write && cargo fmt --manifest-path apps/desktop/Cargo.toml --all",
+    "format:check": "prettier . --check && cargo fmt --manifest-path apps/desktop/Cargo.toml --all --check",
+    "build": "pnpm check:db && pnpm build:desktop && pnpm check:api"
+  },
+  "devDependencies": {
+    "prettier": "^3.8.1"
   }
 }
