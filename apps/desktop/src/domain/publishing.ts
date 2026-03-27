@@ -4,7 +4,7 @@ import type {
   PublishRecordId,
   WorkspaceDocument,
   WorkspaceId,
-  WorkspaceRepositoryBinding
+  WorkspaceRepositoryBinding,
 } from "../types";
 
 export interface PublishAutomationContract {
@@ -58,10 +58,12 @@ export interface PublishExecutionResult {
 
 export interface PublishingService {
   getAutomationContract: () => Promise<PublishAutomationContract>;
-  getWorkspacePublishingSnapshot: (workspaceId: WorkspaceId) => Promise<WorkspacePublishingSnapshot>;
+  getWorkspacePublishingSnapshot: (
+    workspaceId: WorkspaceId,
+  ) => Promise<WorkspacePublishingSnapshot>;
   getPublishRecord: (
     workspaceId: WorkspaceId,
-    publishRecordId: PublishRecordId
+    publishRecordId: PublishRecordId,
   ) => Promise<PublishRecord | null>;
   executePublish: (input: PublishExecutionInput) => Promise<PublishExecutionResult>;
 }

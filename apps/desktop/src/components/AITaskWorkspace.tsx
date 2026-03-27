@@ -21,7 +21,7 @@ function formatTimestamp(value: string | null | undefined) {
 
   return new Intl.DateTimeFormat("en-US", {
     dateStyle: "medium",
-    timeStyle: "short"
+    timeStyle: "short",
   }).format(new Date(value));
 }
 
@@ -36,7 +36,7 @@ export function AITaskWorkspace({
   workspaceGraph,
   entryPoints,
   executionState,
-  onLaunchEntryPoint
+  onLaunchEntryPoint,
 }: AITaskWorkspaceProps) {
   const workspaceEntries = entryPoints.filter((entry) => entry.scope === "workspace");
   const documentEntries = entryPoints.filter((entry) => entry.scope === "document");
@@ -45,7 +45,7 @@ export function AITaskWorkspace({
     .sort(
       (left, right) =>
         new Date(right.lifecycle.generatedAt).getTime() -
-        new Date(left.lifecycle.generatedAt).getTime()
+        new Date(left.lifecycle.generatedAt).getTime(),
     )
     .slice(0, 4);
 
@@ -54,7 +54,10 @@ export function AITaskWorkspace({
       <div className="publish-header">
         <article className="hero-card">
           <p className="eyebrow">AI Harness</p>
-          <h3>Launch AI work from the same workspace and document contexts that own the source of truth.</h3>
+          <h3>
+            Launch AI work from the same workspace and document contexts that own the source of
+            truth.
+          </h3>
           <p>
             Entry points stay tied to selected documents, linked dependencies, and publish review so
             AI drafting remains discoverable without becoming the system of record.
@@ -83,9 +86,17 @@ export function AITaskWorkspace({
         <article className="status-card">
           <p className="eyebrow">Architecture Notes</p>
           <div className="note-stack">
-            <p>AI actions are launched from app-owned workspace context, not directly from GitHub state.</p>
-            <p>Every task remains scoped to internal workspace documents and preserved review relationships.</p>
-            <p>Codex and Claude can both fit this launch model without changing workspace navigation.</p>
+            <p>
+              AI actions are launched from app-owned workspace context, not directly from GitHub
+              state.
+            </p>
+            <p>
+              Every task remains scoped to internal workspace documents and preserved review
+              relationships.
+            </p>
+            <p>
+              Codex and Claude can both fit this launch model without changing workspace navigation.
+            </p>
           </div>
         </article>
       </div>
@@ -180,7 +191,9 @@ export function AITaskWorkspace({
           ) : null}
 
           {executionState.status === "running" ? (
-            <p className="muted">Running {executionState.entryId ?? "AI task"} through the local provider adapter.</p>
+            <p className="muted">
+              Running {executionState.entryId ?? "AI task"} through the local provider adapter.
+            </p>
           ) : null}
 
           {executionState.status === "failed" ? (

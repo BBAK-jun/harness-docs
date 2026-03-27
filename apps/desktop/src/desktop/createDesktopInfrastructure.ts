@@ -4,7 +4,7 @@ import type {
   DesktopInfrastructure,
   DesktopInfrastructureRuntime,
   DesktopKeyValueStore,
-  DesktopWindowService
+  DesktopWindowService,
 } from "./contracts";
 
 const memoryStorage = new Map<string, string>();
@@ -29,7 +29,7 @@ function createCommandClient(runtime: DesktopInfrastructureRuntime): DesktopComm
       }
 
       return invoke<TResponse>(command, args);
-    }
+    },
   };
 }
 
@@ -49,7 +49,7 @@ function createKeyValueStore(): DesktopKeyValueStore {
       }
 
       memoryStorage.set(key, value);
-    }
+    },
   };
 }
 
@@ -77,7 +77,7 @@ function createWindowingService(): DesktopWindowService {
         window.removeEventListener("focus", listener);
         document.removeEventListener("visibilitychange", handleVisibilityChange);
       };
-    }
+    },
   };
 }
 
@@ -88,6 +88,6 @@ export function createDesktopInfrastructure(): DesktopInfrastructure {
     runtime,
     commands: createCommandClient(runtime),
     storage: createKeyValueStore(),
-    windowing: createWindowingService()
+    windowing: createWindowingService(),
   };
 }

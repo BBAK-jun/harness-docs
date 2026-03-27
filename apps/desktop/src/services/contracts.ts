@@ -8,7 +8,7 @@ import type {
   SessionUser,
   WorkspaceGraph,
   WorkspaceId,
-  WorkspaceSummary
+  WorkspaceSummary,
 } from "../types";
 
 export type DesktopRuntime = "tauri" | "browser";
@@ -59,9 +59,7 @@ export interface SignedOutSessionSnapshot {
   user: null;
 }
 
-export type AuthenticationSessionSnapshot =
-  | AuthenticatedSessionSnapshot
-  | SignedOutSessionSnapshot;
+export type AuthenticationSessionSnapshot = AuthenticatedSessionSnapshot | SignedOutSessionSnapshot;
 
 export interface AuthenticatedAppSessionSnapshot {
   authentication: AuthenticatedSessionSnapshot;
@@ -73,9 +71,7 @@ export interface SignedOutAppSessionSnapshot {
   workspace: null;
 }
 
-export type AppSessionSnapshot =
-  | AuthenticatedAppSessionSnapshot
-  | SignedOutAppSessionSnapshot;
+export type AppSessionSnapshot = AuthenticatedAppSessionSnapshot | SignedOutAppSessionSnapshot;
 
 export interface DesktopShellService {
   getMetadata: () => Promise<DesktopShellMetadata>;

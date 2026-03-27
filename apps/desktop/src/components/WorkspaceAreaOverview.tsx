@@ -1,12 +1,6 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle
-} from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import type { AIProvider, NavigationArea, WorkspaceSummary } from "../types";
 
@@ -25,13 +19,14 @@ const aiProviderOptions: Array<{
   {
     value: "Codex",
     label: "Codex",
-    description: "Fast drafting and revision support for document updates and publish memos."
+    description: "Fast drafting and revision support for document updates and publish memos.",
   },
   {
     value: "Claude",
     label: "Claude",
-    description: "Long-form synthesis support for linked-document analysis and approval suggestions."
-  }
+    description:
+      "Long-form synthesis support for linked-document analysis and approval suggestions.",
+  },
 ];
 
 function getAIContent(preferredAIProvider: AIProvider) {
@@ -45,8 +40,8 @@ function getAIContent(preferredAIProvider: AIProvider) {
       foundationNotes: [
         "Codex stays the active launch target until the user explicitly switches providers.",
         "Fast drafting actions read the same workspace-only retrieval scope as every other AI task.",
-        "The composer surfaces the current provider so memo and content drafting stay predictable."
-      ]
+        "The composer surfaces the current provider so memo and content drafting stay predictable.",
+      ],
     };
   }
 
@@ -59,8 +54,8 @@ function getAIContent(preferredAIProvider: AIProvider) {
     foundationNotes: [
       "Claude stays the active launch target until the user explicitly switches providers.",
       "Long-form synthesis still remains constrained to internal workspace documents in v1.",
-      "The composer surfaces the current provider so approver and linkage suggestions stay explicit."
-    ]
+      "The composer surfaces the current provider so approver and linkage suggestions stay explicit.",
+    ],
   };
 }
 
@@ -68,19 +63,20 @@ export function WorkspaceAreaOverview({
   workspace,
   activeArea,
   preferredAIProvider,
-  onPreferredAIProviderChange
+  onPreferredAIProviderChange,
 }: WorkspaceAreaOverviewProps) {
   const area = workspace.areas[activeArea];
   const isAIArea = activeArea === "ai";
   const aiContent = getAIContent(preferredAIProvider);
   const activeAIProviderOption =
-    aiProviderOptions.find((option) => option.value === preferredAIProvider) ?? aiProviderOptions[0];
+    aiProviderOptions.find((option) => option.value === preferredAIProvider) ??
+    aiProviderOptions[0];
   const foundationNotes = isAIArea
     ? aiContent.foundationNotes
     : [
         "Workspace selection is app-managed and decoupled from raw GitHub repository access.",
         "The shell keeps top-level areas stable so later service integrations can attach without replacing navigation.",
-        "Returning to the workspace list preserves the signed-in state while clearly separating no-workspace and active-workspace views."
+        "Returning to the workspace list preserves the signed-in state while clearly separating no-workspace and active-workspace views.",
       ];
 
   return (
@@ -97,7 +93,8 @@ export function WorkspaceAreaOverview({
             </CardDescription>
             {isAIArea ? (
               <p className="text-sm text-slate-400">
-                Active provider: <strong className="text-slate-200">{activeAIProviderOption.label}</strong>.{" "}
+                Active provider:{" "}
+                <strong className="text-slate-200">{activeAIProviderOption.label}</strong>.{" "}
                 {activeAIProviderOption.description}
               </p>
             ) : null}
@@ -150,8 +147,8 @@ export function WorkspaceAreaOverview({
                       Provider Preference
                     </legend>
                     <p className="text-sm leading-6 text-slate-400">
-                      Choose the default provider for new AI tasks. Only one provider can be
-                      active at a time.
+                      Choose the default provider for new AI tasks. Only one provider can be active
+                      at a time.
                     </p>
                     <div className="grid gap-3">
                       {aiProviderOptions.map((option) => {
@@ -164,7 +161,7 @@ export function WorkspaceAreaOverview({
                               "grid cursor-pointer grid-cols-[auto_minmax(0,1fr)] gap-3 rounded-3xl border px-4 py-4 transition-colors",
                               isSelected
                                 ? "border-amber-200/24 bg-amber-200/10"
-                                : "border-white/10 bg-slate-950/55 hover:bg-white/[0.05]"
+                                : "border-white/10 bg-slate-950/55 hover:bg-white/[0.05]",
                             )}
                           >
                             <input

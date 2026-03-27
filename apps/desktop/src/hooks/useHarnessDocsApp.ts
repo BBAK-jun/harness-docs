@@ -3,17 +3,14 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { AITaskExecutionResult } from "../domain/aiTasks";
 import type { PublishExecutionResult } from "../domain/publishing";
 import { buildAITaskEntryPoints } from "../lib/aiTaskEntryPoints";
-import {
-  buildAITaskExecutionInput,
-  buildPublishExecutionInput
-} from "../lib/runtimePayloads";
+import { buildAITaskExecutionInput, buildPublishExecutionInput } from "../lib/runtimePayloads";
 import { useHarnessDocsServices } from "../services/HarnessDocsServicesProvider";
 import type {
   AppSessionSnapshot,
   AppPreferences,
   AuthenticationSessionSnapshot,
   DesktopShellMetadata,
-  WorkspaceSessionSnapshot
+  WorkspaceSessionSnapshot,
 } from "../services/contracts";
 import { fallbackAppPreferences } from "../services/mockHarnessDocsServices";
 import type {
@@ -23,7 +20,7 @@ import type {
   DocumentBlockCommentAnchor,
   NavigationArea,
   WorkspaceDocument,
-  WorkspaceGraph
+  WorkspaceGraph,
 } from "../types";
 import { useDocumentComments } from "./useDocumentComments";
 import { useDocumentEditingLocks } from "./useDocumentEditingLocks";
@@ -58,7 +55,7 @@ function mapSectionKindToBlockKind(kind: ContentSectionKind | undefined): Commen
 
 function buildDefaultBlockCommentAnchor(
   workspaceGraph: WorkspaceGraph,
-  document: WorkspaceDocument
+  document: WorkspaceDocument,
 ): DocumentBlockCommentAnchor {
   const template = workspaceGraph.templates.find((entry) => entry.id === document.templateId);
   const section = template?.sections[0];
@@ -76,13 +73,13 @@ function buildDefaultBlockCommentAnchor(
     headingPath: [section?.title ?? document.title],
     excerpt,
     startOffset: null,
-    endOffset: null
+    endOffset: null,
   };
 }
 
 function buildSelectedDocumentMap(snapshot: WorkspaceSessionSnapshot) {
   return Object.fromEntries(
-    snapshot.workspaceGraphs.map((graph) => [graph.workspace.id, graph.documents[0]?.id ?? ""])
+    snapshot.workspaceGraphs.map((graph) => [graph.workspace.id, graph.documents[0]?.id ?? ""]),
   );
 }
 
@@ -100,30 +97,30 @@ interface HarnessDocsAppNavigation {
 }
 
 async function loadBootstrapState(
-  services: ReturnType<typeof useHarnessDocsServices>
+  services: ReturnType<typeof useHarnessDocsServices>,
 ): Promise<HarnessDocsBootstrapData> {
   const [desktopShell, appSession, preferences] = await Promise.all([
     services.desktopShell.getMetadata(),
     services.appSession.getSnapshot(),
-    services.preferences.read()
+    services.preferences.read(),
   ]);
 
   return {
     desktopShell,
     appSession,
-    preferences
+    preferences,
   };
 }
 
 export function useHarnessDocsApp(
   routeState: HarnessDocsAppRouteState,
-  navigation: HarnessDocsAppNavigation
+  navigation: HarnessDocsAppNavigation,
 ) {
   const services = useHarnessDocsServices();
   const queryClient = useQueryClient();
   const bootstrapQuery = useQuery({
     queryKey: ["desktop-bootstrap"],
-    queryFn: () => loadBootstrapState(services)
+    queryFn: () => loadBootstrapState(services),
   });
   const [preferences, setPreferences] = useState<AppPreferences>(fallbackAppPreferences);
   const [selectedDocumentIds, setSelectedDocumentIds] = useState<Record<string, string>>({});
@@ -152,7 +149,7 @@ export function useHarnessDocsApp(
   const writePreferencesMutation = useMutation({
     mutationFn: async (nextPreferences: AppPreferences) => {
       await services.preferences.write(nextPreferences);
-    }
+    },
   });
 
   const authenticationMutation = useMutation({
@@ -162,7 +159,7 @@ export function useHarnessDocsApp(
             type: "sign-in";
             provider: AuthenticationSessionSnapshot["provider"]["id"];
           }
-        | { type: "sign-out" }
+        | { type: "sign-out" },
     ) => {
       if (action.type === "sign-in") {
         await services.authentication.startSignIn(action.provider);
@@ -174,26 +171,26 @@ export function useHarnessDocsApp(
       queryClient.setQueryData(["desktop-bootstrap"], nextBootstrap);
 
       return nextBootstrap;
-    }
+    },
   });
 
   const aiTaskMutation = useMutation({
     mutationFn: async ({
       entry,
       workspaceGraph,
-      drafts
+      drafts,
     }: {
       entry: AITaskEntryPoint;
       workspaceGraph: WorkspaceGraph;
       drafts: Record<string, string>;
-    }) => services.aiTasks.runEntryPoint(buildAITaskExecutionInput(entry, workspaceGraph, drafts))
+    }) => services.aiTasks.runEntryPoint(buildAITaskExecutionInput(entry, workspaceGraph, drafts)),
   });
 
   const publishMutation = useMutation({
     mutationFn: async ({
       workspaceGraph,
       drafts,
-      membershipId
+      membershipId,
     }: {
       workspaceGraph: WorkspaceGraph;
       drafts: Record<string, string>;
@@ -206,7 +203,7 @@ export function useHarnessDocsApp(
       }
 
       return services.publishing.executePublish(input);
-    }
+    },
   });
 
   const isReady = bootstrapQuery.isSuccess;
@@ -215,24 +212,24 @@ export function useHarnessDocsApp(
   const workspaces = session?.workspaces ?? [];
   const user = authentication?.user ?? null;
   const { workspaceGraphs, createBlockCommentThread } = useDocumentComments(
-    session?.workspaceGraphs ?? []
+    session?.workspaceGraphs ?? [],
   );
   const {
     getDocumentLockForDocument,
     getActiveLockForDocument,
     acquireDocumentEditingLock,
     releaseDocumentEditingLock,
-    touchDocumentEditingLock
+    touchDocumentEditingLock,
   } = useDocumentEditingLocks(workspaceGraphs);
 
   const activeWorkspace = useMemo(
     () => workspaces.find((workspace) => workspace.id === routeState.activeWorkspaceId) ?? null,
-    [routeState.activeWorkspaceId, workspaces]
+    [routeState.activeWorkspaceId, workspaces],
   );
   const activeWorkspaceGraph = useMemo(
     () =>
       workspaceGraphs.find((graph) => graph.workspace.id === routeState.activeWorkspaceId) ?? null,
-    [routeState.activeWorkspaceId, workspaceGraphs]
+    [routeState.activeWorkspaceId, workspaceGraphs],
   );
   const activeMembership = useMemo(() => {
     if (!activeWorkspaceGraph || !user) {
@@ -241,8 +238,7 @@ export function useHarnessDocsApp(
 
     return (
       activeWorkspaceGraph.memberships.find(
-        (membership) =>
-          membership.userId === user.id && membership.lifecycle.status === "active"
+        (membership) => membership.userId === user.id && membership.lifecycle.status === "active",
       ) ?? null
     );
   }, [activeWorkspaceGraph, user]);
@@ -281,10 +277,10 @@ export function useHarnessDocsApp(
             workspaceGraph: activeWorkspaceGraph,
             activeDocument,
             preferredProvider: preferences.preferredAIProvider,
-            activeMembershipId: activeMembership?.id ?? null
+            activeMembershipId: activeMembership?.id ?? null,
           })
         : [],
-    [activeDocument, activeMembership, activeWorkspaceGraph, preferences.preferredAIProvider]
+    [activeDocument, activeMembership, activeWorkspaceGraph, preferences.preferredAIProvider],
   );
 
   useEffect(() => {
@@ -308,7 +304,7 @@ export function useHarnessDocsApp(
       lastInteractionTouchMsRef.current = now;
       touchDocumentEditingLock({
         documentId: activeDocument.id,
-        membershipId: activeMembership.id
+        membershipId: activeMembership.id,
       });
     };
 
@@ -326,13 +322,13 @@ export function useHarnessDocsApp(
   const handleSignIn = async (provider: AuthenticationSessionSnapshot["provider"]["id"]) => {
     await authenticationMutation.mutateAsync({
       type: "sign-in",
-      provider
+      provider,
     });
   };
 
   const handleSignOut = async () => {
     await authenticationMutation.mutateAsync({
-      type: "sign-out"
+      type: "sign-out",
     });
     navigation.onWorkspaceLeave();
   };
@@ -344,19 +340,18 @@ export function useHarnessDocsApp(
 
     setSelectedDocumentIds((current) => ({
       ...current,
-      [activeWorkspaceGraph.workspace.id]: documentId
+      [activeWorkspaceGraph.workspace.id]: documentId,
     }));
     navigation.onSelectedDocumentChange(documentId);
   };
 
   const handleDocumentSourceChange = (document: WorkspaceDocument, nextSource: string) => {
     const workspaceGraph = workspaceGraphs.find(
-      (graph) => graph.workspace.id === document.workspaceId
+      (graph) => graph.workspace.id === document.workspaceId,
     );
     const currentMembership =
       workspaceGraph?.memberships.find(
-        (membership) =>
-          membership.userId === user?.id && membership.lifecycle.status === "active"
+        (membership) => membership.userId === user?.id && membership.lifecycle.status === "active",
       ) ?? null;
     const activeLock = getActiveLockForDocument(document.id);
 
@@ -366,12 +361,12 @@ export function useHarnessDocsApp(
 
     touchDocumentEditingLock({
       documentId: document.id,
-      membershipId: currentMembership.id
+      membershipId: currentMembership.id,
     });
 
     setDocumentDrafts((current) => ({
       ...current,
-      [document.id]: nextSource
+      [document.id]: nextSource,
     }));
   };
 
@@ -383,7 +378,7 @@ export function useHarnessDocsApp(
     acquireDocumentEditingLock({
       document,
       membershipId: activeMembership.id,
-      area: "editor"
+      area: "editor",
     });
   };
 
@@ -395,7 +390,7 @@ export function useHarnessDocsApp(
     releaseDocumentEditingLock({
       documentId: document.id,
       membershipId: activeMembership.id,
-      reason: "manual_release"
+      reason: "manual_release",
     });
   };
 
@@ -411,16 +406,16 @@ export function useHarnessDocsApp(
       bodyMarkdown,
       anchor: buildDefaultBlockCommentAnchor(activeWorkspaceGraph, document),
       linkedDocumentIds: document.linkedDocumentIds,
-      triggeredReviewDocumentIds: document.linkedDocumentIds
+      triggeredReviewDocumentIds: document.linkedDocumentIds,
     });
   };
 
   const handlePreferredAIProviderChange = (
-    preferredAIProvider: AppPreferences["preferredAIProvider"]
+    preferredAIProvider: AppPreferences["preferredAIProvider"],
   ) => {
     const nextPreferences = {
       ...preferences,
-      preferredAIProvider
+      preferredAIProvider,
     };
 
     setPreferences(nextPreferences);
@@ -431,7 +426,7 @@ export function useHarnessDocsApp(
     if (entry.documentId && activeWorkspaceGraph) {
       setSelectedDocumentIds((current) => ({
         ...current,
-        [activeWorkspaceGraph.workspace.id]: entry.documentId ?? ""
+        [activeWorkspaceGraph.workspace.id]: entry.documentId ?? "",
       }));
       navigation.onSelectedDocumentChange(entry.documentId);
     }
@@ -446,7 +441,7 @@ export function useHarnessDocsApp(
     await aiTaskMutation.mutateAsync({
       entry,
       workspaceGraph: activeWorkspaceGraph,
-      drafts: documentDrafts
+      drafts: documentDrafts,
     });
   };
 
@@ -459,7 +454,7 @@ export function useHarnessDocsApp(
       await publishMutation.mutateAsync({
         workspaceGraph: activeWorkspaceGraph,
         drafts: documentDrafts,
-        membershipId: activeMembership?.id ?? null
+        membershipId: activeMembership?.id ?? null,
       });
       navigation.onAreaChange("publish");
     } catch (error) {
@@ -472,7 +467,7 @@ export function useHarnessDocsApp(
         status: "running",
         error: null,
         result: null,
-        entryId: aiTaskMutation.variables?.entry.id ?? null
+        entryId: aiTaskMutation.variables?.entry.id ?? null,
       }
     : aiTaskMutation.isError
       ? {
@@ -482,27 +477,27 @@ export function useHarnessDocsApp(
               ? aiTaskMutation.error.message
               : "AI task execution failed.",
           result: null,
-          entryId: aiTaskMutation.variables?.entry.id ?? null
+          entryId: aiTaskMutation.variables?.entry.id ?? null,
         }
       : aiTaskMutation.isSuccess
         ? {
             status: "succeeded",
             error: null,
             result: aiTaskMutation.data,
-            entryId: aiTaskMutation.variables?.entry.id ?? null
+            entryId: aiTaskMutation.variables?.entry.id ?? null,
           }
         : {
             status: "idle",
             error: null,
             result: null,
-            entryId: null
+            entryId: null,
           };
 
   const publishState: AsyncTaskState<PublishExecutionResult> = publishMutation.isPending
     ? {
         status: "running",
         error: null,
-        result: null
+        result: null,
       }
     : publishMutation.isError
       ? {
@@ -511,18 +506,18 @@ export function useHarnessDocsApp(
             publishMutation.error instanceof Error
               ? publishMutation.error.message
               : "GitHub publish failed.",
-          result: null
+          result: null,
         }
       : publishMutation.isSuccess
         ? {
             status: "succeeded",
             error: null,
-            result: publishMutation.data
+            result: publishMutation.data,
           }
         : {
             status: "idle",
             error: null,
-            result: null
+            result: null,
           };
 
   return {
@@ -555,6 +550,6 @@ export function useHarnessDocsApp(
     handleStartEditing,
     handleReleaseEditing,
     handleCreateBlockComment,
-    handleAreaChange: navigation.onAreaChange
+    handleAreaChange: navigation.onAreaChange,
   };
 }

@@ -8,7 +8,7 @@ interface PersistedAppPreferences {
 }
 
 export const defaultAppPreferences: PersistedAppPreferences = {
-  preferredAIProvider: "Codex"
+  preferredAIProvider: "Codex",
 };
 
 function isAIProvider(value: unknown): value is AIProvider {
@@ -16,7 +16,7 @@ function isAIProvider(value: unknown): value is AIProvider {
 }
 
 export async function readAppPreferences(
-  storage: DesktopKeyValueStore
+  storage: DesktopKeyValueStore,
 ): Promise<PersistedAppPreferences> {
   const rawPreferences = await storage.getItem(APP_PREFERENCES_STORAGE_KEY);
 
@@ -30,7 +30,7 @@ export async function readAppPreferences(
     return {
       preferredAIProvider: isAIProvider(parsedPreferences.preferredAIProvider)
         ? parsedPreferences.preferredAIProvider
-        : defaultAppPreferences.preferredAIProvider
+        : defaultAppPreferences.preferredAIProvider,
     };
   } catch {
     return defaultAppPreferences;
@@ -39,7 +39,7 @@ export async function readAppPreferences(
 
 export async function writeAppPreferences(
   storage: DesktopKeyValueStore,
-  preferences: PersistedAppPreferences
+  preferences: PersistedAppPreferences,
 ): Promise<void> {
   await storage.setItem(APP_PREFERENCES_STORAGE_KEY, JSON.stringify(preferences));
 }

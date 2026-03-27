@@ -13,7 +13,7 @@ import type {
   WorkspaceDocument,
   WorkspaceGraph,
   WorkspaceMembership,
-  WorkspaceSummary
+  WorkspaceSummary,
 } from "../types";
 import { createPublishRecordWithPreflight } from "../lib/publishPreflight";
 
@@ -27,8 +27,8 @@ const workspaceAreaSummaries: Record<string, Record<string, WorkspaceAreaSummary
       highlights: [
         "PRD, UX Flow, Technical Spec, Policy/Decision",
         "Linked-doc traceability",
-        "Template-aware creation"
-      ]
+        "Template-aware creation",
+      ],
     },
     editor: {
       title: "Markdown Editor",
@@ -38,53 +38,48 @@ const workspaceAreaSummaries: Record<string, Record<string, WorkspaceAreaSummary
       highlights: [
         "Start Editing lock flow",
         "Split source and preview",
-        "Idle release after 30 minutes"
-      ]
+        "Idle release after 30 minutes",
+      ],
     },
     comments: {
       title: "Comments and Mentions",
       description:
         "Track block-level feedback, route mentions, and see linked review requests triggered by changes.",
       primaryAction: "Open review threads",
-      highlights: ["Paragraph comments", "@mention routing", "Review-request visibility"]
+      highlights: ["Paragraph comments", "@mention routing", "Review-request visibility"],
     },
     approvals: {
       title: "Approvals",
       description:
         "Manage app-native approvers, current approval state, and restoration by lead-level authority.",
       primaryAction: "Review approver matrix",
-      highlights: [
-        "App-managed authority",
-        "Imported GitHub candidates",
-        "Decision history"
-      ]
+      highlights: ["App-managed authority", "Imported GitHub candidates", "Decision history"],
     },
     publish: {
       title: "Publish Flow",
       description:
         "Prepare GitHub branch, commit, and pull request publication while surfacing stale rationale.",
       primaryAction: "Prepare publish memo",
-      highlights: ["Stale publish allowed", "Rationale required", "Unresolved approvals preserved"]
+      highlights: ["Stale publish allowed", "Rationale required", "Unresolved approvals preserved"],
     },
     ai: {
       title: "AI Harness",
       description:
         "Launch structured AI actions with either Codex or Claude against internal workspace documents.",
       primaryAction: "Start AI task",
-      highlights: ["Provider selection", "Action-button first UX", "Internal-doc search only"]
-    }
+      highlights: ["Provider selection", "Action-button first UX", "Internal-doc search only"],
+    },
   },
   ws_northstar: {
     documents: {
       title: "Document Library",
-      description:
-        "View document coverage across release readiness and dependency policies.",
+      description: "View document coverage across release readiness and dependency policies.",
       primaryAction: "Inspect document map",
       highlights: [
         "Role-specific documents",
         "Linked change requests",
-        "Workspace-specific templates"
-      ]
+        "Workspace-specific templates",
+      ],
     },
     editor: {
       title: "Markdown Editor",
@@ -94,38 +89,36 @@ const workspaceAreaSummaries: Record<string, Record<string, WorkspaceAreaSummary
       highlights: [
         "Lock ownership visibility",
         "Markdown-first workflow",
-        "Preview before publish"
-      ]
+        "Preview before publish",
+      ],
     },
     comments: {
       title: "Comments and Mentions",
-      description:
-        "Review thread volume and surface who still needs to respond before approval.",
+      description: "Review thread volume and surface who still needs to respond before approval.",
       primaryAction: "Triage mentions",
-      highlights: ["Comment resolution", "Mention feed", "Cross-doc review triggers"]
+      highlights: ["Comment resolution", "Mention feed", "Cross-doc review triggers"],
     },
     approvals: {
       title: "Approvals",
-      description:
-        "See remaining approvers, invalidated decisions, and restored authority paths.",
+      description: "See remaining approvers, invalidated decisions, and restored authority paths.",
       primaryAction: "Audit approval state",
-      highlights: ["Lead restoration", "App-native decisions", "Candidate import history"]
+      highlights: ["Lead restoration", "App-native decisions", "Candidate import history"],
     },
     publish: {
       title: "Publish Flow",
       description:
         "Assemble publish rationale even when stale links or invalidations remain unresolved.",
       primaryAction: "Inspect publish checklist",
-      highlights: ["Branch and PR automation", "Unresolved state capture", "Memo drafting"]
+      highlights: ["Branch and PR automation", "Unresolved state capture", "Memo drafting"],
     },
     ai: {
       title: "AI Harness",
       description:
         "Run Codex or Claude tasks to draft approver suggestions and document link updates.",
       primaryAction: "Choose provider",
-      highlights: ["Codex and Claude", "Workspace-only retrieval", "Task-scoped suggestions"]
-    }
-  }
+      highlights: ["Codex and Claude", "Workspace-only retrieval", "Task-scoped suggestions"],
+    },
+  },
 };
 
 export const mockUser: SessionUser = {
@@ -134,21 +127,23 @@ export const mockUser: SessionUser = {
   handle: "@mina",
   avatarInitials: "MC",
   githubLogin: "mina-cho",
-  primaryEmail: "mina@harnessdocs.dev"
+  primaryEmail: "mina@harnessdocs.dev",
 };
 
-function createReviewState(overrides: WorkspaceDocument["lifecycle"]["review"]): WorkspaceDocument["lifecycle"]["review"] {
+function createReviewState(
+  overrides: WorkspaceDocument["lifecycle"]["review"],
+): WorkspaceDocument["lifecycle"]["review"] {
   return overrides;
 }
 
 function createPrePublicationState(
-  overrides: DocumentPrePublicationState
+  overrides: DocumentPrePublicationState,
 ): DocumentPrePublicationState {
   return overrides;
 }
 
 function createUnresolvedApprovalSnapshot(
-  overrides: UnresolvedApprovalSnapshot
+  overrides: UnresolvedApprovalSnapshot,
 ): UnresolvedApprovalSnapshot {
   return overrides;
 }
@@ -157,7 +152,7 @@ function summarizeUnresolvedApprovals(documentId: string, approvals: DocumentApp
   return approvals.filter(
     (approval) =>
       approval.documentId === documentId &&
-      ["pending", "changes_requested", "invalidated"].includes(approval.lifecycle.state)
+      ["pending", "changes_requested", "invalidated"].includes(approval.lifecycle.state),
   );
 }
 
@@ -175,8 +170,8 @@ const horizonMemberships: WorkspaceMembership[] = [
       updatedAt: "2026-03-27T08:55:00Z",
       invitedAt: "2026-02-03T09:00:00Z",
       joinedAt: "2026-02-03T09:05:00Z",
-      lastActiveAt: "2026-03-27T08:55:00Z"
-    }
+      lastActiveAt: "2026-03-27T08:55:00Z",
+    },
   },
   {
     id: "mbr_horizon_lee",
@@ -190,8 +185,8 @@ const horizonMemberships: WorkspaceMembership[] = [
       updatedAt: "2026-03-27T07:40:00Z",
       invitedAt: "2026-02-04T08:30:00Z",
       joinedAt: "2026-02-04T08:41:00Z",
-      lastActiveAt: "2026-03-27T07:40:00Z"
-    }
+      lastActiveAt: "2026-03-27T07:40:00Z",
+    },
   },
   {
     id: "mbr_horizon_sam",
@@ -205,9 +200,9 @@ const horizonMemberships: WorkspaceMembership[] = [
       updatedAt: "2026-03-27T06:15:00Z",
       invitedAt: "2026-02-04T09:20:00Z",
       joinedAt: "2026-02-04T10:10:00Z",
-      lastActiveAt: "2026-03-27T06:15:00Z"
-    }
-  }
+      lastActiveAt: "2026-03-27T06:15:00Z",
+    },
+  },
 ];
 
 const horizonActiveLock: DocumentEditingLock = {
@@ -225,8 +220,8 @@ const horizonActiveLock: DocumentEditingLock = {
   lifecycle: {
     status: "active",
     createdAt: "2026-03-27T08:20:00Z",
-    updatedAt: "2026-03-27T08:52:00Z"
-  }
+    updatedAt: "2026-03-27T08:52:00Z",
+  },
 };
 
 const horizonCommentThreads: DocumentCommentThread[] = [
@@ -242,7 +237,7 @@ const horizonCommentThreads: DocumentCommentThread[] = [
       headingPath: ["Problem"],
       excerpt: "The current checkout drops users during plan selection on desktop.",
       startOffset: 0,
-      endOffset: 62
+      endOffset: 62,
     },
     participantMembershipIds: ["mbr_horizon_mina", "mbr_horizon_sam"],
     commentIds: ["cmt_horizon_problem_1", "cmt_horizon_problem_2"],
@@ -252,8 +247,8 @@ const horizonCommentThreads: DocumentCommentThread[] = [
       status: "open",
       createdAt: "2026-03-27T08:24:00Z",
       updatedAt: "2026-03-27T08:40:00Z",
-      lastCommentAt: "2026-03-27T08:40:00Z"
-    }
+      lastCommentAt: "2026-03-27T08:40:00Z",
+    },
   },
   {
     id: "thread_horizon_publish_links",
@@ -267,7 +262,7 @@ const horizonCommentThreads: DocumentCommentThread[] = [
       headingPath: ["Responsibilities"],
       excerpt: "Open a pull request in the mapped docs repository",
       startOffset: null,
-      endOffset: null
+      endOffset: null,
     },
     participantMembershipIds: ["mbr_horizon_lee", "mbr_horizon_mina"],
     commentIds: ["cmt_horizon_publish_1"],
@@ -279,9 +274,9 @@ const horizonCommentThreads: DocumentCommentThread[] = [
       updatedAt: "2026-03-25T18:05:00Z",
       lastCommentAt: "2026-03-25T17:50:00Z",
       resolvedAt: "2026-03-25T18:05:00Z",
-      resolvedByMembershipId: "mbr_horizon_mina"
-    }
-  }
+      resolvedByMembershipId: "mbr_horizon_mina",
+    },
+  },
 ];
 
 const horizonComments: DocumentComment[] = [
@@ -308,7 +303,7 @@ const horizonComments: DocumentComment[] = [
           normalizedKey: "mina",
           displayLabel: "Mina Cho",
           membershipId: "mbr_horizon_mina",
-          userId: "usr_mina_cho"
+          userId: "usr_mina_cho",
         },
         parse: {
           trigger: "@",
@@ -316,18 +311,18 @@ const horizonComments: DocumentComment[] = [
           endOffset: 5,
           line: 1,
           column: 1,
-          blockId: "prd_problem"
+          blockId: "prd_problem",
         },
         createdAt: "2026-03-27T08:24:00Z",
         deliveryStatus: "read",
         deliveredAt: "2026-03-27T08:24:30Z",
-        readAt: "2026-03-27T08:26:00Z"
-      }
+        readAt: "2026-03-27T08:26:00Z",
+      },
     ],
     lifecycle: {
       createdAt: "2026-03-27T08:24:00Z",
-      updatedAt: "2026-03-27T08:24:00Z"
-    }
+      updatedAt: "2026-03-27T08:24:00Z",
+    },
   },
   {
     id: "cmt_horizon_problem_2",
@@ -341,8 +336,8 @@ const horizonComments: DocumentComment[] = [
     mentions: [],
     lifecycle: {
       createdAt: "2026-03-27T08:40:00Z",
-      updatedAt: "2026-03-27T08:40:00Z"
-    }
+      updatedAt: "2026-03-27T08:40:00Z",
+    },
   },
   {
     id: "cmt_horizon_publish_1",
@@ -357,9 +352,9 @@ const horizonComments: DocumentComment[] = [
     lifecycle: {
       createdAt: "2026-03-25T17:50:00Z",
       updatedAt: "2026-03-25T18:05:00Z",
-      resolvedAt: "2026-03-25T18:05:00Z"
-    }
-  }
+      resolvedAt: "2026-03-25T18:05:00Z",
+    },
+  },
 ];
 
 const horizonTemplates: DocumentTemplate[] = [
@@ -381,7 +376,7 @@ const horizonTemplates: DocumentTemplate[] = [
       intent: "create_document",
       linkedDocumentIds: [],
       invalidatedByDocumentIds: [],
-      referenceDocumentIds: []
+      referenceDocumentIds: [],
     },
     sections: [
       {
@@ -391,8 +386,11 @@ const horizonTemplates: DocumentTemplate[] = [
         summary: "State the user or business problem this PRD addresses.",
         required: true,
         defaultMarkdown: "## Problem\nDescribe the friction, risk, or unmet need.",
-        guidance: ["Anchor the problem in observable evidence.", "Keep scope narrow enough to approve."],
-        linkedDocumentTypeHints: ["UX Flow", "Technical Spec"]
+        guidance: [
+          "Anchor the problem in observable evidence.",
+          "Keep scope narrow enough to approve.",
+        ],
+        linkedDocumentTypeHints: ["UX Flow", "Technical Spec"],
       },
       {
         id: "prd_goals",
@@ -401,17 +399,20 @@ const horizonTemplates: DocumentTemplate[] = [
         summary: "Capture the intended outcomes and decision boundaries.",
         required: true,
         defaultMarkdown: "## Goals\n- Outcome 1\n- Outcome 2",
-        guidance: ["Use measurable outcomes where possible.", "Separate goals from implementation details."],
-        linkedDocumentTypeHints: ["UX Flow", "Policy/Decision"]
-      }
+        guidance: [
+          "Use measurable outcomes where possible.",
+          "Separate goals from implementation details.",
+        ],
+        linkedDocumentTypeHints: ["UX Flow", "Policy/Decision"],
+      },
     ],
     lifecycle: {
       status: "active",
       createdAt: "2026-02-03T09:01:00Z",
       updatedAt: "2026-03-01T10:00:00Z",
       publishedAt: "2026-02-03T09:08:00Z",
-      lastPublishedCommitSha: "bf12a33"
-    }
+      lastPublishedCommitSha: "bf12a33",
+    },
   },
   {
     id: "tpl_ux_flow_system",
@@ -431,7 +432,7 @@ const horizonTemplates: DocumentTemplate[] = [
       intent: "create_document",
       linkedDocumentIds: [],
       invalidatedByDocumentIds: [],
-      referenceDocumentIds: []
+      referenceDocumentIds: [],
     },
     sections: [
       {
@@ -441,8 +442,11 @@ const horizonTemplates: DocumentTemplate[] = [
         summary: "Identify how users enter the flow.",
         required: true,
         defaultMarkdown: "## Entry Points\n- Entry point",
-        guidance: ["List triggers and preconditions.", "Reference upstream PRD language when relevant."],
-        linkedDocumentTypeHints: ["PRD"]
+        guidance: [
+          "List triggers and preconditions.",
+          "Reference upstream PRD language when relevant.",
+        ],
+        linkedDocumentTypeHints: ["PRD"],
       },
       {
         id: "ux_flow_steps",
@@ -452,16 +456,16 @@ const horizonTemplates: DocumentTemplate[] = [
         required: true,
         defaultMarkdown: "## Flow Steps\n1. Step one\n2. Step two",
         guidance: ["Call out recovery moments.", "Highlight decision branches and redirects."],
-        linkedDocumentTypeHints: ["PRD", "Technical Spec"]
-      }
+        linkedDocumentTypeHints: ["PRD", "Technical Spec"],
+      },
     ],
     lifecycle: {
       status: "active",
       createdAt: "2026-02-03T09:02:00Z",
       updatedAt: "2026-03-01T10:00:00Z",
       publishedAt: "2026-02-03T09:08:00Z",
-      lastPublishedCommitSha: "bf12a34"
-    }
+      lastPublishedCommitSha: "bf12a34",
+    },
   },
   {
     id: "tpl_tech_spec_system",
@@ -481,7 +485,7 @@ const horizonTemplates: DocumentTemplate[] = [
       intent: "create_document",
       linkedDocumentIds: [],
       invalidatedByDocumentIds: [],
-      referenceDocumentIds: []
+      referenceDocumentIds: [],
     },
     sections: [
       {
@@ -491,17 +495,20 @@ const horizonTemplates: DocumentTemplate[] = [
         summary: "Define the concrete technical responsibilities and boundaries.",
         required: true,
         defaultMarkdown: "## Responsibilities\n- Responsibility",
-        guidance: ["Name systems of record and automation boundaries.", "Call out GitHub touchpoints explicitly."],
-        linkedDocumentTypeHints: ["PRD", "Policy/Decision"]
-      }
+        guidance: [
+          "Name systems of record and automation boundaries.",
+          "Call out GitHub touchpoints explicitly.",
+        ],
+        linkedDocumentTypeHints: ["PRD", "Policy/Decision"],
+      },
     ],
     lifecycle: {
       status: "active",
       createdAt: "2026-02-03T09:03:00Z",
       updatedAt: "2026-03-01T10:00:00Z",
       publishedAt: "2026-02-03T09:08:00Z",
-      lastPublishedCommitSha: "bf12a35"
-    }
+      lastPublishedCommitSha: "bf12a35",
+    },
   },
   {
     id: "tpl_policy_system",
@@ -521,7 +528,7 @@ const horizonTemplates: DocumentTemplate[] = [
       intent: "create_document",
       linkedDocumentIds: [],
       invalidatedByDocumentIds: [],
-      referenceDocumentIds: []
+      referenceDocumentIds: [],
     },
     sections: [
       {
@@ -531,8 +538,11 @@ const horizonTemplates: DocumentTemplate[] = [
         summary: "Capture the governing decision and its authority.",
         required: true,
         defaultMarkdown: "## Decision\nState the approved decision.",
-        guidance: ["Name who can restore or override approval state.", "Keep the rule explicit and auditable."],
-        linkedDocumentTypeHints: ["PRD", "Technical Spec"]
+        guidance: [
+          "Name who can restore or override approval state.",
+          "Keep the rule explicit and auditable.",
+        ],
+        linkedDocumentTypeHints: ["PRD", "Technical Spec"],
       },
       {
         id: "policy_guardrails",
@@ -542,17 +552,17 @@ const horizonTemplates: DocumentTemplate[] = [
         required: true,
         defaultMarkdown: "## Guardrails\n- Guardrail",
         guidance: ["Focus on visible enforcement.", "Include publish-time requirements."],
-        linkedDocumentTypeHints: ["Technical Spec"]
-      }
+        linkedDocumentTypeHints: ["Technical Spec"],
+      },
     ],
     lifecycle: {
       status: "active",
       createdAt: "2026-02-03T09:04:00Z",
       updatedAt: "2026-03-01T10:00:00Z",
       publishedAt: "2026-02-03T09:08:00Z",
-      lastPublishedCommitSha: "bf12a36"
-    }
-  }
+      lastPublishedCommitSha: "bf12a36",
+    },
+  },
 ];
 
 const horizonApprovals: DocumentApproval[] = [
@@ -573,8 +583,8 @@ const horizonApprovals: DocumentApproval[] = [
       createdAt: "2026-03-24T09:00:00Z",
       updatedAt: "2026-03-27T08:24:00Z",
       requestedAt: "2026-03-24T09:00:00Z",
-      respondedAt: "2026-03-27T08:24:00Z"
-    }
+      respondedAt: "2026-03-27T08:24:00Z",
+    },
   },
   {
     id: "apr_horizon_checkout_lead",
@@ -593,8 +603,8 @@ const horizonApprovals: DocumentApproval[] = [
       state: "pending",
       createdAt: "2026-03-24T09:00:00Z",
       updatedAt: "2026-03-27T08:45:00Z",
-      requestedAt: "2026-03-24T09:00:00Z"
-    }
+      requestedAt: "2026-03-24T09:00:00Z",
+    },
   },
   {
     id: "apr_horizon_ux_reviewer",
@@ -612,8 +622,8 @@ const horizonApprovals: DocumentApproval[] = [
       state: "pending",
       createdAt: "2026-03-26T16:10:00Z",
       updatedAt: "2026-03-26T16:10:00Z",
-      requestedAt: "2026-03-26T16:10:00Z"
-    }
+      requestedAt: "2026-03-26T16:10:00Z",
+    },
   },
   {
     id: "apr_horizon_publish_lead",
@@ -632,8 +642,8 @@ const horizonApprovals: DocumentApproval[] = [
       createdAt: "2026-03-18T14:00:00Z",
       updatedAt: "2026-03-22T15:00:00Z",
       requestedAt: "2026-03-18T14:00:00Z",
-      respondedAt: "2026-03-22T15:00:00Z"
-    }
+      respondedAt: "2026-03-22T15:00:00Z",
+    },
   },
   {
     id: "apr_horizon_policy_lead",
@@ -652,9 +662,9 @@ const horizonApprovals: DocumentApproval[] = [
       createdAt: "2026-03-18T08:20:00Z",
       updatedAt: "2026-03-20T09:00:00Z",
       requestedAt: "2026-03-18T08:20:00Z",
-      respondedAt: "2026-03-20T09:00:00Z"
-    }
-  }
+      respondedAt: "2026-03-20T09:00:00Z",
+    },
+  },
 ];
 
 const horizonDocuments: WorkspaceDocument[] = [
@@ -696,11 +706,13 @@ The current checkout drops users during plan selection on desktop.
           documentId: "doc_horizon_prd_checkout",
           label: "Sam Kim requested changes",
           authority: "required_reviewer",
-          summary: "Reviewer feedback remains unresolved and must stay visible before GitHub publication.",
-          requiredAction: "Resolve the requested changes or disclose the rejected state in the publish memo.",
+          summary:
+            "Reviewer feedback remains unresolved and must stay visible before GitHub publication.",
+          requiredAction:
+            "Resolve the requested changes or disclose the rejected state in the publish memo.",
           approvalId: "apr_horizon_checkout_reviewer",
           membershipId: "mbr_horizon_sam",
-          invalidationIds: []
+          invalidationIds: [],
         }),
         createUnresolvedApprovalSnapshot({
           id: "unresolved_horizon_prd_lead_pending",
@@ -708,12 +720,14 @@ The current checkout drops users during plan selection on desktop.
           documentId: "doc_horizon_prd_checkout",
           label: "Lead approval still pending",
           authority: "lead",
-          summary: "Lead approval remains open after the linked policy update invalidated the prior approval context.",
-          requiredAction: "Capture a lead restoration decision in-app or publish with the unresolved pending state recorded.",
+          summary:
+            "Lead approval remains open after the linked policy update invalidated the prior approval context.",
+          requiredAction:
+            "Capture a lead restoration decision in-app or publish with the unresolved pending state recorded.",
           approvalId: "apr_horizon_checkout_lead",
           membershipId: "mbr_horizon_mina",
-          invalidationIds: ["inv_horizon_checkout_policy"]
-        })
+          invalidationIds: ["inv_horizon_checkout_policy"],
+        }),
       ],
       invalidationIds: ["inv_horizon_checkout_policy"],
       blockingIssues: [
@@ -722,10 +736,12 @@ The current checkout drops users during plan selection on desktop.
           kind: "changes_requested",
           severity: "warning",
           label: "Review changes remain open",
-          summary: "A reviewer has active change feedback that remains attached to the publish record.",
-          requiredAction: "Decide whether to resolve the review feedback or publish with explicit rationale.",
+          summary:
+            "A reviewer has active change feedback that remains attached to the publish record.",
+          requiredAction:
+            "Decide whether to resolve the review feedback or publish with explicit rationale.",
           relatedApprovalIds: ["apr_horizon_checkout_reviewer"],
-          relatedInvalidationIds: []
+          relatedInvalidationIds: [],
         },
         {
           id: "prepub_horizon_prd_invalidated",
@@ -734,10 +750,11 @@ The current checkout drops users during plan selection on desktop.
           label: "Lead approval was invalidated by a linked policy update",
           summary:
             "The release policy changed after approval context was captured, so the stale rationale must travel with the publish record.",
-          requiredAction: "Preserve the invalidation and any lead restoration decision in the publish memo.",
+          requiredAction:
+            "Preserve the invalidation and any lead restoration decision in the publish memo.",
           relatedApprovalIds: ["apr_horizon_checkout_lead"],
-          relatedInvalidationIds: ["inv_horizon_checkout_policy"]
-        }
+          relatedInvalidationIds: ["inv_horizon_checkout_policy"],
+        },
       ],
       github: {
         status: "eligible_with_warnings",
@@ -747,10 +764,10 @@ The current checkout drops users during plan selection on desktop.
           owner: "harness-docs",
           name: "horizon-docs",
           defaultBranch: "main",
-          installationId: 1042
+          installationId: 1042,
         },
-        missingCapabilities: []
-      }
+        missingCapabilities: [],
+      },
     }),
     lifecycle: {
       status: "draft",
@@ -783,13 +800,13 @@ The current checkout drops users during plan selection on desktop.
               summary: "Release approval policy changed after the PRD review request was opened.",
               detectedAt: "2026-03-27T08:45:00Z",
               affectsApprovalIds: ["apr_horizon_checkout_lead"],
-              requiresReviewRequest: false
-            }
-          ]
-        }
+              requiresReviewRequest: false,
+            },
+          ],
+        },
       }),
-      activeEditLock: horizonActiveLock
-    }
+      activeEditLock: horizonActiveLock,
+    },
   },
   {
     id: "doc_horizon_ux_checkout",
@@ -830,12 +847,14 @@ The current checkout drops users during plan selection on desktop.
           documentId: "doc_horizon_ux_checkout",
           label: "Reviewer response still pending",
           authority: "required_reviewer",
-          summary: "The UX flow is in the publish batch, but the reviewer has not responded to the latest request.",
-          requiredAction: "Collect the reviewer decision or carry the pending approval state into the publish memo.",
+          summary:
+            "The UX flow is in the publish batch, but the reviewer has not responded to the latest request.",
+          requiredAction:
+            "Collect the reviewer decision or carry the pending approval state into the publish memo.",
           approvalId: "apr_horizon_ux_reviewer",
           membershipId: "mbr_horizon_mina",
-          invalidationIds: []
-        })
+          invalidationIds: [],
+        }),
       ],
       invalidationIds: [],
       blockingIssues: [
@@ -844,11 +863,12 @@ The current checkout drops users during plan selection on desktop.
           kind: "approval_pending",
           severity: "warning",
           label: "Reviewer approval is pending",
-          summary: "The document remains publishable in the batch, but the app records the unresolved reviewer state.",
+          summary:
+            "The document remains publishable in the batch, but the app records the unresolved reviewer state.",
           requiredAction: "Collect the decision or disclose the open approval in the publish memo.",
           relatedApprovalIds: ["apr_horizon_ux_reviewer"],
-          relatedInvalidationIds: []
-        }
+          relatedInvalidationIds: [],
+        },
       ],
       github: {
         status: "eligible_with_warnings",
@@ -858,10 +878,10 @@ The current checkout drops users during plan selection on desktop.
           owner: "harness-docs",
           name: "horizon-docs",
           defaultBranch: "main",
-          installationId: 1042
+          installationId: 1042,
         },
-        missingCapabilities: []
-      }
+        missingCapabilities: [],
+      },
     }),
     lifecycle: {
       status: "in_review",
@@ -880,11 +900,11 @@ The current checkout drops users during plan selection on desktop.
           rationaleRequired: false,
           summary: "Linked PRD references are current for the active review request.",
           reasons: [],
-          invalidations: []
-        }
+          invalidations: [],
+        },
       }),
-      activeEditLock: null
-    }
+      activeEditLock: null,
+    },
   },
   {
     id: "doc_horizon_tech_publish",
@@ -907,7 +927,8 @@ The current checkout drops users during plan selection on desktop.
     linkedDocumentIds: ["doc_horizon_prd_checkout", "doc_horizon_policy_rollout"],
     prePublication: createPrePublicationState({
       readiness: "ready",
-      summary: "The technical spec is current, approved, and ready to enter GitHub publish automation.",
+      summary:
+        "The technical spec is current, approved, and ready to enter GitHub publish automation.",
       evaluatedAt: "2026-03-27T08:47:00Z",
       evaluatedByMembershipId: "mbr_horizon_mina",
       publishRecordId: "pub_horizon_release_20260327",
@@ -919,15 +940,16 @@ The current checkout drops users during plan selection on desktop.
       blockingIssues: [],
       github: {
         status: "eligible",
-        summary: "No pre-publication issues prevent branch, commit, or pull request creation for this document.",
+        summary:
+          "No pre-publication issues prevent branch, commit, or pull request creation for this document.",
         repository: {
           owner: "harness-docs",
           name: "horizon-docs",
           defaultBranch: "main",
-          installationId: 1042
+          installationId: 1042,
         },
-        missingCapabilities: []
-      }
+        missingCapabilities: [],
+      },
     }),
     lifecycle: {
       status: "approved",
@@ -949,13 +971,13 @@ The current checkout drops users during plan selection on desktop.
           rationaleRequired: false,
           summary: "No linked document invalidations affect the current approved spec.",
           reasons: [],
-          invalidations: []
-        }
+          invalidations: [],
+        },
       }),
       lastPublishedAt: "2026-03-25T18:30:00Z",
       lastPublishedCommitSha: "9d23fa7",
-      activeEditLock: null
-    }
+      activeEditLock: null,
+    },
   },
   {
     id: "doc_horizon_policy_rollout",
@@ -980,7 +1002,8 @@ Lead-level approvers may restore invalidated app-native approvals during publish
     linkedDocumentIds: ["doc_horizon_prd_checkout", "doc_horizon_tech_publish"],
     prePublication: createPrePublicationState({
       readiness: "ready",
-      summary: "The governing policy is already current and can be republished without additional publish-time intervention.",
+      summary:
+        "The governing policy is already current and can be republished without additional publish-time intervention.",
       evaluatedAt: "2026-03-27T07:50:00Z",
       evaluatedByMembershipId: "mbr_horizon_mina",
       publishRecordId: null,
@@ -992,15 +1015,16 @@ Lead-level approvers may restore invalidated app-native approvals during publish
       blockingIssues: [],
       github: {
         status: "eligible",
-        summary: "Repository binding is intact and no unresolved approval or freshness issue blocks GitHub publication.",
+        summary:
+          "Repository binding is intact and no unresolved approval or freshness issue blocks GitHub publication.",
         repository: {
           owner: "harness-docs",
           name: "horizon-docs",
           defaultBranch: "main",
-          installationId: 1042
+          installationId: 1042,
         },
-        missingCapabilities: []
-      }
+        missingCapabilities: [],
+      },
     }),
     lifecycle: {
       status: "published",
@@ -1020,16 +1044,17 @@ Lead-level approvers may restore invalidated app-native approvals during publish
           evaluatedAt: "2026-03-27T07:50:00Z",
           evaluatedByMembershipId: "mbr_horizon_mina",
           rationaleRequired: false,
-          summary: "The governing policy is the freshest source for publish-time approval restoration.",
+          summary:
+            "The governing policy is the freshest source for publish-time approval restoration.",
           reasons: [],
-          invalidations: []
-        }
+          invalidations: [],
+        },
       }),
       lastPublishedAt: "2026-03-21T12:05:00Z",
       lastPublishedCommitSha: "3bc9aa2",
-      activeEditLock: null
-    }
-  }
+      activeEditLock: null,
+    },
+  },
 ];
 
 const horizonAIDraftSuggestions: AIDraftSuggestion[] = [
@@ -1051,7 +1076,7 @@ const horizonAIDraftSuggestions: AIDraftSuggestion[] = [
       intent: "revise_document",
       linkedDocumentIds: ["doc_horizon_ux_checkout", "doc_horizon_tech_publish"],
       invalidatedByDocumentIds: ["doc_horizon_policy_rollout"],
-      referenceDocumentIds: ["doc_horizon_ux_checkout", "doc_horizon_policy_rollout"]
+      referenceDocumentIds: ["doc_horizon_ux_checkout", "doc_horizon_policy_rollout"],
     },
     sections: [
       {
@@ -1059,15 +1084,15 @@ const horizonAIDraftSuggestions: AIDraftSuggestion[] = [
         title: "Problem",
         markdown:
           "## Problem\nDesktop users drop during plan selection when authentication and payment recovery states diverge.",
-        rationale: "Aligns the problem framing with the linked UX recovery flow."
+        rationale: "Aligns the problem framing with the linked UX recovery flow.",
       },
       {
         sectionId: "prd_goals",
         title: "Goals",
         markdown:
           "## Goals\n- Increase completed annual-plan checkouts on desktop\n- Reduce support tickets tied to interrupted checkout recovery",
-        rationale: "Turns the existing goals into measurable outcomes."
-      }
+        rationale: "Turns the existing goals into measurable outcomes.",
+      },
     ],
     suggestedLinkedDocumentIds: ["doc_horizon_ux_checkout", "doc_horizon_tech_publish"],
     lifecycle: {
@@ -1075,8 +1100,8 @@ const horizonAIDraftSuggestions: AIDraftSuggestion[] = [
       createdAt: "2026-03-27T08:10:00Z",
       updatedAt: "2026-03-27T08:18:00Z",
       generatedAt: "2026-03-27T08:10:00Z",
-      reviewedAt: "2026-03-27T08:18:00Z"
-    }
+      reviewedAt: "2026-03-27T08:18:00Z",
+    },
   },
   {
     id: "ai_horizon_prd_links",
@@ -1096,7 +1121,7 @@ const horizonAIDraftSuggestions: AIDraftSuggestion[] = [
       intent: "resolve_review",
       linkedDocumentIds: ["doc_horizon_ux_checkout", "doc_horizon_tech_publish"],
       invalidatedByDocumentIds: ["doc_horizon_policy_rollout"],
-      referenceDocumentIds: ["doc_horizon_policy_rollout"]
+      referenceDocumentIds: ["doc_horizon_policy_rollout"],
     },
     sections: [
       {
@@ -1104,16 +1129,16 @@ const horizonAIDraftSuggestions: AIDraftSuggestion[] = [
         title: "Linked Documents",
         markdown:
           "- Keep `Checkout Recovery Flow` linked for flow validation\n- Keep `Publish Pipeline Foundation` linked for downstream publish automation",
-        rationale: "Preserves review traceability between content and implementation."
-      }
+        rationale: "Preserves review traceability between content and implementation.",
+      },
     ],
     suggestedLinkedDocumentIds: ["doc_horizon_ux_checkout", "doc_horizon_tech_publish"],
     lifecycle: {
       status: "proposed",
       createdAt: "2026-03-27T08:19:00Z",
       updatedAt: "2026-03-27T08:19:00Z",
-      generatedAt: "2026-03-27T08:19:00Z"
-    }
+      generatedAt: "2026-03-27T08:19:00Z",
+    },
   },
   {
     id: "ai_horizon_publish_memo",
@@ -1133,7 +1158,7 @@ const horizonAIDraftSuggestions: AIDraftSuggestion[] = [
       intent: "prepare_publish",
       linkedDocumentIds: ["doc_horizon_prd_checkout", "doc_horizon_policy_rollout"],
       invalidatedByDocumentIds: [],
-      referenceDocumentIds: ["doc_horizon_prd_checkout", "doc_horizon_policy_rollout"]
+      referenceDocumentIds: ["doc_horizon_prd_checkout", "doc_horizon_policy_rollout"],
     },
     sections: [
       {
@@ -1141,8 +1166,8 @@ const horizonAIDraftSuggestions: AIDraftSuggestion[] = [
         title: "Publish Memo",
         markdown:
           "Proceed with publish branch creation while recording the stale PRD rationale and unresolved approval reference for Checkout Modernization.",
-        rationale: "Matches the publish-time stale policy captured in linked documents."
-      }
+        rationale: "Matches the publish-time stale policy captured in linked documents.",
+      },
     ],
     suggestedLinkedDocumentIds: ["doc_horizon_prd_checkout", "doc_horizon_policy_rollout"],
     lifecycle: {
@@ -1151,295 +1176,312 @@ const horizonAIDraftSuggestions: AIDraftSuggestion[] = [
       updatedAt: "2026-03-25T18:22:00Z",
       generatedAt: "2026-03-25T18:00:00Z",
       reviewedAt: "2026-03-25T18:18:00Z",
-      acceptedAt: "2026-03-25T18:22:00Z"
-    }
-  }
+      acceptedAt: "2026-03-25T18:22:00Z",
+    },
+  },
 ];
 
 const horizonPublishRecords: PublishRecord[] = [
-  createPublishRecordWithPreflight({
-    id: "pub_horizon_release_20260327",
-    workspaceId: "ws_horizon",
-    source: {
-      kind: "workspace",
+  createPublishRecordWithPreflight(
+    {
+      id: "pub_horizon_release_20260327",
       workspaceId: "ws_horizon",
-      documentId: null,
-      templateId: null,
-      label: "Horizon workspace publish batch",
-      changeSummary:
-        "Publishes the checkout modernization document set from the app-native workspace source of truth."
+      source: {
+        kind: "workspace",
+        workspaceId: "ws_horizon",
+        documentId: null,
+        templateId: null,
+        label: "Horizon workspace publish batch",
+        changeSummary:
+          "Publishes the checkout modernization document set from the app-native workspace source of truth.",
+      },
+      currentStageId: "memo",
+      memoSuggestionId: "ai_horizon_publish_memo",
+      staleRationale:
+        "The PRD remains publishable because the linked release policy invalidated prior approval context without changing the documented implementation path. The unresolved lead approval and reviewer request stay attached to the publish record for follow-up.",
+      staleRationaleEntries: [
+        {
+          id: "pub_horizon_rationale_policy_invalidation",
+          label: "Policy invalidation disclosed",
+          summary:
+            "The linked release policy invalidated prior approval context, but the publish batch still preserves that unresolved state for reviewers.",
+          status: "current",
+          recordedAt: "2026-03-27T08:39:00Z",
+          recordedByMembershipId: "mbr_horizon_mina",
+          relatedDocumentId: "doc_horizon_prd_checkout",
+          relatedInvalidationId: "inv_horizon_checkout_policy",
+          relatedApprovalId: "apr_horizon_checkout_lead",
+        },
+        {
+          id: "pub_horizon_rationale_old_ux_alignment",
+          label: "Legacy UX alignment note",
+          summary:
+            "An earlier publish note assumed the UX flow was the only affected artifact in the batch.",
+          status: "outdated",
+          recordedAt: "2026-03-27T08:33:00Z",
+          recordedByMembershipId: "mbr_horizon_mina",
+          relatedDocumentId: "doc_horizon_ux_checkout",
+          supersededAt: "2026-03-27T08:41:00Z",
+          supersededByDocumentId: "doc_horizon_prd_checkout",
+          supersededReason:
+            "PRD invalidation analysis expanded the stale rationale to include approval fallout.",
+        },
+      ],
+      stages: [
+        {
+          id: "scope",
+          title: "Select publish scope",
+          description: "Confirm which documents and templates belong in this publish batch.",
+          status: "complete",
+          primaryAction: "Review included artifacts",
+          guidance: [
+            "Keep role-specific documents separate in the batch.",
+            "Include template updates when they change authored output.",
+          ],
+        },
+        {
+          id: "freshness",
+          title: "Evaluate stale state",
+          description:
+            "Review linked invalidations, determine current versus stale status, and record rationale when stale publish remains allowed.",
+          status: "complete",
+          primaryAction: "Inspect invalidations",
+          guidance: [
+            "Stale publish cannot hard-block the batch.",
+            "Unresolved invalidations must remain visible in the record.",
+          ],
+        },
+        {
+          id: "approvals",
+          title: "Capture approval snapshot",
+          description:
+            "Freeze app-native approval state, including unresolved or restored decisions, before GitHub publication starts.",
+          status: "complete",
+          primaryAction: "Audit approvers",
+          guidance: [
+            "Lead authority remains app-native.",
+            "GitHub users may appear only as imported approval candidates.",
+          ],
+        },
+        {
+          id: "memo",
+          title: "Draft publish memo",
+          description:
+            "Prepare the rationale, affected documents, and notification summary that will accompany the branch and pull request.",
+          status: "attention",
+          primaryAction: "Review memo draft",
+          guidance: [
+            "AI can draft the memo, but the app stores the final source of truth.",
+            "Mention unresolved approvals explicitly in the memo.",
+          ],
+        },
+        {
+          id: "github",
+          title: "Create branch, commit, and PR",
+          description:
+            "Publish automation executes against the mapped docs repository after the app-side review state is captured.",
+          status: "ready",
+          primaryAction: "Start GitHub publish",
+          guidance: [
+            "Branch creation, commit creation, and PR creation are a single publish sequence.",
+            "Outbound notifications fire after the publish record is prepared.",
+          ],
+        },
+      ],
+      artifacts: [
+        {
+          id: "pub_artifact_horizon_prd",
+          kind: "document",
+          targetId: "doc_horizon_prd_checkout",
+          label: "Checkout Modernization",
+          documentType: "PRD",
+          changeSummary:
+            "Updated problem framing and linked stale approval context for publish review.",
+          linkedDocumentIds: ["doc_horizon_ux_checkout", "doc_horizon_tech_publish"],
+          stalenessStatus: "stale",
+          unresolvedApprovalIds: ["apr_horizon_checkout_reviewer", "apr_horizon_checkout_lead"],
+          unresolvedApprovals: [
+            createUnresolvedApprovalSnapshot({
+              id: "unresolved_horizon_prd_reviewer_rejected",
+              status: "rejected",
+              documentId: "doc_horizon_prd_checkout",
+              label: "Sam Kim requested changes",
+              authority: "required_reviewer",
+              summary:
+                "Reviewer feedback remains unresolved and must stay visible before GitHub publication.",
+              requiredAction:
+                "Resolve the requested changes or disclose the rejected state in the publish memo.",
+              approvalId: "apr_horizon_checkout_reviewer",
+              membershipId: "mbr_horizon_sam",
+              invalidationIds: [],
+            }),
+            createUnresolvedApprovalSnapshot({
+              id: "unresolved_horizon_prd_lead_pending",
+              status: "pending",
+              documentId: "doc_horizon_prd_checkout",
+              label: "Lead approval still pending",
+              authority: "lead",
+              summary:
+                "Lead approval remains open after the linked policy update invalidated the prior approval context.",
+              requiredAction:
+                "Capture a lead restoration decision in-app or publish with the unresolved pending state recorded.",
+              approvalId: "apr_horizon_checkout_lead",
+              membershipId: "mbr_horizon_mina",
+              invalidationIds: ["inv_horizon_checkout_policy"],
+            }),
+          ],
+          invalidationIds: ["inv_horizon_checkout_policy"],
+        },
+        {
+          id: "pub_artifact_horizon_ux",
+          kind: "document",
+          targetId: "doc_horizon_ux_checkout",
+          label: "Checkout Recovery Flow",
+          documentType: "UX Flow",
+          changeSummary: "Carries linked UX updates triggered by the PRD review thread.",
+          linkedDocumentIds: ["doc_horizon_prd_checkout"],
+          stalenessStatus: "current",
+          unresolvedApprovalIds: ["apr_horizon_ux_reviewer"],
+          unresolvedApprovals: [
+            createUnresolvedApprovalSnapshot({
+              id: "unresolved_horizon_ux_reviewer_pending",
+              status: "pending",
+              documentId: "doc_horizon_ux_checkout",
+              label: "Reviewer response still pending",
+              authority: "required_reviewer",
+              summary:
+                "The UX flow is in the publish batch, but the reviewer has not responded to the latest request.",
+              requiredAction:
+                "Collect the reviewer decision or carry the pending approval state into the publish memo.",
+              approvalId: "apr_horizon_ux_reviewer",
+              membershipId: "mbr_horizon_mina",
+              invalidationIds: [],
+            }),
+          ],
+          invalidationIds: [],
+        },
+        {
+          id: "pub_artifact_horizon_publish",
+          kind: "document",
+          targetId: "doc_horizon_tech_publish",
+          label: "Publish Pipeline Foundation",
+          documentType: "Technical Spec",
+          changeSummary: "Defines the branch, commit, and pull request automation path.",
+          linkedDocumentIds: ["doc_horizon_prd_checkout", "doc_horizon_policy_rollout"],
+          stalenessStatus: "current",
+          unresolvedApprovalIds: [],
+          unresolvedApprovals: [],
+          invalidationIds: [],
+        },
+      ],
+      staleDocumentIds: ["doc_horizon_prd_checkout"],
+      unresolvedApprovalIds: [
+        "apr_horizon_checkout_reviewer",
+        "apr_horizon_checkout_lead",
+        "apr_horizon_ux_reviewer",
+      ],
+      unresolvedApprovals: [
+        createUnresolvedApprovalSnapshot({
+          id: "unresolved_horizon_prd_reviewer_rejected",
+          status: "rejected",
+          documentId: "doc_horizon_prd_checkout",
+          label: "Sam Kim requested changes",
+          authority: "required_reviewer",
+          summary:
+            "Reviewer feedback remains unresolved and must stay visible before GitHub publication.",
+          requiredAction:
+            "Resolve the requested changes or disclose the rejected state in the publish memo.",
+          approvalId: "apr_horizon_checkout_reviewer",
+          membershipId: "mbr_horizon_sam",
+          invalidationIds: [],
+        }),
+        createUnresolvedApprovalSnapshot({
+          id: "unresolved_horizon_prd_lead_pending",
+          status: "pending",
+          documentId: "doc_horizon_prd_checkout",
+          label: "Lead approval still pending",
+          authority: "lead",
+          summary:
+            "Lead approval remains open after the linked policy update invalidated the prior approval context.",
+          requiredAction:
+            "Capture a lead restoration decision in-app or publish with the unresolved pending state recorded.",
+          approvalId: "apr_horizon_checkout_lead",
+          membershipId: "mbr_horizon_mina",
+          invalidationIds: ["inv_horizon_checkout_policy"],
+        }),
+        createUnresolvedApprovalSnapshot({
+          id: "unresolved_horizon_ux_reviewer_pending",
+          status: "pending",
+          documentId: "doc_horizon_ux_checkout",
+          label: "Reviewer response still pending",
+          authority: "required_reviewer",
+          summary:
+            "The UX flow is in the publish batch, but the reviewer has not responded to the latest request.",
+          requiredAction:
+            "Collect the reviewer decision or carry the pending approval state into the publish memo.",
+          approvalId: "apr_horizon_ux_reviewer",
+          membershipId: "mbr_horizon_mina",
+          invalidationIds: [],
+        }),
+      ],
+      invalidationIds: ["inv_horizon_checkout_policy"],
+      notificationTargets: [
+        {
+          id: "pub_notify_horizon_inapp_mina",
+          kind: "in_app",
+          label: "Mina Cho",
+          membershipId: "mbr_horizon_mina",
+          status: "queued",
+        },
+        {
+          id: "pub_notify_horizon_inapp_sam",
+          kind: "in_app",
+          label: "Sam Kim",
+          membershipId: "mbr_horizon_sam",
+          status: "queued",
+        },
+        {
+          id: "pub_notify_horizon_webhook_team",
+          kind: "webhook",
+          label: "Horizon team webhook",
+          destination: "https://hooks.slack.com/services/demo/horizon",
+          status: "pending",
+        },
+      ],
+      publication: {
+        initiatedByMembershipId: "mbr_horizon_mina",
+        repository: {
+          owner: "harness-docs",
+          name: "horizon-docs",
+          defaultBranch: "main",
+          baseBranch: "main",
+          branchName: "publish/2026-03-27-checkout-modernization",
+          installationId: 1042,
+        },
+        commit: {
+          sha: null,
+          message:
+            "docs: publish checkout modernization set with stale rationale and approval snapshot",
+          authoredByMembershipId: "mbr_horizon_mina",
+          authoredAt: null,
+        },
+        pullRequest: {
+          number: null,
+          title: "Publish checkout modernization documentation set",
+          url: null,
+          openedByMembershipId: null,
+          openedAt: null,
+        },
+      },
+      lifecycle: {
+        status: "ready_for_publish",
+        createdAt: "2026-03-27T08:30:00Z",
+        updatedAt: "2026-03-27T08:52:00Z",
+        validatedAt: "2026-03-27T08:47:00Z",
+      },
     },
-    currentStageId: "memo",
-    memoSuggestionId: "ai_horizon_publish_memo",
-    staleRationale:
-      "The PRD remains publishable because the linked release policy invalidated prior approval context without changing the documented implementation path. The unresolved lead approval and reviewer request stay attached to the publish record for follow-up.",
-    staleRationaleEntries: [
-      {
-        id: "pub_horizon_rationale_policy_invalidation",
-        label: "Policy invalidation disclosed",
-        summary:
-          "The linked release policy invalidated prior approval context, but the publish batch still preserves that unresolved state for reviewers.",
-        status: "current",
-        recordedAt: "2026-03-27T08:39:00Z",
-        recordedByMembershipId: "mbr_horizon_mina",
-        relatedDocumentId: "doc_horizon_prd_checkout",
-        relatedInvalidationId: "inv_horizon_checkout_policy",
-        relatedApprovalId: "apr_horizon_checkout_lead"
-      },
-      {
-        id: "pub_horizon_rationale_old_ux_alignment",
-        label: "Legacy UX alignment note",
-        summary:
-          "An earlier publish note assumed the UX flow was the only affected artifact in the batch.",
-        status: "outdated",
-        recordedAt: "2026-03-27T08:33:00Z",
-        recordedByMembershipId: "mbr_horizon_mina",
-        relatedDocumentId: "doc_horizon_ux_checkout",
-        supersededAt: "2026-03-27T08:41:00Z",
-        supersededByDocumentId: "doc_horizon_prd_checkout",
-        supersededReason:
-          "PRD invalidation analysis expanded the stale rationale to include approval fallout."
-      }
-    ],
-    stages: [
-      {
-        id: "scope",
-        title: "Select publish scope",
-        description: "Confirm which documents and templates belong in this publish batch.",
-        status: "complete",
-        primaryAction: "Review included artifacts",
-        guidance: [
-          "Keep role-specific documents separate in the batch.",
-          "Include template updates when they change authored output."
-        ]
-      },
-      {
-        id: "freshness",
-        title: "Evaluate stale state",
-        description:
-          "Review linked invalidations, determine current versus stale status, and record rationale when stale publish remains allowed.",
-        status: "complete",
-        primaryAction: "Inspect invalidations",
-        guidance: [
-          "Stale publish cannot hard-block the batch.",
-          "Unresolved invalidations must remain visible in the record."
-        ]
-      },
-      {
-        id: "approvals",
-        title: "Capture approval snapshot",
-        description:
-          "Freeze app-native approval state, including unresolved or restored decisions, before GitHub publication starts.",
-        status: "complete",
-        primaryAction: "Audit approvers",
-        guidance: [
-          "Lead authority remains app-native.",
-          "GitHub users may appear only as imported approval candidates."
-        ]
-      },
-      {
-        id: "memo",
-        title: "Draft publish memo",
-        description:
-          "Prepare the rationale, affected documents, and notification summary that will accompany the branch and pull request.",
-        status: "attention",
-        primaryAction: "Review memo draft",
-        guidance: [
-          "AI can draft the memo, but the app stores the final source of truth.",
-          "Mention unresolved approvals explicitly in the memo."
-        ]
-      },
-      {
-        id: "github",
-        title: "Create branch, commit, and PR",
-        description:
-          "Publish automation executes against the mapped docs repository after the app-side review state is captured.",
-        status: "ready",
-        primaryAction: "Start GitHub publish",
-        guidance: [
-          "Branch creation, commit creation, and PR creation are a single publish sequence.",
-          "Outbound notifications fire after the publish record is prepared."
-        ]
-      }
-    ],
-    artifacts: [
-      {
-        id: "pub_artifact_horizon_prd",
-        kind: "document",
-        targetId: "doc_horizon_prd_checkout",
-        label: "Checkout Modernization",
-        documentType: "PRD",
-        changeSummary: "Updated problem framing and linked stale approval context for publish review.",
-        linkedDocumentIds: ["doc_horizon_ux_checkout", "doc_horizon_tech_publish"],
-        stalenessStatus: "stale",
-        unresolvedApprovalIds: ["apr_horizon_checkout_reviewer", "apr_horizon_checkout_lead"],
-        unresolvedApprovals: [
-          createUnresolvedApprovalSnapshot({
-            id: "unresolved_horizon_prd_reviewer_rejected",
-            status: "rejected",
-            documentId: "doc_horizon_prd_checkout",
-            label: "Sam Kim requested changes",
-            authority: "required_reviewer",
-            summary: "Reviewer feedback remains unresolved and must stay visible before GitHub publication.",
-            requiredAction: "Resolve the requested changes or disclose the rejected state in the publish memo.",
-            approvalId: "apr_horizon_checkout_reviewer",
-            membershipId: "mbr_horizon_sam",
-            invalidationIds: []
-          }),
-          createUnresolvedApprovalSnapshot({
-            id: "unresolved_horizon_prd_lead_pending",
-            status: "pending",
-            documentId: "doc_horizon_prd_checkout",
-            label: "Lead approval still pending",
-            authority: "lead",
-            summary: "Lead approval remains open after the linked policy update invalidated the prior approval context.",
-            requiredAction: "Capture a lead restoration decision in-app or publish with the unresolved pending state recorded.",
-            approvalId: "apr_horizon_checkout_lead",
-            membershipId: "mbr_horizon_mina",
-            invalidationIds: ["inv_horizon_checkout_policy"]
-          })
-        ],
-        invalidationIds: ["inv_horizon_checkout_policy"]
-      },
-      {
-        id: "pub_artifact_horizon_ux",
-        kind: "document",
-        targetId: "doc_horizon_ux_checkout",
-        label: "Checkout Recovery Flow",
-        documentType: "UX Flow",
-        changeSummary: "Carries linked UX updates triggered by the PRD review thread.",
-        linkedDocumentIds: ["doc_horizon_prd_checkout"],
-        stalenessStatus: "current",
-        unresolvedApprovalIds: ["apr_horizon_ux_reviewer"],
-        unresolvedApprovals: [
-          createUnresolvedApprovalSnapshot({
-            id: "unresolved_horizon_ux_reviewer_pending",
-            status: "pending",
-            documentId: "doc_horizon_ux_checkout",
-            label: "Reviewer response still pending",
-            authority: "required_reviewer",
-            summary: "The UX flow is in the publish batch, but the reviewer has not responded to the latest request.",
-            requiredAction: "Collect the reviewer decision or carry the pending approval state into the publish memo.",
-            approvalId: "apr_horizon_ux_reviewer",
-            membershipId: "mbr_horizon_mina",
-            invalidationIds: []
-          })
-        ],
-        invalidationIds: []
-      },
-      {
-        id: "pub_artifact_horizon_publish",
-        kind: "document",
-        targetId: "doc_horizon_tech_publish",
-        label: "Publish Pipeline Foundation",
-        documentType: "Technical Spec",
-        changeSummary: "Defines the branch, commit, and pull request automation path.",
-        linkedDocumentIds: ["doc_horizon_prd_checkout", "doc_horizon_policy_rollout"],
-        stalenessStatus: "current",
-        unresolvedApprovalIds: [],
-        unresolvedApprovals: [],
-        invalidationIds: []
-      }
-    ],
-    staleDocumentIds: ["doc_horizon_prd_checkout"],
-    unresolvedApprovalIds: [
-      "apr_horizon_checkout_reviewer",
-      "apr_horizon_checkout_lead",
-      "apr_horizon_ux_reviewer"
-    ],
-    unresolvedApprovals: [
-      createUnresolvedApprovalSnapshot({
-        id: "unresolved_horizon_prd_reviewer_rejected",
-        status: "rejected",
-        documentId: "doc_horizon_prd_checkout",
-        label: "Sam Kim requested changes",
-        authority: "required_reviewer",
-        summary: "Reviewer feedback remains unresolved and must stay visible before GitHub publication.",
-        requiredAction: "Resolve the requested changes or disclose the rejected state in the publish memo.",
-        approvalId: "apr_horizon_checkout_reviewer",
-        membershipId: "mbr_horizon_sam",
-        invalidationIds: []
-      }),
-      createUnresolvedApprovalSnapshot({
-        id: "unresolved_horizon_prd_lead_pending",
-        status: "pending",
-        documentId: "doc_horizon_prd_checkout",
-        label: "Lead approval still pending",
-        authority: "lead",
-        summary: "Lead approval remains open after the linked policy update invalidated the prior approval context.",
-        requiredAction: "Capture a lead restoration decision in-app or publish with the unresolved pending state recorded.",
-        approvalId: "apr_horizon_checkout_lead",
-        membershipId: "mbr_horizon_mina",
-        invalidationIds: ["inv_horizon_checkout_policy"]
-      }),
-      createUnresolvedApprovalSnapshot({
-        id: "unresolved_horizon_ux_reviewer_pending",
-        status: "pending",
-        documentId: "doc_horizon_ux_checkout",
-        label: "Reviewer response still pending",
-        authority: "required_reviewer",
-        summary: "The UX flow is in the publish batch, but the reviewer has not responded to the latest request.",
-        requiredAction: "Collect the reviewer decision or carry the pending approval state into the publish memo.",
-        approvalId: "apr_horizon_ux_reviewer",
-        membershipId: "mbr_horizon_mina",
-        invalidationIds: []
-      })
-    ],
-    invalidationIds: ["inv_horizon_checkout_policy"],
-    notificationTargets: [
-      {
-        id: "pub_notify_horizon_inapp_mina",
-        kind: "in_app",
-        label: "Mina Cho",
-        membershipId: "mbr_horizon_mina",
-        status: "queued"
-      },
-      {
-        id: "pub_notify_horizon_inapp_sam",
-        kind: "in_app",
-        label: "Sam Kim",
-        membershipId: "mbr_horizon_sam",
-        status: "queued"
-      },
-      {
-        id: "pub_notify_horizon_webhook_team",
-        kind: "webhook",
-        label: "Horizon team webhook",
-        destination: "https://hooks.slack.com/services/demo/horizon",
-        status: "pending"
-      }
-    ],
-    publication: {
-      initiatedByMembershipId: "mbr_horizon_mina",
-      repository: {
-        owner: "harness-docs",
-        name: "horizon-docs",
-        defaultBranch: "main",
-        baseBranch: "main",
-        branchName: "publish/2026-03-27-checkout-modernization",
-        installationId: 1042
-      },
-      commit: {
-        sha: null,
-        message: "docs: publish checkout modernization set with stale rationale and approval snapshot",
-        authoredByMembershipId: "mbr_horizon_mina",
-        authoredAt: null
-      },
-      pullRequest: {
-        number: null,
-        title: "Publish checkout modernization documentation set",
-        url: null,
-        openedByMembershipId: null,
-        openedAt: null
-      }
-    },
-    lifecycle: {
-      status: "ready_for_publish",
-      createdAt: "2026-03-27T08:30:00Z",
-      updatedAt: "2026-03-27T08:52:00Z",
-      validatedAt: "2026-03-27T08:47:00Z"
-    }
-  }, horizonDocuments)
+    horizonDocuments,
+  ),
 ];
 
 const northstarMemberships: WorkspaceMembership[] = [
@@ -1455,8 +1497,8 @@ const northstarMemberships: WorkspaceMembership[] = [
       updatedAt: "2026-03-26T22:10:00Z",
       invitedAt: "2026-02-10T09:00:00Z",
       joinedAt: "2026-02-10T09:25:00Z",
-      lastActiveAt: "2026-03-26T22:10:00Z"
-    }
+      lastActiveAt: "2026-03-26T22:10:00Z",
+    },
   },
   {
     id: "mbr_northstar_alex",
@@ -1470,9 +1512,9 @@ const northstarMemberships: WorkspaceMembership[] = [
       updatedAt: "2026-03-27T05:50:00Z",
       invitedAt: "2026-02-01T08:00:00Z",
       joinedAt: "2026-02-01T08:05:00Z",
-      lastActiveAt: "2026-03-27T05:50:00Z"
-    }
-  }
+      lastActiveAt: "2026-03-27T05:50:00Z",
+    },
+  },
 ];
 
 const northstarCommentThreads: DocumentCommentThread[] = [
@@ -1489,7 +1531,7 @@ const northstarCommentThreads: DocumentCommentThread[] = [
       excerpt:
         "Coordinate approvals, stale rationale, and final publish decisions across linked docs.",
       startOffset: 0,
-      endOffset: 83
+      endOffset: 83,
     },
     participantMembershipIds: ["mbr_northstar_mina", "mbr_northstar_alex"],
     commentIds: ["cmt_northstar_scope_1", "cmt_northstar_scope_2"],
@@ -1499,9 +1541,9 @@ const northstarCommentThreads: DocumentCommentThread[] = [
       status: "open",
       createdAt: "2026-03-26T21:40:00Z",
       updatedAt: "2026-03-26T22:05:00Z",
-      lastCommentAt: "2026-03-26T22:05:00Z"
-    }
-  }
+      lastCommentAt: "2026-03-26T22:05:00Z",
+    },
+  },
 ];
 
 const northstarComments: DocumentComment[] = [
@@ -1528,7 +1570,7 @@ const northstarComments: DocumentComment[] = [
           normalizedKey: "mina",
           displayLabel: "Mina Cho",
           membershipId: "mbr_northstar_mina",
-          userId: "usr_mina_cho"
+          userId: "usr_mina_cho",
         },
         parse: {
           trigger: "@",
@@ -1536,18 +1578,18 @@ const northstarComments: DocumentComment[] = [
           endOffset: 5,
           line: 1,
           column: 1,
-          blockId: "prd_scope"
+          blockId: "prd_scope",
         },
         createdAt: "2026-03-26T21:40:00Z",
         deliveryStatus: "read",
         deliveredAt: "2026-03-26T21:40:20Z",
-        readAt: "2026-03-26T21:45:00Z"
-      }
+        readAt: "2026-03-26T21:45:00Z",
+      },
     ],
     lifecycle: {
       createdAt: "2026-03-26T21:40:00Z",
-      updatedAt: "2026-03-26T21:40:00Z"
-    }
+      updatedAt: "2026-03-26T21:40:00Z",
+    },
   },
   {
     id: "cmt_northstar_scope_2",
@@ -1561,9 +1603,9 @@ const northstarComments: DocumentComment[] = [
     mentions: [],
     lifecycle: {
       createdAt: "2026-03-26T22:05:00Z",
-      updatedAt: "2026-03-26T22:05:00Z"
-    }
-  }
+      updatedAt: "2026-03-26T22:05:00Z",
+    },
+  },
 ];
 
 const northstarApprovals: DocumentApproval[] = [
@@ -1584,8 +1626,8 @@ const northstarApprovals: DocumentApproval[] = [
       createdAt: "2026-03-18T09:00:00Z",
       updatedAt: "2026-03-20T13:00:00Z",
       requestedAt: "2026-03-18T09:00:00Z",
-      respondedAt: "2026-03-20T13:00:00Z"
-    }
+      respondedAt: "2026-03-20T13:00:00Z",
+    },
   },
   {
     id: "apr_northstar_prd_lead",
@@ -1599,14 +1641,15 @@ const northstarApprovals: DocumentApproval[] = [
     decision: null,
     decisionByMembershipId: null,
     invalidatedByDocumentId: "doc_northstar_policy_release",
-    decisionNote: "Lead approval is still required because linked release policy changes affected publish authority.",
+    decisionNote:
+      "Lead approval is still required because linked release policy changes affected publish authority.",
     lifecycle: {
       state: "pending",
       createdAt: "2026-03-26T21:50:00Z",
       updatedAt: "2026-03-27T05:35:00Z",
-      requestedAt: "2026-03-26T21:50:00Z"
-    }
-  }
+      requestedAt: "2026-03-26T21:50:00Z",
+    },
+  },
 ];
 
 const northstarDocuments: WorkspaceDocument[] = [
@@ -1634,7 +1677,8 @@ Publish remains allowed even when linked approvals are stale.
     linkedDocumentIds: ["doc_northstar_prd_release", "doc_northstar_tech_dependencies"],
     prePublication: createPrePublicationState({
       readiness: "ready",
-      summary: "The release policy is current and can serve as a clean publish-time authority source.",
+      summary:
+        "The release policy is current and can serve as a clean publish-time authority source.",
       evaluatedAt: "2026-03-27T05:40:00Z",
       evaluatedByMembershipId: "mbr_northstar_alex",
       publishRecordId: null,
@@ -1651,10 +1695,10 @@ Publish remains allowed even when linked approvals are stale.
           owner: "harness-docs",
           name: "northstar-docs",
           defaultBranch: "main",
-          installationId: 1077
+          installationId: 1077,
         },
-        missingCapabilities: []
-      }
+        missingCapabilities: [],
+      },
     }),
     lifecycle: {
       status: "approved",
@@ -1676,11 +1720,11 @@ Publish remains allowed even when linked approvals are stale.
           rationaleRequired: false,
           summary: "The policy document is the current publish authority source.",
           reasons: [],
-          invalidations: []
-        }
+          invalidations: [],
+        },
       }),
-      activeEditLock: null
-    }
+      activeEditLock: null,
+    },
   },
   {
     id: "doc_northstar_prd_release",
@@ -1716,12 +1760,14 @@ Coordinate approvals, stale rationale, and final publish decisions across linked
           documentId: "doc_northstar_prd_release",
           label: "Lead approval remains pending",
           authority: "lead",
-          summary: "The lead approval is still open after release policy changes invalidated the prior approval assumptions.",
-          requiredAction: "Restore or re-issue the lead decision in-app, or disclose the pending approval in the publish record.",
+          summary:
+            "The lead approval is still open after release policy changes invalidated the prior approval assumptions.",
+          requiredAction:
+            "Restore or re-issue the lead decision in-app, or disclose the pending approval in the publish record.",
           approvalId: "apr_northstar_prd_lead",
           membershipId: "mbr_northstar_alex",
-          invalidationIds: ["inv_northstar_prd_policy"]
-        })
+          invalidationIds: ["inv_northstar_prd_policy"],
+        }),
       ],
       invalidationIds: ["inv_northstar_prd_policy"],
       blockingIssues: [
@@ -1734,18 +1780,20 @@ Coordinate approvals, stale rationale, and final publish decisions across linked
             "The document may be published while stale, but only after rationale is captured and attached to the pre-publication record.",
           requiredAction: "Record the publish rationale before enabling GitHub automation.",
           relatedApprovalIds: ["apr_northstar_prd_lead"],
-          relatedInvalidationIds: ["inv_northstar_prd_policy"]
+          relatedInvalidationIds: ["inv_northstar_prd_policy"],
         },
         {
           id: "prepub_northstar_prd_invalidated",
           kind: "approval_invalidated",
           severity: "warning",
           label: "Lead approval context was invalidated",
-          summary: "The linked policy update changed approver authority assumptions after review started.",
-          requiredAction: "Either restore the approval in-app or publish with the unresolved invalidation disclosed.",
+          summary:
+            "The linked policy update changed approver authority assumptions after review started.",
+          requiredAction:
+            "Either restore the approval in-app or publish with the unresolved invalidation disclosed.",
           relatedApprovalIds: ["apr_northstar_prd_lead"],
-          relatedInvalidationIds: ["inv_northstar_prd_policy"]
-        }
+          relatedInvalidationIds: ["inv_northstar_prd_policy"],
+        },
       ],
       github: {
         status: "not_eligible",
@@ -1755,10 +1803,10 @@ Coordinate approvals, stale rationale, and final publish decisions across linked
           owner: "harness-docs",
           name: "northstar-docs",
           defaultBranch: "main",
-          installationId: 1077
+          installationId: 1077,
         },
-        missingCapabilities: []
-      }
+        missingCapabilities: [],
+      },
     }),
     lifecycle: {
       status: "in_review",
@@ -1788,16 +1836,17 @@ Coordinate approvals, stale rationale, and final publish decisions across linked
               documentId: "doc_northstar_prd_release",
               sourceDocumentId: "doc_northstar_policy_release",
               reason: "approval_invalidated",
-              summary: "Release policy updates changed the approver authority assumptions for this PRD.",
+              summary:
+                "Release policy updates changed the approver authority assumptions for this PRD.",
               detectedAt: "2026-03-27T05:35:00Z",
               affectsApprovalIds: ["apr_northstar_prd_lead"],
-              requiresReviewRequest: false
-            }
-          ]
-        }
+              requiresReviewRequest: false,
+            },
+          ],
+        },
       }),
-      activeEditLock: null
-    }
+      activeEditLock: null,
+    },
   },
   {
     id: "doc_northstar_tech_dependencies",
@@ -1834,11 +1883,12 @@ Represent linked document invalidations and outbound webhook notifications in th
           label: "Required lead approval has not been assigned",
           authority: "lead",
           summary: "No app-native lead approval request exists yet for the stale dependency spec.",
-          requiredAction: "Assign and request the required lead approval before attempting GitHub publication.",
+          requiredAction:
+            "Assign and request the required lead approval before attempting GitHub publication.",
           approvalId: null,
           membershipId: null,
-          invalidationIds: ["inv_northstar_tech_prd"]
-        })
+          invalidationIds: ["inv_northstar_tech_prd"],
+        }),
       ],
       invalidationIds: ["inv_northstar_tech_prd"],
       blockingIssues: [
@@ -1848,20 +1898,23 @@ Represent linked document invalidations and outbound webhook notifications in th
           severity: "blocking",
           label: "A review request is required before publish",
           summary: "The document became stale before any approval request was sent.",
-          requiredAction: "Send a new review request and capture approvers before preparing a publish record.",
+          requiredAction:
+            "Send a new review request and capture approvers before preparing a publish record.",
           relatedApprovalIds: [],
-          relatedInvalidationIds: ["inv_northstar_tech_prd"]
+          relatedInvalidationIds: ["inv_northstar_tech_prd"],
         },
         {
           id: "prepub_northstar_tech_missing_approval",
           kind: "approval_missing",
           severity: "blocking",
           label: "Required lead approval is missing",
-          summary: "The publish flow cannot preserve an approval decision because no required lead approver has been requested yet.",
-          requiredAction: "Assign the lead approver and create the in-app approval request before preparing the publish batch.",
+          summary:
+            "The publish flow cannot preserve an approval decision because no required lead approver has been requested yet.",
+          requiredAction:
+            "Assign the lead approver and create the in-app approval request before preparing the publish batch.",
           relatedApprovalIds: [],
-          relatedInvalidationIds: ["inv_northstar_tech_prd"]
-        }
+          relatedInvalidationIds: ["inv_northstar_tech_prd"],
+        },
       ],
       github: {
         status: "not_eligible",
@@ -1871,10 +1924,10 @@ Represent linked document invalidations and outbound webhook notifications in th
           owner: "harness-docs",
           name: "northstar-docs",
           defaultBranch: "main",
-          installationId: 1077
+          installationId: 1077,
         },
-        missingCapabilities: []
-      }
+        missingCapabilities: [],
+      },
     }),
     lifecycle: {
       status: "draft",
@@ -1900,17 +1953,18 @@ Represent linked document invalidations and outbound webhook notifications in th
               documentId: "doc_northstar_tech_dependencies",
               sourceDocumentId: "doc_northstar_prd_release",
               reason: "linked_document_updated",
-              summary: "Release readiness scope changed after the dependency spec was last updated.",
+              summary:
+                "Release readiness scope changed after the dependency spec was last updated.",
               detectedAt: "2026-03-27T05:30:00Z",
               affectsApprovalIds: [],
-              requiresReviewRequest: true
-            }
-          ]
-        }
+              requiresReviewRequest: true,
+            },
+          ],
+        },
       }),
-      activeEditLock: null
-    }
-  }
+      activeEditLock: null,
+    },
+  },
 ];
 
 const northstarTemplates: DocumentTemplate[] = [
@@ -1921,8 +1975,8 @@ const northstarTemplates: DocumentTemplate[] = [
     authoringContext: {
       ...horizonTemplates[0].authoringContext,
       workspaceId: "ws_northstar",
-      currentUserMembershipId: "mbr_northstar_alex"
-    }
+      currentUserMembershipId: "mbr_northstar_alex",
+    },
   },
   {
     ...horizonTemplates[1],
@@ -1931,8 +1985,8 @@ const northstarTemplates: DocumentTemplate[] = [
     authoringContext: {
       ...horizonTemplates[1].authoringContext,
       workspaceId: "ws_northstar",
-      currentUserMembershipId: "mbr_northstar_alex"
-    }
+      currentUserMembershipId: "mbr_northstar_alex",
+    },
   },
   {
     ...horizonTemplates[2],
@@ -1941,14 +1995,15 @@ const northstarTemplates: DocumentTemplate[] = [
     authoringContext: {
       ...horizonTemplates[2].authoringContext,
       workspaceId: "ws_northstar",
-      currentUserMembershipId: "mbr_northstar_alex"
-    }
+      currentUserMembershipId: "mbr_northstar_alex",
+    },
   },
   {
     id: "tpl_policy_system",
     workspaceId: "ws_northstar",
     name: "Release Governance Policy",
-    description: "Workspace-customized policy template for release readiness and stale publish authority.",
+    description:
+      "Workspace-customized policy template for release readiness and stale publish authority.",
     documentType: "Policy/Decision",
     source: "workspace",
     version: 2,
@@ -1962,7 +2017,7 @@ const northstarTemplates: DocumentTemplate[] = [
       intent: "create_document",
       linkedDocumentIds: [],
       invalidatedByDocumentIds: [],
-      referenceDocumentIds: ["doc_northstar_prd_release"]
+      referenceDocumentIds: ["doc_northstar_prd_release"],
     },
     sections: [
       {
@@ -1972,8 +2027,11 @@ const northstarTemplates: DocumentTemplate[] = [
         summary: "State the governing release decision.",
         required: true,
         defaultMarkdown: "## Current Position\nState the current release stance.",
-        guidance: ["Keep the decision binary and easy to restore.", "Tie it to app-native authority."],
-        linkedDocumentTypeHints: ["PRD", "Technical Spec"]
+        guidance: [
+          "Keep the decision binary and easy to restore.",
+          "Tie it to app-native authority.",
+        ],
+        linkedDocumentTypeHints: ["PRD", "Technical Spec"],
       },
       {
         id: "policy_capture",
@@ -1982,18 +2040,21 @@ const northstarTemplates: DocumentTemplate[] = [
         summary: "List what must be recorded when publish proceeds under stale conditions.",
         required: true,
         defaultMarkdown: "## Required Capture\n- Rationale\n- Unresolved invalidations",
-        guidance: ["Include publish rationale and affected approvers.", "Reflect what the app must preserve."],
-        linkedDocumentTypeHints: ["PRD"]
-      }
+        guidance: [
+          "Include publish rationale and affected approvers.",
+          "Reflect what the app must preserve.",
+        ],
+        linkedDocumentTypeHints: ["PRD"],
+      },
     ],
     lifecycle: {
       status: "active",
       createdAt: "2026-02-14T09:30:00Z",
       updatedAt: "2026-03-20T12:45:00Z",
       publishedAt: "2026-03-20T13:10:00Z",
-      lastPublishedCommitSha: "c92ed01"
-    }
-  }
+      lastPublishedCommitSha: "c92ed01",
+    },
+  },
 ];
 
 const northstarAIDraftSuggestions: AIDraftSuggestion[] = [
@@ -2015,7 +2076,7 @@ const northstarAIDraftSuggestions: AIDraftSuggestion[] = [
       intent: "resolve_review",
       linkedDocumentIds: ["doc_northstar_policy_release"],
       invalidatedByDocumentIds: ["doc_northstar_policy_release"],
-      referenceDocumentIds: ["doc_northstar_policy_release", "doc_northstar_tech_dependencies"]
+      referenceDocumentIds: ["doc_northstar_policy_release", "doc_northstar_tech_dependencies"],
     },
     sections: [
       {
@@ -2023,280 +2084,293 @@ const northstarAIDraftSuggestions: AIDraftSuggestion[] = [
         title: "Approver Suggestions",
         markdown:
           "- Lead approver for stale publish authority\n- Technical reviewer for dependency invalidation coverage",
-        rationale: "Derived from linked policy and spec ownership rather than GitHub collaborator state."
-      }
+        rationale:
+          "Derived from linked policy and spec ownership rather than GitHub collaborator state.",
+      },
     ],
     suggestedLinkedDocumentIds: ["doc_northstar_policy_release", "doc_northstar_tech_dependencies"],
     lifecycle: {
       status: "proposed",
       createdAt: "2026-03-26T21:35:00Z",
       updatedAt: "2026-03-26T21:35:00Z",
-      generatedAt: "2026-03-26T21:35:00Z"
-    }
-  }
+      generatedAt: "2026-03-26T21:35:00Z",
+    },
+  },
 ];
 
 const northstarPublishRecords: PublishRecord[] = [
-  createPublishRecordWithPreflight({
-    id: "pub_northstar_release_20260327",
-    workspaceId: "ws_northstar",
-    source: {
-      kind: "workspace",
+  createPublishRecordWithPreflight(
+    {
+      id: "pub_northstar_release_20260327",
       workspaceId: "ws_northstar",
-      documentId: null,
-      templateId: null,
-      label: "Northstar workspace publish batch",
-      changeSummary:
-        "Publishes release-readiness documents and policy template changes from the workspace source of truth."
+      source: {
+        kind: "workspace",
+        workspaceId: "ws_northstar",
+        documentId: null,
+        templateId: null,
+        label: "Northstar workspace publish batch",
+        changeSummary:
+          "Publishes release-readiness documents and policy template changes from the workspace source of truth.",
+      },
+      currentStageId: "approvals",
+      memoSuggestionId: null,
+      staleRationale:
+        "The release PRD and dependency spec remain publishable while the updated policy invalidation is surfaced and the pending lead approval remains unresolved in the app-native approval log.",
+      staleRationaleEntries: [
+        {
+          id: "pub_northstar_rationale_prd_policy",
+          label: "PRD stale publish rationale",
+          summary:
+            "The release PRD can still publish because the policy invalidation is visible and the lead approval remains unresolved inside the app snapshot.",
+          status: "current",
+          recordedAt: "2026-03-27T05:42:00Z",
+          recordedByMembershipId: "mbr_northstar_alex",
+          relatedDocumentId: "doc_northstar_prd_release",
+          relatedInvalidationId: "inv_northstar_prd_policy",
+          relatedApprovalId: "apr_northstar_prd_lead",
+        },
+        {
+          id: "pub_northstar_rationale_tech_dependencies",
+          label: "Dependency spec stale publish rationale",
+          summary:
+            "The dependency spec remains publishable because its upstream PRD change is captured as an unresolved invalidation in the batch.",
+          status: "current",
+          recordedAt: "2026-03-27T05:43:00Z",
+          recordedByMembershipId: "mbr_northstar_alex",
+          relatedDocumentId: "doc_northstar_tech_dependencies",
+          relatedInvalidationId: "inv_northstar_tech_prd",
+        },
+        {
+          id: "pub_northstar_rationale_old_policy_only",
+          label: "Policy-only rationale draft",
+          summary:
+            "A first pass recorded stale publication as if only the policy document had changed.",
+          status: "outdated",
+          recordedAt: "2026-03-27T05:40:00Z",
+          recordedByMembershipId: "mbr_northstar_alex",
+          relatedDocumentId: "doc_northstar_policy_release",
+          supersededAt: "2026-03-27T05:43:00Z",
+          supersededByDocumentId: "doc_northstar_prd_release",
+          supersededReason:
+            "Later evaluation showed the publish batch also needed PRD and dependency-spec rationale.",
+        },
+      ],
+      stages: [
+        {
+          id: "scope",
+          title: "Select publish scope",
+          description:
+            "Bundle changed documents and customized templates for a single workspace publish.",
+          status: "complete",
+          primaryAction: "Review publish set",
+          guidance: [
+            "Workspace templates publish alongside documents when versioned changes exist.",
+            "One workspace maps to one docs repository.",
+          ],
+        },
+        {
+          id: "freshness",
+          title: "Evaluate stale state",
+          description:
+            "Check linked policy invalidations and identify which artifacts require stale rationale before publish.",
+          status: "complete",
+          primaryAction: "Review stale artifacts",
+          guidance: [
+            "Freshness is evaluated at publish time, not on every edit.",
+            "Record the reason stale publish proceeds.",
+          ],
+        },
+        {
+          id: "approvals",
+          title: "Capture approval snapshot",
+          description:
+            "Record pending lead approval and any unresolved invalidations before handing off to GitHub automation.",
+          status: "attention",
+          primaryAction: "Freeze approval state",
+          guidance: [
+            "Approval authority remains inside the app.",
+            "Restoration is a lead-level action, not a GitHub permission.",
+          ],
+        },
+        {
+          id: "memo",
+          title: "Draft publish memo",
+          description:
+            "Summarize stale rationale, linked document impact, and notification recipients for the publish event.",
+          status: "ready",
+          primaryAction: "Write publish memo",
+          guidance: [
+            "AI memo drafting is optional.",
+            "The memo should explain unresolved approvals and invalidations.",
+          ],
+        },
+        {
+          id: "github",
+          title: "Create branch, commit, and PR",
+          description:
+            "After the approval snapshot is captured, the publish action creates the repo branch, commit, and pull request.",
+          status: "pending",
+          primaryAction: "Await publish readiness",
+          guidance: [
+            "GitHub publication happens after app-native review capture.",
+            "Webhook notifications are queued from the publish batch.",
+          ],
+        },
+      ],
+      artifacts: [
+        {
+          id: "pub_artifact_northstar_prd",
+          kind: "document",
+          targetId: "doc_northstar_prd_release",
+          label: "Release Readiness Coverage",
+          documentType: "PRD",
+          changeSummary: "Tracks release-scope updates now affected by policy invalidation.",
+          linkedDocumentIds: ["doc_northstar_policy_release", "doc_northstar_tech_dependencies"],
+          stalenessStatus: "stale",
+          unresolvedApprovalIds: ["apr_northstar_prd_lead"],
+          unresolvedApprovals: [
+            createUnresolvedApprovalSnapshot({
+              id: "unresolved_northstar_prd_lead_pending",
+              status: "pending",
+              documentId: "doc_northstar_prd_release",
+              label: "Lead approval remains pending",
+              authority: "lead",
+              summary:
+                "The lead approval is still open after release policy changes invalidated the prior approval assumptions.",
+              requiredAction:
+                "Restore or re-issue the lead decision in-app, or disclose the pending approval in the publish record.",
+              approvalId: "apr_northstar_prd_lead",
+              membershipId: "mbr_northstar_alex",
+              invalidationIds: ["inv_northstar_prd_policy"],
+            }),
+          ],
+          invalidationIds: ["inv_northstar_prd_policy"],
+        },
+        {
+          id: "pub_artifact_northstar_tech",
+          kind: "document",
+          targetId: "doc_northstar_tech_dependencies",
+          label: "Dependency Notification Routing",
+          documentType: "Technical Spec",
+          changeSummary:
+            "Captures outbound webhook handling and linked dependency invalidation coverage.",
+          linkedDocumentIds: ["doc_northstar_prd_release"],
+          stalenessStatus: "stale",
+          unresolvedApprovalIds: [],
+          unresolvedApprovals: [
+            createUnresolvedApprovalSnapshot({
+              id: "unresolved_northstar_tech_lead_missing",
+              status: "missing",
+              documentId: "doc_northstar_tech_dependencies",
+              label: "Required lead approval has not been assigned",
+              authority: "lead",
+              summary:
+                "No app-native lead approval request exists yet for the stale dependency spec.",
+              requiredAction:
+                "Assign and request the required lead approval before attempting GitHub publication.",
+              approvalId: null,
+              membershipId: null,
+              invalidationIds: ["inv_northstar_tech_prd"],
+            }),
+          ],
+          invalidationIds: ["inv_northstar_tech_prd"],
+        },
+        {
+          id: "pub_artifact_northstar_template",
+          kind: "template",
+          targetId: "tpl_policy_system",
+          label: "Release Governance Policy template",
+          documentType: "Policy/Decision",
+          changeSummary: "Workspace template v2 adds explicit stale-publish capture requirements.",
+          linkedDocumentIds: ["doc_northstar_policy_release"],
+          stalenessStatus: null,
+          unresolvedApprovalIds: [],
+          unresolvedApprovals: [],
+          invalidationIds: [],
+        },
+      ],
+      staleDocumentIds: ["doc_northstar_prd_release", "doc_northstar_tech_dependencies"],
+      unresolvedApprovalIds: ["apr_northstar_prd_lead"],
+      unresolvedApprovals: [
+        createUnresolvedApprovalSnapshot({
+          id: "unresolved_northstar_prd_lead_pending",
+          status: "pending",
+          documentId: "doc_northstar_prd_release",
+          label: "Lead approval remains pending",
+          authority: "lead",
+          summary:
+            "The lead approval is still open after release policy changes invalidated the prior approval assumptions.",
+          requiredAction:
+            "Restore or re-issue the lead decision in-app, or disclose the pending approval in the publish record.",
+          approvalId: "apr_northstar_prd_lead",
+          membershipId: "mbr_northstar_alex",
+          invalidationIds: ["inv_northstar_prd_policy"],
+        }),
+        createUnresolvedApprovalSnapshot({
+          id: "unresolved_northstar_tech_lead_missing",
+          status: "missing",
+          documentId: "doc_northstar_tech_dependencies",
+          label: "Required lead approval has not been assigned",
+          authority: "lead",
+          summary: "No app-native lead approval request exists yet for the stale dependency spec.",
+          requiredAction:
+            "Assign and request the required lead approval before attempting GitHub publication.",
+          approvalId: null,
+          membershipId: null,
+          invalidationIds: ["inv_northstar_tech_prd"],
+        }),
+      ],
+      invalidationIds: ["inv_northstar_prd_policy", "inv_northstar_tech_prd"],
+      notificationTargets: [
+        {
+          id: "pub_notify_northstar_inapp_alex",
+          kind: "in_app",
+          label: "Alex Han",
+          membershipId: "mbr_northstar_alex",
+          status: "queued",
+        },
+        {
+          id: "pub_notify_northstar_webhook_mina",
+          kind: "webhook",
+          label: "Mina webhook",
+          membershipId: "mbr_northstar_mina",
+          destination: "https://hooks.slack.com/services/demo/northstar",
+          status: "pending",
+        },
+      ],
+      publication: {
+        initiatedByMembershipId: "mbr_northstar_alex",
+        repository: {
+          owner: "harness-docs",
+          name: "northstar-docs",
+          defaultBranch: "main",
+          baseBranch: "main",
+          branchName: "publish/2026-03-27-release-readiness-batch",
+          installationId: 1064,
+        },
+        commit: {
+          sha: null,
+          message: "docs: publish release readiness policy and dependency updates",
+          authoredByMembershipId: "mbr_northstar_alex",
+          authoredAt: null,
+        },
+        pullRequest: {
+          number: null,
+          title: "Publish Northstar release readiness updates",
+          url: null,
+          openedByMembershipId: null,
+          openedAt: null,
+        },
+      },
+      lifecycle: {
+        status: "draft",
+        createdAt: "2026-03-27T05:40:00Z",
+        updatedAt: "2026-03-27T05:50:00Z",
+        validatedAt: "2026-03-27T05:44:00Z",
+      },
     },
-    currentStageId: "approvals",
-    memoSuggestionId: null,
-    staleRationale:
-      "The release PRD and dependency spec remain publishable while the updated policy invalidation is surfaced and the pending lead approval remains unresolved in the app-native approval log.",
-    staleRationaleEntries: [
-      {
-        id: "pub_northstar_rationale_prd_policy",
-        label: "PRD stale publish rationale",
-        summary:
-          "The release PRD can still publish because the policy invalidation is visible and the lead approval remains unresolved inside the app snapshot.",
-        status: "current",
-        recordedAt: "2026-03-27T05:42:00Z",
-        recordedByMembershipId: "mbr_northstar_alex",
-        relatedDocumentId: "doc_northstar_prd_release",
-        relatedInvalidationId: "inv_northstar_prd_policy",
-        relatedApprovalId: "apr_northstar_prd_lead"
-      },
-      {
-        id: "pub_northstar_rationale_tech_dependencies",
-        label: "Dependency spec stale publish rationale",
-        summary:
-          "The dependency spec remains publishable because its upstream PRD change is captured as an unresolved invalidation in the batch.",
-        status: "current",
-        recordedAt: "2026-03-27T05:43:00Z",
-        recordedByMembershipId: "mbr_northstar_alex",
-        relatedDocumentId: "doc_northstar_tech_dependencies",
-        relatedInvalidationId: "inv_northstar_tech_prd"
-      },
-      {
-        id: "pub_northstar_rationale_old_policy_only",
-        label: "Policy-only rationale draft",
-        summary:
-          "A first pass recorded stale publication as if only the policy document had changed.",
-        status: "outdated",
-        recordedAt: "2026-03-27T05:40:00Z",
-        recordedByMembershipId: "mbr_northstar_alex",
-        relatedDocumentId: "doc_northstar_policy_release",
-        supersededAt: "2026-03-27T05:43:00Z",
-        supersededByDocumentId: "doc_northstar_prd_release",
-        supersededReason:
-          "Later evaluation showed the publish batch also needed PRD and dependency-spec rationale."
-      }
-    ],
-    stages: [
-      {
-        id: "scope",
-        title: "Select publish scope",
-        description: "Bundle changed documents and customized templates for a single workspace publish.",
-        status: "complete",
-        primaryAction: "Review publish set",
-        guidance: [
-          "Workspace templates publish alongside documents when versioned changes exist.",
-          "One workspace maps to one docs repository."
-        ]
-      },
-      {
-        id: "freshness",
-        title: "Evaluate stale state",
-        description:
-          "Check linked policy invalidations and identify which artifacts require stale rationale before publish.",
-        status: "complete",
-        primaryAction: "Review stale artifacts",
-        guidance: [
-          "Freshness is evaluated at publish time, not on every edit.",
-          "Record the reason stale publish proceeds."
-        ]
-      },
-      {
-        id: "approvals",
-        title: "Capture approval snapshot",
-        description:
-          "Record pending lead approval and any unresolved invalidations before handing off to GitHub automation.",
-        status: "attention",
-        primaryAction: "Freeze approval state",
-        guidance: [
-          "Approval authority remains inside the app.",
-          "Restoration is a lead-level action, not a GitHub permission."
-        ]
-      },
-      {
-        id: "memo",
-        title: "Draft publish memo",
-        description:
-          "Summarize stale rationale, linked document impact, and notification recipients for the publish event.",
-        status: "ready",
-        primaryAction: "Write publish memo",
-        guidance: [
-          "AI memo drafting is optional.",
-          "The memo should explain unresolved approvals and invalidations."
-        ]
-      },
-      {
-        id: "github",
-        title: "Create branch, commit, and PR",
-        description:
-          "After the approval snapshot is captured, the publish action creates the repo branch, commit, and pull request.",
-        status: "pending",
-        primaryAction: "Await publish readiness",
-        guidance: [
-          "GitHub publication happens after app-native review capture.",
-          "Webhook notifications are queued from the publish batch."
-        ]
-      }
-    ],
-    artifacts: [
-      {
-        id: "pub_artifact_northstar_prd",
-        kind: "document",
-        targetId: "doc_northstar_prd_release",
-        label: "Release Readiness Coverage",
-        documentType: "PRD",
-        changeSummary: "Tracks release-scope updates now affected by policy invalidation.",
-        linkedDocumentIds: ["doc_northstar_policy_release", "doc_northstar_tech_dependencies"],
-        stalenessStatus: "stale",
-        unresolvedApprovalIds: ["apr_northstar_prd_lead"],
-        unresolvedApprovals: [
-          createUnresolvedApprovalSnapshot({
-            id: "unresolved_northstar_prd_lead_pending",
-            status: "pending",
-            documentId: "doc_northstar_prd_release",
-            label: "Lead approval remains pending",
-            authority: "lead",
-            summary: "The lead approval is still open after release policy changes invalidated the prior approval assumptions.",
-            requiredAction: "Restore or re-issue the lead decision in-app, or disclose the pending approval in the publish record.",
-            approvalId: "apr_northstar_prd_lead",
-            membershipId: "mbr_northstar_alex",
-            invalidationIds: ["inv_northstar_prd_policy"]
-          })
-        ],
-        invalidationIds: ["inv_northstar_prd_policy"]
-      },
-      {
-        id: "pub_artifact_northstar_tech",
-        kind: "document",
-        targetId: "doc_northstar_tech_dependencies",
-        label: "Dependency Notification Routing",
-        documentType: "Technical Spec",
-        changeSummary: "Captures outbound webhook handling and linked dependency invalidation coverage.",
-        linkedDocumentIds: ["doc_northstar_prd_release"],
-        stalenessStatus: "stale",
-        unresolvedApprovalIds: [],
-        unresolvedApprovals: [
-          createUnresolvedApprovalSnapshot({
-            id: "unresolved_northstar_tech_lead_missing",
-            status: "missing",
-            documentId: "doc_northstar_tech_dependencies",
-            label: "Required lead approval has not been assigned",
-            authority: "lead",
-            summary: "No app-native lead approval request exists yet for the stale dependency spec.",
-            requiredAction: "Assign and request the required lead approval before attempting GitHub publication.",
-            approvalId: null,
-            membershipId: null,
-            invalidationIds: ["inv_northstar_tech_prd"]
-          })
-        ],
-        invalidationIds: ["inv_northstar_tech_prd"]
-      },
-      {
-        id: "pub_artifact_northstar_template",
-        kind: "template",
-        targetId: "tpl_policy_system",
-        label: "Release Governance Policy template",
-        documentType: "Policy/Decision",
-        changeSummary: "Workspace template v2 adds explicit stale-publish capture requirements.",
-        linkedDocumentIds: ["doc_northstar_policy_release"],
-        stalenessStatus: null,
-        unresolvedApprovalIds: [],
-        unresolvedApprovals: [],
-        invalidationIds: []
-      }
-    ],
-    staleDocumentIds: ["doc_northstar_prd_release", "doc_northstar_tech_dependencies"],
-    unresolvedApprovalIds: ["apr_northstar_prd_lead"],
-    unresolvedApprovals: [
-      createUnresolvedApprovalSnapshot({
-        id: "unresolved_northstar_prd_lead_pending",
-        status: "pending",
-        documentId: "doc_northstar_prd_release",
-        label: "Lead approval remains pending",
-        authority: "lead",
-        summary: "The lead approval is still open after release policy changes invalidated the prior approval assumptions.",
-        requiredAction: "Restore or re-issue the lead decision in-app, or disclose the pending approval in the publish record.",
-        approvalId: "apr_northstar_prd_lead",
-        membershipId: "mbr_northstar_alex",
-        invalidationIds: ["inv_northstar_prd_policy"]
-      }),
-      createUnresolvedApprovalSnapshot({
-        id: "unresolved_northstar_tech_lead_missing",
-        status: "missing",
-        documentId: "doc_northstar_tech_dependencies",
-        label: "Required lead approval has not been assigned",
-        authority: "lead",
-        summary: "No app-native lead approval request exists yet for the stale dependency spec.",
-        requiredAction: "Assign and request the required lead approval before attempting GitHub publication.",
-        approvalId: null,
-        membershipId: null,
-        invalidationIds: ["inv_northstar_tech_prd"]
-      })
-    ],
-    invalidationIds: ["inv_northstar_prd_policy", "inv_northstar_tech_prd"],
-    notificationTargets: [
-      {
-        id: "pub_notify_northstar_inapp_alex",
-        kind: "in_app",
-        label: "Alex Han",
-        membershipId: "mbr_northstar_alex",
-        status: "queued"
-      },
-      {
-        id: "pub_notify_northstar_webhook_mina",
-        kind: "webhook",
-        label: "Mina webhook",
-        membershipId: "mbr_northstar_mina",
-        destination: "https://hooks.slack.com/services/demo/northstar",
-        status: "pending"
-      }
-    ],
-    publication: {
-      initiatedByMembershipId: "mbr_northstar_alex",
-      repository: {
-        owner: "harness-docs",
-        name: "northstar-docs",
-        defaultBranch: "main",
-        baseBranch: "main",
-        branchName: "publish/2026-03-27-release-readiness-batch",
-        installationId: 1064
-      },
-      commit: {
-        sha: null,
-        message: "docs: publish release readiness policy and dependency updates",
-        authoredByMembershipId: "mbr_northstar_alex",
-        authoredAt: null
-      },
-      pullRequest: {
-        number: null,
-        title: "Publish Northstar release readiness updates",
-        url: null,
-        openedByMembershipId: null,
-        openedAt: null
-      }
-    },
-    lifecycle: {
-      status: "draft",
-      createdAt: "2026-03-27T05:40:00Z",
-      updatedAt: "2026-03-27T05:50:00Z",
-      validatedAt: "2026-03-27T05:44:00Z"
-    }
-  }, northstarDocuments)
+    northstarDocuments,
+  ),
 ];
 
 export const mockWorkspaceGraphs: WorkspaceGraph[] = [
@@ -2311,7 +2385,7 @@ export const mockWorkspaceGraphs: WorkspaceGraph[] = [
         owner: "harness-docs",
         name: "horizon-docs",
         defaultBranch: "main",
-        installationId: 1042
+        installationId: 1042,
       },
       createdByUserId: mockUser.id,
       leadMembershipId: "mbr_horizon_mina",
@@ -2321,15 +2395,15 @@ export const mockWorkspaceGraphs: WorkspaceGraph[] = [
         "tpl_prd_system",
         "tpl_ux_flow_system",
         "tpl_tech_spec_system",
-        "tpl_policy_system"
+        "tpl_policy_system",
       ],
       lifecycle: {
         status: "active",
         createdAt: "2026-02-03T09:00:00Z",
         updatedAt: "2026-03-27T08:55:00Z",
         provisionedAt: "2026-02-03T09:08:00Z",
-        lastOpenedAt: "2026-03-27T08:55:00Z"
-      }
+        lastOpenedAt: "2026-03-27T08:55:00Z",
+      },
     },
     memberships: horizonMemberships,
     documents: horizonDocuments,
@@ -2339,7 +2413,7 @@ export const mockWorkspaceGraphs: WorkspaceGraph[] = [
     comments: horizonComments,
     templates: horizonTemplates,
     aiDraftSuggestions: horizonAIDraftSuggestions,
-    publishRecords: horizonPublishRecords
+    publishRecords: horizonPublishRecords,
   },
   {
     workspace: {
@@ -2352,7 +2426,7 @@ export const mockWorkspaceGraphs: WorkspaceGraph[] = [
         owner: "harness-docs",
         name: "northstar-docs",
         defaultBranch: "main",
-        installationId: 1064
+        installationId: 1064,
       },
       createdByUserId: "usr_alex_han",
       leadMembershipId: "mbr_northstar_alex",
@@ -2362,15 +2436,15 @@ export const mockWorkspaceGraphs: WorkspaceGraph[] = [
         "tpl_prd_system",
         "tpl_ux_flow_system",
         "tpl_tech_spec_system",
-        "tpl_policy_system"
+        "tpl_policy_system",
       ],
       lifecycle: {
         status: "active",
         createdAt: "2026-02-01T08:00:00Z",
         updatedAt: "2026-03-27T05:50:00Z",
         provisionedAt: "2026-02-01T08:20:00Z",
-        lastOpenedAt: "2026-03-26T22:10:00Z"
-      }
+        lastOpenedAt: "2026-03-26T22:10:00Z",
+      },
     },
     memberships: northstarMemberships,
     documents: northstarDocuments,
@@ -2380,8 +2454,8 @@ export const mockWorkspaceGraphs: WorkspaceGraph[] = [
     comments: northstarComments,
     templates: northstarTemplates,
     aiDraftSuggestions: northstarAIDraftSuggestions,
-    publishRecords: northstarPublishRecords
-  }
+    publishRecords: northstarPublishRecords,
+  },
 ];
 
 function countOpenReviews(documents: WorkspaceDocument[]) {
@@ -2390,9 +2464,8 @@ function countOpenReviews(documents: WorkspaceDocument[]) {
 }
 
 function countPendingDrafts(documents: WorkspaceDocument[]) {
-  return documents.filter((document) =>
-    ["draft", "in_review"].includes(document.lifecycle.status)
-  ).length;
+  return documents.filter((document) => ["draft", "in_review"].includes(document.lifecycle.status))
+    .length;
 }
 
 function countStaleDocuments(documents: WorkspaceDocument[]) {
@@ -2403,7 +2476,7 @@ function countStaleDocuments(documents: WorkspaceDocument[]) {
 function summarizeWorkspace(graph: WorkspaceGraph, userId: string): WorkspaceSummary {
   const activeMembership =
     graph.memberships.find(
-      (membership) => membership.userId === userId && membership.lifecycle.status === "active"
+      (membership) => membership.userId === userId && membership.lifecycle.status === "active",
     ) ?? graph.memberships[0];
 
   return {
@@ -2415,17 +2488,17 @@ function summarizeWorkspace(graph: WorkspaceGraph, userId: string): WorkspaceSum
     openReviews: countOpenReviews(graph.documents),
     pendingDrafts: countPendingDrafts(graph.documents),
     staleDocuments: countStaleDocuments(graph.documents),
-    areas: workspaceAreaSummaries[graph.workspace.id] as WorkspaceSummary["areas"]
+    areas: workspaceAreaSummaries[graph.workspace.id] as WorkspaceSummary["areas"],
   };
 }
 
 export const mockWorkspaces: WorkspaceSummary[] = mockWorkspaceGraphs.map((graph) =>
-  summarizeWorkspace(graph, mockUser.id)
+  summarizeWorkspace(graph, mockUser.id),
 );
 
 export const mockSession = {
   user: mockUser,
   workspaces: mockWorkspaces,
   workspaceGraphs: mockWorkspaceGraphs,
-  lastActiveWorkspaceId: mockWorkspaces[0]?.id ?? null
+  lastActiveWorkspaceId: mockWorkspaces[0]?.id ?? null,
 };

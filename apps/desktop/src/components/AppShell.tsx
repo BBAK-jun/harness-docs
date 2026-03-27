@@ -13,7 +13,7 @@ import type {
   AITaskEntryPoint,
   DocumentEditingLock,
   NavigationArea,
-  WorkspaceSummary
+  WorkspaceSummary,
 } from "../types";
 import type { WorkspaceDocument, WorkspaceGraph } from "../types";
 
@@ -73,7 +73,7 @@ export function AppShell({
   onReleaseEditing,
   onCreateBlockComment,
   onOpenDocument,
-  onLeaveWorkspace
+  onLeaveWorkspace,
 }: AppShellProps) {
   const content = renderShellContent({
     workspace,
@@ -95,7 +95,7 @@ export function AppShell({
     onStartEditing,
     onReleaseEditing,
     onCreateBlockComment,
-    onOpenDocument
+    onOpenDocument,
   });
 
   return (
@@ -127,7 +127,7 @@ function renderShellContent({
   onStartEditing,
   onReleaseEditing,
   onCreateBlockComment,
-  onOpenDocument
+  onOpenDocument,
 }: Omit<AppShellProps, "onAreaChange" | "onLeaveWorkspace">) {
   if (activeArea === "documents" && workspaceGraph) {
     return (

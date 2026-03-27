@@ -15,27 +15,45 @@ interface MarkdownPreviewProps {
 
 function renderHeading(level: number, content: ReturnType<typeof renderInline>, key: string) {
   const className =
-    level === 1
-      ? "text-3xl"
-      : level === 2
-        ? "text-2xl"
-        : level === 3
-          ? "text-xl"
-          : "text-lg";
+    level === 1 ? "text-3xl" : level === 2 ? "text-2xl" : level === 3 ? "text-xl" : "text-lg";
 
   switch (level) {
     case 1:
-      return <h1 key={key} className={cn("font-semibold tracking-tight text-slate-50", className)}>{content}</h1>;
+      return (
+        <h1 key={key} className={cn("font-semibold tracking-tight text-slate-50", className)}>
+          {content}
+        </h1>
+      );
     case 2:
-      return <h2 key={key} className={cn("font-semibold tracking-tight text-slate-50", className)}>{content}</h2>;
+      return (
+        <h2 key={key} className={cn("font-semibold tracking-tight text-slate-50", className)}>
+          {content}
+        </h2>
+      );
     case 3:
-      return <h3 key={key} className={cn("font-semibold tracking-tight text-slate-100", className)}>{content}</h3>;
+      return (
+        <h3 key={key} className={cn("font-semibold tracking-tight text-slate-100", className)}>
+          {content}
+        </h3>
+      );
     case 4:
-      return <h4 key={key} className={cn("font-semibold tracking-tight text-slate-100", className)}>{content}</h4>;
+      return (
+        <h4 key={key} className={cn("font-semibold tracking-tight text-slate-100", className)}>
+          {content}
+        </h4>
+      );
     case 5:
-      return <h5 key={key} className={cn("font-semibold tracking-tight text-slate-100", className)}>{content}</h5>;
+      return (
+        <h5 key={key} className={cn("font-semibold tracking-tight text-slate-100", className)}>
+          {content}
+        </h5>
+      );
     default:
-      return <h6 key={key} className={cn("font-semibold tracking-tight text-slate-100", className)}>{content}</h6>;
+      return (
+        <h6 key={key} className={cn("font-semibold tracking-tight text-slate-100", className)}>
+          {content}
+        </h6>
+      );
   }
 }
 
@@ -74,7 +92,7 @@ function parseMarkdown(source: string): MarkdownBlock[] {
       blocks.push({
         type: "code",
         language,
-        code: codeLines.join("\n")
+        code: codeLines.join("\n"),
       });
       continue;
     }
@@ -85,7 +103,7 @@ function parseMarkdown(source: string): MarkdownBlock[] {
       blocks.push({
         type: "heading",
         level: heading[1].length,
-        text: heading[2]
+        text: heading[2],
       });
       index += 1;
       continue;
@@ -201,7 +219,11 @@ function renderInline(text: string) {
     const strongMatch = token.match(/^\*\*([^*]+)\*\*$/);
 
     if (strongMatch) {
-      return <strong key={`${token}-${index}`} className="font-semibold text-slate-100">{strongMatch[1]}</strong>;
+      return (
+        <strong key={`${token}-${index}`} className="font-semibold text-slate-100">
+          {strongMatch[1]}
+        </strong>
+      );
     }
 
     const linkMatch = token.match(/^\[([^\]]+)\]\(([^)]+)\)$/);

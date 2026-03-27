@@ -5,7 +5,7 @@ import type {
   PublishPreflightResult,
   PublishRecord,
   UnresolvedApprovalSnapshot,
-  WorkspaceDocument
+  WorkspaceDocument,
 } from "../types";
 
 type PublishRecordInput = Omit<PublishRecord, "publication"> & {
@@ -33,20 +33,23 @@ function dedupeApprovalIds(approvals: UnresolvedApprovalSnapshot[]) {
     new Set(
       approvals
         .map((approval) => approval.approvalId)
-        .filter((approvalId): approvalId is ApprovalId => approvalId != null)
-    )
+        .filter((approvalId): approvalId is ApprovalId => approvalId != null),
+    ),
   );
 }
 
 function buildStaleRationaleFindings(
-  publishRecord: Pick<PublishRecordInput, "staleDocumentIds" | "staleRationale" | "staleRationaleEntries">,
-  documents: WorkspaceDocument[]
+  publishRecord: Pick<
+    PublishRecordInput,
+    "staleDocumentIds" | "staleRationale" | "staleRationaleEntries"
+  >,
+  documents: WorkspaceDocument[],
 ): PublishPreflightFinding[] {
   return publishRecord.staleDocumentIds.map((documentId) => {
     const document = documents.find((entry) => entry.id === documentId) ?? null;
     const rationaleEntry =
       publishRecord.staleRationaleEntries.find(
-        (entry) => entry.status === "current" && entry.relatedDocumentId === documentId
+        (entry) => entry.status === "current" && entry.relatedDocumentId === documentId,
       ) ?? null;
     const hasRecordedRationale =
       rationaleEntry != null || publishRecord.staleRationale.trim().length > 0;
@@ -69,14 +72,14 @@ function buildStaleRationaleFindings(
       documentId,
       approvalId: rationaleEntry?.relatedApprovalId ?? null,
       invalidationId: rationaleEntry?.relatedInvalidationId ?? null,
-      staleRationaleEntryId: rationaleEntry?.id ?? null
+      staleRationaleEntryId: rationaleEntry?.id ?? null,
     };
   });
 }
 
 function buildUnresolvedApprovalFindings(
   publishRecord: Pick<PublishRecordInput, "unresolvedApprovals">,
-  documents: WorkspaceDocument[]
+  documents: WorkspaceDocument[],
 ): PublishPreflightFinding[] {
   return (publishRecord.unresolvedApprovals ?? []).map((approval) => {
     const document = documents.find((entry) => entry.id === approval.documentId) ?? null;
@@ -91,7 +94,7 @@ function buildUnresolvedApprovalFindings(
       documentId: approval.documentId,
       approvalId: approval.approvalId ?? null,
       invalidationId: approval.invalidationIds[0] ?? null,
-      staleRationaleEntryId: null
+      staleRationaleEntryId: null,
     };
   });
 }
@@ -101,7 +104,7 @@ export function buildPublishPreflightResult(
     PublishRecordInput,
     "staleDocumentIds" | "staleRationale" | "staleRationaleEntries" | "unresolvedApprovals"
   >,
-  documents: WorkspaceDocument[]
+  documents: WorkspaceDocument[],
 ): PublishPreflightResult {
   const staleFindings = buildStaleRationaleFindings(publishRecord, documents);
   const approvalFindings = buildUnresolvedApprovalFindings(publishRecord, documents);
@@ -127,19 +130,19 @@ export function buildPublishPreflightResult(
     summary,
     staleDocumentIds: [...publishRecord.staleDocumentIds],
     unresolvedApprovalIds,
-    findings
+    findings,
   };
 }
 
 export function createPublishRecordWithPreflight(
   publishRecord: PublishRecordInput,
-  documents: WorkspaceDocument[]
+  documents: WorkspaceDocument[],
 ): PublishRecord {
   return {
     ...publishRecord,
     publication: {
       ...publishRecord.publication,
-      preflight: buildPublishPreflightResult(publishRecord, documents)
-    }
+      preflight: buildPublishPreflightResult(publishRecord, documents),
+    },
   };
 }

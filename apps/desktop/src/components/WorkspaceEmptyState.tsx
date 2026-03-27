@@ -1,13 +1,7 @@
 import { ArrowRight, LayoutTemplate, Users } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle
-} from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
 interface WorkspaceEmptyStateDetail {
   title: string;
@@ -32,13 +26,13 @@ export function WorkspaceEmptyState({
   details = [
     {
       title: "Authenticated with memberships",
-      body: "Users can switch between active workspaces without repeating GitHub OAuth."
+      body: "Users can switch between active workspaces without repeating GitHub OAuth.",
     },
     {
       title: "Authenticated without memberships",
-      body: "The same entry frame can route into workspace creation or invitation acceptance without dropping the desktop session."
-    }
-  ]
+      body: "The same entry frame can route into workspace creation or invitation acceptance without dropping the desktop session.",
+    },
+  ],
 }: WorkspaceEmptyStateProps) {
   return (
     <div className="grid gap-5">
@@ -58,7 +52,11 @@ export function WorkspaceEmptyState({
             </div>
 
             {primaryActionLabel && onPrimaryAction ? (
-              <Button className="justify-self-start lg:justify-self-end" onClick={onPrimaryAction} type="button">
+              <Button
+                className="justify-self-start lg:justify-self-end"
+                onClick={onPrimaryAction}
+                type="button"
+              >
                 {primaryActionLabel}
                 <ArrowRight className="size-4" />
               </Button>

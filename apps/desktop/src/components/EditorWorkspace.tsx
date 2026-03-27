@@ -7,7 +7,7 @@ import type {
   NavigationArea,
   WorkspaceDocument,
   WorkspaceGraph,
-  WorkspaceMembership
+  WorkspaceMembership,
 } from "../types";
 
 interface EditorWorkspaceProps {
@@ -33,7 +33,7 @@ function formatTimestamp(value: string | null | undefined) {
 
   return new Intl.DateTimeFormat("en-US", {
     dateStyle: "medium",
-    timeStyle: "short"
+    timeStyle: "short",
   }).format(new Date(value));
 }
 
@@ -90,7 +90,7 @@ export function EditorWorkspace({
   onDocumentSourceChange,
   onStartEditing,
   onReleaseEditing,
-  onCreateBlockComment
+  onCreateBlockComment,
 }: EditorWorkspaceProps) {
   const [newBlockCommentBody, setNewBlockCommentBody] = useState("");
 
@@ -104,34 +104,35 @@ export function EditorWorkspace({
     );
   }
 
-  const activeLock =
-    activeDocumentLock?.lifecycle.status === "active" ? activeDocumentLock : null;
+  const activeLock = activeDocumentLock?.lifecycle.status === "active" ? activeDocumentLock : null;
   const releasedLock =
     activeDocumentLock?.lifecycle.status === "released" ? activeDocumentLock : null;
   const linkedDocuments = workspaceGraph.documents.filter((document) =>
-    activeDocument.linkedDocumentIds.includes(document.id)
+    activeDocument.linkedDocumentIds.includes(document.id),
   );
   const documentAIEntryPoints = aiEntryPoints.filter(
     (entry) =>
       entry.discoverableFrom.includes("document_workspace") &&
-      (!entry.documentId || entry.documentId === activeDocument.id)
+      (!entry.documentId || entry.documentId === activeDocument.id),
   );
   const documentApprovals = workspaceGraph.approvals.filter(
-    (approval) => approval.documentId === activeDocument.id
+    (approval) => approval.documentId === activeDocument.id,
   );
   const unresolvedApprovals = documentApprovals.filter((approval) =>
-    ["pending", "changes_requested", "invalidated"].includes(approval.lifecycle.state)
+    ["pending", "changes_requested", "invalidated"].includes(approval.lifecycle.state),
   );
-  const commentsById = Object.fromEntries(workspaceGraph.comments.map((comment) => [comment.id, comment]));
+  const commentsById = Object.fromEntries(
+    workspaceGraph.comments.map((comment) => [comment.id, comment]),
+  );
   const currentMembership =
     workspaceGraph.memberships.find((membership) => membership.id === activeMembershipId) ?? null;
   const ownerMembership =
     workspaceGraph.memberships.find(
-      (membership) => membership.id === activeDocument.ownerMembershipId
+      (membership) => membership.id === activeDocument.ownerMembershipId,
     ) ?? null;
   const lockOwner =
     workspaceGraph.memberships.find(
-      (membership) => membership.id === activeLock?.lockedByMembershipId
+      (membership) => membership.id === activeLock?.lockedByMembershipId,
     ) ?? null;
   const commentThreads = workspaceGraph.commentThreads
     .filter((thread) => thread.documentId === activeDocument.id)
@@ -145,12 +146,14 @@ export function EditorWorkspace({
         new Date(left.lifecycle.lastCommentAt).getTime()
       );
     });
-  const leadMemberships = workspaceGraph.memberships.filter((membership) => membership.role === "Lead");
+  const leadMemberships = workspaceGraph.memberships.filter(
+    (membership) => membership.role === "Lead",
+  );
   const candidateApprovers = workspaceGraph.memberships.filter(
-    (membership) => membership.role === "Lead" || membership.role === "Reviewer"
+    (membership) => membership.role === "Lead" || membership.role === "Reviewer",
   );
   const lockOwnedByCurrentUser = Boolean(
-    activeLock && currentMembership && activeLock.lockedByMembershipId === currentMembership.id
+    activeLock && currentMembership && activeLock.lockedByMembershipId === currentMembership.id,
   );
   const canStartEditing = !activeLock && Boolean(currentMembership);
   const canReleaseEditing = lockOwnedByCurrentUser;
@@ -205,8 +208,7 @@ export function EditorWorkspace({
                 <span className="editor-document-type">{document.type}</span>
                 <strong>{document.title}</strong>
                 <span className="muted">
-                  {document.lifecycle.status.replace("_", " ")} •{" "}
-                  {getStalenessStatus(document)}
+                  {document.lifecycle.status.replace("_", " ")} • {getStalenessStatus(document)}
                 </span>
               </button>
             );
@@ -264,8 +266,8 @@ export function EditorWorkspace({
             <p className="eyebrow">Approval Snapshot</p>
             <div className="note-stack">
               <p>
-                {unresolvedApprovals.length} unresolved approval
-                reference{unresolvedApprovals.length === 1 ? "" : "s"}
+                {unresolvedApprovals.length} unresolved approval reference
+                {unresolvedApprovals.length === 1 ? "" : "s"}
               </p>
               <p className="muted">
                 {getStaleRationaleRequired(activeDocument)
@@ -295,37 +297,37 @@ export function EditorWorkspace({
                   <span className="muted">Controlled draft state</span>
                 </div>
 
-            <div className={`editor-lock-banner${lockBannerTone}`} aria-live="polite">
-              <div className="editor-lock-copy">
-                <strong>{lockHeading}</strong>
-                <p className="muted">{lockSummary}</p>
-                <p className="muted">{lockDetail}</p>
-              </div>
+                <div className={`editor-lock-banner${lockBannerTone}`} aria-live="polite">
+                  <div className="editor-lock-copy">
+                    <strong>{lockHeading}</strong>
+                    <p className="muted">{lockSummary}</p>
+                    <p className="muted">{lockDetail}</p>
+                  </div>
 
-              <div className="editor-lock-actions">
-                <button
-                  className={`primary-button${lockOwnedByCurrentUser ? " is-active" : ""}`}
-                  disabled={!canStartEditing}
-                  onClick={() => onStartEditing(activeDocument)}
-                  type="button"
-                >
-                  {lockOwnedByCurrentUser
-                    ? "Editing Locked"
-                    : activeLock
-                      ? "Lock Unavailable"
-                      : "Start Editing"}
-                </button>
+                  <div className="editor-lock-actions">
+                    <button
+                      className={`primary-button${lockOwnedByCurrentUser ? " is-active" : ""}`}
+                      disabled={!canStartEditing}
+                      onClick={() => onStartEditing(activeDocument)}
+                      type="button"
+                    >
+                      {lockOwnedByCurrentUser
+                        ? "Editing Locked"
+                        : activeLock
+                          ? "Lock Unavailable"
+                          : "Start Editing"}
+                    </button>
 
-                <button
-                  className="ghost-button"
-                  disabled={!canReleaseEditing}
-                  onClick={() => onReleaseEditing(activeDocument)}
-                  type="button"
-                >
-                  Release Lock
-                </button>
-              </div>
-            </div>
+                    <button
+                      className="ghost-button"
+                      disabled={!canReleaseEditing}
+                      onClick={() => onReleaseEditing(activeDocument)}
+                      type="button"
+                    >
+                      Release Lock
+                    </button>
+                  </div>
+                </div>
 
                 <textarea
                   aria-label={`Markdown source for ${activeDocument.title}`}
@@ -395,16 +397,19 @@ export function EditorWorkspace({
 
                 {commentThreads.length > 0 ? (
                   commentThreads.map((thread) => {
-                    const latestComment = commentsById[thread.commentIds[thread.commentIds.length - 1]];
+                    const latestComment =
+                      commentsById[thread.commentIds[thread.commentIds.length - 1]];
                     const latestAuthor =
                       workspaceGraph.memberships.find(
-                        (membership) => membership.id === latestComment?.authorMembershipId
+                        (membership) => membership.id === latestComment?.authorMembershipId,
                       ) ?? null;
 
                     return (
                       <article key={thread.id} className="comment-thread-card">
                         <div className="document-row-topline">
-                          <span className={`queue-chip${thread.lifecycle.status === "resolved" ? " muted-chip" : ""}`}>
+                          <span
+                            className={`queue-chip${thread.lifecycle.status === "resolved" ? " muted-chip" : ""}`}
+                          >
                             {thread.lifecycle.status}
                           </span>
                           <span className="muted">
@@ -463,7 +468,9 @@ export function EditorWorkspace({
                   <strong>Lead Restoration Authority</strong>
                   <p className="muted">
                     {leadMemberships.length > 0
-                      ? leadMemberships.map((membership) => formatMembershipLabel(membership)).join(", ")
+                      ? leadMemberships
+                          .map((membership) => formatMembershipLabel(membership))
+                          .join(", ")
                       : "No lead authority assigned"}
                   </p>
                 </article>
@@ -489,13 +496,14 @@ export function EditorWorkspace({
                       documentApprovals.map((approval) => {
                         const membership =
                           workspaceGraph.memberships.find(
-                            (entry) => entry.id === approval.membershipId
+                            (entry) => entry.id === approval.membershipId,
                           ) ?? null;
 
                         return (
                           <div key={approval.id} className="approval-candidate">
                             <span>
-                              {approval.reviewerLabel} • {formatStateLabel(approval.lifecycle.state)}
+                              {approval.reviewerLabel} •{" "}
+                              {formatStateLabel(approval.lifecycle.state)}
                             </span>
                             <span className="detail-pill">
                               {membership ? formatMembershipLabel(membership) : approval.authority}

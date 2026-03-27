@@ -8,14 +8,14 @@ const allowedAreas: NavigationArea[] = [
   "comments",
   "approvals",
   "publish",
-  "ai"
+  "ai",
 ];
 
 export const Route = createFileRoute("/workspaces/$workspaceId/$area")({
   validateSearch: (search) => ({
-    documentId: typeof search.documentId === "string" ? search.documentId : undefined
+    documentId: typeof search.documentId === "string" ? search.documentId : undefined,
   }),
-  component: WorkspaceAreaRoute
+  component: WorkspaceAreaRoute,
 });
 
 function WorkspaceAreaRoute() {
@@ -29,7 +29,7 @@ function WorkspaceAreaRoute() {
           ? (area as NavigationArea)
           : "documents",
         activeWorkspaceId: workspaceId,
-        selectedDocumentId: search.documentId ?? null
+        selectedDocumentId: search.documentId ?? null,
       }}
     />
   );

@@ -1,9 +1,4 @@
-import type {
-  AIDraftSuggestion,
-  AITaskEntryPoint,
-  AIProvider,
-  WorkspaceGraph
-} from "../types";
+import type { AIDraftSuggestion, AITaskEntryPoint, AIProvider, WorkspaceGraph } from "../types";
 
 export interface AITaskExecutionInput {
   workspaceGraph: WorkspaceGraph;

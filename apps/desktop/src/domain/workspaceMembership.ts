@@ -3,7 +3,7 @@ import type {
   WorkspaceId,
   WorkspaceMembership,
   WorkspaceRepositoryBinding,
-  WorkspaceRole
+  WorkspaceRole,
 } from "../types";
 
 export interface WorkspaceMembershipCapabilities {
@@ -32,5 +32,8 @@ export interface WorkspaceMembershipSnapshot {
 
 export interface WorkspaceMembershipService {
   listForUser: (userId: UserId) => Promise<WorkspaceMembershipSnapshot[]>;
-  getWorkspaceMemberships: (workspaceId: WorkspaceId, userId: UserId) => Promise<WorkspaceMembershipSnapshot>;
+  getWorkspaceMemberships: (
+    workspaceId: WorkspaceId,
+    userId: UserId,
+  ) => Promise<WorkspaceMembershipSnapshot>;
 }

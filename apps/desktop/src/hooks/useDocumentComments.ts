@@ -6,7 +6,7 @@ import type {
   DocumentCommentMention,
   DocumentCommentThread,
   MembershipId,
-  WorkspaceGraph
+  WorkspaceGraph,
 } from "../types";
 
 function buildCommentId(documentId: string, now: number) {
@@ -24,7 +24,7 @@ function createMentions(
   workspaceId: string,
   documentId: string,
   createdAt: string,
-  seed: string
+  seed: string,
 ): DocumentCommentMention[] {
   return (membershipIds ?? []).map((membershipId, index) => ({
     id: `men_${seed}_${index + 1}`,
@@ -38,7 +38,7 @@ function createMentions(
       rawText: `@${membershipId}`,
       normalizedKey: membershipId.toLowerCase(),
       displayLabel: membershipId,
-      membershipId
+      membershipId,
     },
     parse: {
       trigger: "@",
@@ -46,27 +46,25 @@ function createMentions(
       endOffset: -1,
       line: 1,
       column: 1,
-      blockId: null
+      blockId: null,
     },
     createdAt,
     deliveryStatus: "pending",
     deliveredAt: null,
-    readAt: null
+    readAt: null,
   }));
 }
 
-function createComment(
-  input: {
-    workspaceId: string;
-    documentId: string;
-    threadId: string;
-    authorMembershipId: MembershipId;
-    bodyMarkdown: string;
-    mentionedMembershipIds?: MembershipId[];
-    createdAt: string;
-    idSeed: string;
-  }
-): DocumentComment {
+function createComment(input: {
+  workspaceId: string;
+  documentId: string;
+  threadId: string;
+  authorMembershipId: MembershipId;
+  bodyMarkdown: string;
+  mentionedMembershipIds?: MembershipId[];
+  createdAt: string;
+  idSeed: string;
+}): DocumentComment {
   const idSeedParts = input.idSeed.split("_");
   const seedTimestamp = Number(idSeedParts[idSeedParts.length - 1] ?? Date.now());
   const commentId = buildCommentId(input.documentId, seedTimestamp);
@@ -86,12 +84,12 @@ function createComment(
       input.workspaceId,
       input.documentId,
       input.createdAt,
-      input.idSeed
+      input.idSeed,
     ),
     lifecycle: {
       createdAt: input.createdAt,
-      updatedAt: input.createdAt
-    }
+      updatedAt: input.createdAt,
+    },
   };
 }
 
@@ -102,7 +100,7 @@ function collectInitialCommentState(workspaceGraphs: WorkspaceGraph[]) {
 export function useDocumentComments(initialWorkspaceGraphs: WorkspaceGraph[]) {
   const initialGraphs = useMemo(
     () => collectInitialCommentState(initialWorkspaceGraphs),
-    [initialWorkspaceGraphs]
+    [initialWorkspaceGraphs],
   );
   const [workspaceGraphs, setWorkspaceGraphs] = useState<WorkspaceGraph[]>(initialGraphs);
 
@@ -123,7 +121,7 @@ export function useDocumentComments(initialWorkspaceGraphs: WorkspaceGraph[]) {
       bodyMarkdown: input.bodyMarkdown,
       mentionedMembershipIds: input.mentionedMembershipIds,
       createdAt: timestamp,
-      idSeed
+      idSeed,
     });
 
     const nextThread: DocumentCommentThread = {
@@ -132,7 +130,7 @@ export function useDocumentComments(initialWorkspaceGraphs: WorkspaceGraph[]) {
       documentId: input.documentId,
       anchor: input.anchor,
       participantMembershipIds: Array.from(
-        new Set([input.authorMembershipId, ...(input.mentionedMembershipIds ?? [])])
+        new Set([input.authorMembershipId, ...(input.mentionedMembershipIds ?? [])]),
       ),
       commentIds: [initialComment.id],
       linkedDocumentIds: input.linkedDocumentIds ?? [],
@@ -141,8 +139,8 @@ export function useDocumentComments(initialWorkspaceGraphs: WorkspaceGraph[]) {
         status: "open",
         createdAt: timestamp,
         updatedAt: timestamp,
-        lastCommentAt: timestamp
-      }
+        lastCommentAt: timestamp,
+      },
     };
 
     setWorkspaceGraphs((current) =>
@@ -158,24 +156,24 @@ export function useDocumentComments(initialWorkspaceGraphs: WorkspaceGraph[]) {
               ? {
                   ...document,
                   commentThreadIds: Array.from(
-                    new Set([...document.commentThreadIds, nextThread.id])
+                    new Set([...document.commentThreadIds, nextThread.id]),
                   ),
                   lifecycle: {
                     ...document.lifecycle,
-                    updatedAt: timestamp
-                  }
+                    updatedAt: timestamp,
+                  },
                 }
-              : document
+              : document,
           ),
           commentThreads: [...graph.commentThreads, nextThread],
-          comments: [...graph.comments, initialComment]
+          comments: [...graph.comments, initialComment],
         };
-      })
+      }),
     );
 
     return {
       thread: nextThread,
-      comment: initialComment
+      comment: initialComment,
     };
   };
 
@@ -191,7 +189,7 @@ export function useDocumentComments(initialWorkspaceGraphs: WorkspaceGraph[]) {
       bodyMarkdown: input.bodyMarkdown,
       mentionedMembershipIds: input.mentionedMembershipIds,
       createdAt: timestamp,
-      idSeed
+      idSeed,
     });
 
     setWorkspaceGraphs((current) =>
@@ -210,22 +208,22 @@ export function useDocumentComments(initialWorkspaceGraphs: WorkspaceGraph[]) {
                     new Set([
                       ...thread.participantMembershipIds,
                       input.authorMembershipId,
-                      ...(input.mentionedMembershipIds ?? [])
-                    ])
+                      ...(input.mentionedMembershipIds ?? []),
+                    ]),
                   ),
                   commentIds: [...thread.commentIds, nextComment.id],
                   lifecycle: {
                     ...thread.lifecycle,
                     status: "open",
                     updatedAt: timestamp,
-                    lastCommentAt: timestamp
-                  }
+                    lastCommentAt: timestamp,
+                  },
                 }
-              : thread
+              : thread,
           ),
-          comments: [...graph.comments, nextComment]
+          comments: [...graph.comments, nextComment],
         };
-      })
+      }),
     );
 
     return nextComment;
@@ -235,6 +233,6 @@ export function useDocumentComments(initialWorkspaceGraphs: WorkspaceGraph[]) {
     workspaceGraphs,
     setWorkspaceGraphs,
     createBlockCommentThread,
-    addCommentToThread
+    addCommentToThread,
   };
 }

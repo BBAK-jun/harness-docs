@@ -1,16 +1,20 @@
-import type { ApprovalService, DocumentApprovalBundle, WorkspaceApprovalPolicy } from "../domain/approvals";
+import type {
+  ApprovalService,
+  DocumentApprovalBundle,
+  WorkspaceApprovalPolicy,
+} from "../domain/approvals";
 import type { AITaskExecutionInput, AITaskExecutionResult, AITaskService } from "../domain/aiTasks";
 import type {
   PublishAutomationContract,
   PublishExecutionResult,
   PublishingService,
-  WorkspacePublishingSnapshot
+  WorkspacePublishingSnapshot,
 } from "../domain/publishing";
 import type {
   WorkspaceMemberProfile,
   WorkspaceMembershipCapabilities,
   WorkspaceMembershipService,
-  WorkspaceMembershipSnapshot
+  WorkspaceMembershipSnapshot,
 } from "../domain/workspaceMembership";
 import { mockSession } from "../data/mockSession";
 import type {
@@ -19,34 +23,34 @@ import type {
   UserId,
   WorkspaceGraph,
   WorkspaceId,
-  WorkspaceMembership
+  WorkspaceMembership,
 } from "../types";
 
 const mockUserDirectory = {
   usr_mina_cho: {
     name: "Mina Cho",
-    githubLogin: "mina-cho"
+    githubLogin: "mina-cho",
   },
   usr_lee_park: {
     name: "Lee Park",
-    githubLogin: "lee-park"
+    githubLogin: "lee-park",
   },
   usr_sam_kim: {
     name: "Sam Kim",
-    githubLogin: "sam-kim"
+    githubLogin: "sam-kim",
   },
   usr_ava_shah: {
     name: "Ava Shah",
-    githubLogin: "ava-shah"
+    githubLogin: "ava-shah",
   },
   usr_dan_ng: {
     name: "Dan Ng",
-    githubLogin: "dan-ng"
+    githubLogin: "dan-ng",
   },
   usr_noah_rivera: {
     name: "Noah Rivera",
-    githubLogin: "noah-rivera"
-  }
+    githubLogin: "noah-rivera",
+  },
 } as const;
 
 function getWorkspaceGraph(workspaceId: WorkspaceId): WorkspaceGraph {
@@ -59,58 +63,59 @@ function getWorkspaceGraph(workspaceId: WorkspaceId): WorkspaceGraph {
   return graph;
 }
 
-function getMembershipCapabilities(role: WorkspaceMembership["role"]): WorkspaceMembershipCapabilities {
+function getMembershipCapabilities(
+  role: WorkspaceMembership["role"],
+): WorkspaceMembershipCapabilities {
   switch (role) {
     case "Lead":
       return {
         canEditDocuments: true,
         canManageApprovals: true,
         canPublish: true,
-        canAdministerWorkspace: true
+        canAdministerWorkspace: true,
       };
     case "Editor":
       return {
         canEditDocuments: true,
         canManageApprovals: false,
         canPublish: true,
-        canAdministerWorkspace: false
+        canAdministerWorkspace: false,
       };
     case "Reviewer":
       return {
         canEditDocuments: false,
         canManageApprovals: true,
         canPublish: false,
-        canAdministerWorkspace: false
+        canAdministerWorkspace: false,
       };
   }
 }
 
 function formatMemberProfile(
   membership: WorkspaceMembership,
-  currentUserId: UserId
+  currentUserId: UserId,
 ): WorkspaceMemberProfile {
-  const user =
-    mockUserDirectory[membership.userId as keyof typeof mockUserDirectory] ?? {
-      name: membership.userId.replace(/^usr_/, "").replace(/_/g, " "),
-      githubLogin: membership.userId.replace(/^usr_/, "").replace(/_/g, "-")
-    };
+  const user = mockUserDirectory[membership.userId as keyof typeof mockUserDirectory] ?? {
+    name: membership.userId.replace(/^usr_/, "").replace(/_/g, " "),
+    githubLogin: membership.userId.replace(/^usr_/, "").replace(/_/g, "-"),
+  };
 
   return {
     membership,
     displayName: user.name,
     githubLogin: user.githubLogin,
     isCurrentUser: membership.userId === currentUserId,
-    capabilities: getMembershipCapabilities(membership.role)
+    capabilities: getMembershipCapabilities(membership.role),
   };
 }
 
 function buildWorkspaceMembershipSnapshot(
   graph: WorkspaceGraph,
-  userId: UserId
+  userId: UserId,
 ): WorkspaceMembershipSnapshot {
   const activeMembership =
     graph.memberships.find(
-      (membership) => membership.userId === userId && membership.lifecycle.status === "active"
+      (membership) => membership.userId === userId && membership.lifecycle.status === "active",
     ) ?? null;
 
   return {
@@ -119,13 +124,13 @@ function buildWorkspaceMembershipSnapshot(
     leadMembershipId: graph.workspace.leadMembershipId,
     currentUserMembershipId: activeMembership?.id ?? null,
     roles: ["Lead", "Editor", "Reviewer"],
-    members: graph.memberships.map((membership) => formatMemberProfile(membership, userId))
+    members: graph.memberships.map((membership) => formatMemberProfile(membership, userId)),
   };
 }
 
 function buildApprovalBundle(
   graph: WorkspaceGraph,
-  documentId: string
+  documentId: string,
 ): DocumentApprovalBundle | null {
   const document = graph.documents.find((entry) => entry.id === documentId);
 
@@ -144,7 +149,7 @@ function buildApprovalBundle(
     review: document.lifecycle.review,
     approvals,
     invalidations,
-    unresolvedApprovals
+    unresolvedApprovals,
   };
 }
 
@@ -157,7 +162,7 @@ function buildWorkspacePublishingSnapshot(graph: WorkspaceGraph): WorkspacePubli
     activePublishRecord,
     publishRecords: graph.publishRecords,
     staleDocumentIds: activePublishRecord?.staleDocumentIds ?? [],
-    unresolvedApprovalIds: activePublishRecord?.unresolvedApprovalIds ?? []
+    unresolvedApprovalIds: activePublishRecord?.unresolvedApprovalIds ?? [],
   };
 }
 
@@ -170,9 +175,9 @@ const publishAutomationContract: PublishAutomationContract = {
     evaluatedAtPublishTime: true,
     allowStalePublish: true,
     requireRationale: true,
-    preserveUnresolvedState: true
+    preserveUnresolvedState: true,
   },
-  templateVersioning: "templates_versioned_and_published"
+  templateVersioning: "templates_versioned_and_published",
 };
 
 export function createMockWorkspaceMembershipService(): WorkspaceMembershipService {
@@ -184,7 +189,7 @@ export function createMockWorkspaceMembershipService(): WorkspaceMembershipServi
     },
     async getWorkspaceMemberships(workspaceId, userId) {
       return buildWorkspaceMembershipSnapshot(getWorkspaceGraph(workspaceId), userId);
-    }
+    },
   };
 }
 
@@ -202,10 +207,10 @@ export function createMockApprovalService(): ApprovalService {
         restorationPolicy: {
           restoredBy: "lead",
           leadMembershipIds,
-          appNativeOnly: true
+          appNativeOnly: true,
         },
         linkedDocumentChangesRequestReview: true,
-        linkedDocumentChangesTriggerNotifications: true
+        linkedDocumentChangesTriggerNotifications: true,
       };
 
       return policy;
@@ -219,7 +224,7 @@ export function createMockApprovalService(): ApprovalService {
     },
     async getDocumentApprovalBundle(workspaceId, documentId) {
       return buildApprovalBundle(getWorkspaceGraph(workspaceId), documentId);
-    }
+    },
   };
 }
 
@@ -234,7 +239,7 @@ export function createMockPublishingService(): PublishingService {
     async getPublishRecord(workspaceId, publishRecordId) {
       return (
         getWorkspaceGraph(workspaceId).publishRecords.find(
-          (record: PublishRecord) => record.id === publishRecordId
+          (record: PublishRecord) => record.id === publishRecordId,
         ) ?? null
       );
     },
@@ -250,19 +255,20 @@ export function createMockPublishingService(): PublishingService {
         pullRequestUrl: "https://github.com/mock/mock/pull/42",
         committedFiles: input.files.map((file) => file.path),
         startedAt,
-        completedAt
+        completedAt,
       };
 
       return result;
-    }
+    },
   };
 }
 
 function createMockSuggestion(input: AITaskExecutionInput): AIDraftSuggestion | null {
   const document =
     input.entry.documentId != null
-      ? input.workspaceGraph.documents.find((entry) => entry.id === input.entry.documentId) ?? null
-      : input.workspaceGraph.documents[0] ?? null;
+      ? (input.workspaceGraph.documents.find((entry) => entry.id === input.entry.documentId) ??
+        null)
+      : (input.workspaceGraph.documents[0] ?? null);
 
   if (!document) {
     return null;
@@ -283,29 +289,28 @@ function createMockSuggestion(input: AITaskExecutionInput): AIDraftSuggestion | 
       workspaceId: input.workspaceGraph.workspace.id,
       currentDocumentId: document.id,
       templateId: document.templateId,
-      currentUserMembershipId:
-        input.workspaceGraph.workspace.leadMembershipId,
+      currentUserMembershipId: input.workspaceGraph.workspace.leadMembershipId,
       activeArea: "ai",
       intent: input.entry.suggestedIntent,
       linkedDocumentIds: document.linkedDocumentIds,
       invalidatedByDocumentIds: input.entry.invalidatedByDocumentIds,
-      referenceDocumentIds: input.entry.referenceDocumentIds
+      referenceDocumentIds: input.entry.referenceDocumentIds,
     },
     sections: [
       {
         sectionId: "mock-output",
         title: input.entry.title,
         markdown: "Mock AI output generated from browser fallback services.",
-        rationale: "Use the Tauri runtime to execute Codex or Claude for real."
-      }
+        rationale: "Use the Tauri runtime to execute Codex or Claude for real.",
+      },
     ],
     suggestedLinkedDocumentIds: input.entry.referenceDocumentIds,
     lifecycle: {
       status: "proposed",
       createdAt: now,
       updatedAt: now,
-      generatedAt: now
-    }
+      generatedAt: now,
+    },
   };
 }
 
@@ -323,8 +328,8 @@ export function createMockAITaskService(): AITaskService {
         workingDirectory: "/mock/ai-workspace",
         startedAt,
         completedAt,
-        suggestion: createMockSuggestion(input)
+        suggestion: createMockSuggestion(input),
       };
-    }
+    },
   };
 }

@@ -8,10 +8,7 @@ interface WorkspaceNavigationProps {
   onAreaChange: (area: NavigationArea) => void;
 }
 
-export function WorkspaceNavigation({
-  activeArea,
-  onAreaChange
-}: WorkspaceNavigationProps) {
+export function WorkspaceNavigation({ activeArea, onAreaChange }: WorkspaceNavigationProps) {
   return (
     <nav className="mb-5 flex flex-wrap gap-2" aria-label="Primary">
       {navigationItems.map(({ area, icon: Icon, label }) => {
@@ -23,7 +20,7 @@ export function WorkspaceNavigation({
             className={cn(
               "rounded-full px-4",
               isActive &&
-                "border border-amber-200/20 bg-amber-200/12 text-amber-100 hover:bg-amber-200/16"
+                "border border-amber-200/20 bg-amber-200/12 text-amber-100 hover:bg-amber-200/16",
             )}
             onClick={() => onAreaChange(area)}
             type="button"

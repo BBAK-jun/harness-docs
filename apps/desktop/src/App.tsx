@@ -23,17 +23,17 @@ export default function App({ routeState }: AppProps) {
   const navigateToWorkspaceArea = (
     workspaceId: string,
     area: NavigationArea,
-    documentId?: string | null
+    documentId?: string | null,
   ) => {
     void navigate({
       params: {
         area,
-        workspaceId
+        workspaceId,
       },
       search: {
-        documentId: documentId ?? undefined
+        documentId: documentId ?? undefined,
       },
-      to: "/workspaces/$workspaceId/$area"
+      to: "/workspaces/$workspaceId/$area",
     });
   };
 
@@ -67,7 +67,7 @@ export default function App({ routeState }: AppProps) {
     handleStartEditing,
     handleReleaseEditing,
     handleCreateBlockComment,
-    handleAreaChange
+    handleAreaChange,
   } = useHarnessDocsApp(routeState, {
     onAreaChange: (area) => {
       if (!routeState.activeWorkspaceId) {
@@ -77,7 +77,7 @@ export default function App({ routeState }: AppProps) {
       navigateToWorkspaceArea(
         routeState.activeWorkspaceId,
         area,
-        activeDocument?.id ?? routeState.selectedDocumentId
+        activeDocument?.id ?? routeState.selectedDocumentId,
       );
     },
     onSelectedDocumentChange: (documentId) => {
@@ -92,9 +92,9 @@ export default function App({ routeState }: AppProps) {
     },
     onWorkspaceLeave: () => {
       void navigate({
-        to: "/"
+        to: "/",
       });
-    }
+    },
   });
   const apiHealth = useApiHealth();
 
@@ -225,12 +225,12 @@ export default function App({ routeState }: AppProps) {
               details={[
                 {
                   title: "Provider contract first",
-                  body: "The shell only depends on provider metadata and session state, not on GitHub-specific callback handling."
+                  body: "The shell only depends on provider metadata and session state, not on GitHub-specific callback handling.",
                 },
                 {
                   title: "Workspace session deferred",
-                  body: "Workspace data loads only after the auth layer restores a signed-in session."
-                }
+                  body: "Workspace data loads only after the auth layer restores a signed-in session.",
+                },
               ]}
             />
           ) : activeWorkspace ? (

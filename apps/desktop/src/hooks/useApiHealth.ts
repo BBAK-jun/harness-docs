@@ -24,13 +24,13 @@ export function useApiHealth() {
       }>(await response.json());
     },
     retry: false,
-    refetchInterval: 30_000
+    refetchInterval: 30_000,
   });
 
   if (healthQuery.isPending) {
     return {
       status: healthQuery.fetchStatus === "fetching" ? "checking" : "idle",
-      message: `Checking ${harnessApiBaseUrl}`
+      message: `Checking ${harnessApiBaseUrl}`,
     } satisfies ApiHealthState;
   }
 
@@ -40,12 +40,12 @@ export function useApiHealth() {
       message:
         healthQuery.error instanceof Error
           ? healthQuery.error.message
-          : `Unable to reach ${harnessApiBaseUrl}`
+          : `Unable to reach ${harnessApiBaseUrl}`,
     } satisfies ApiHealthState;
   }
 
   return {
     status: "healthy",
-    message: `${healthQuery.data.service} via ${healthQuery.data.transport}`
+    message: `${healthQuery.data.service} via ${healthQuery.data.transport}`,
   } satisfies ApiHealthState;
 }

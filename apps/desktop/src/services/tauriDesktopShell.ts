@@ -11,11 +11,11 @@ const browserShellMetadata: DesktopShellMetadata = {
   supportedAIProviders: ["Codex", "Claude"],
   editingLockTimeoutMinutes: 30,
   supportsOutboundWebhooks: true,
-  supportsGitHubPublishAutomation: true
+  supportsGitHubPublishAutomation: true,
 };
 
 export function createDesktopShellService(
-  desktopInfrastructure: DesktopInfrastructure
+  desktopInfrastructure: DesktopInfrastructure,
 ): DesktopShellService {
   return {
     async getMetadata() {
@@ -25,11 +25,11 @@ export function createDesktopShellService(
 
       try {
         return await desktopInfrastructure.commands.invoke<DesktopShellMetadata>(
-          "get_desktop_shell_metadata"
+          "get_desktop_shell_metadata",
         );
       } catch {
         return browserShellMetadata;
       }
-    }
+    },
   };
 }

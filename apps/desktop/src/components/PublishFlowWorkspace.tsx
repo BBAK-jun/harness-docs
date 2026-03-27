@@ -12,7 +12,7 @@ import type {
   PublishStaleRationaleEntry,
   UnresolvedApprovalSnapshot,
   WorkspaceGraph,
-  WorkspaceMembership
+  WorkspaceMembership,
 } from "../types";
 
 interface PublishFlowWorkspaceProps {
@@ -31,31 +31,31 @@ const stageToneCopy: Record<PublishFlowStageStatus, string> = {
   pending: "Waiting",
   ready: "Ready",
   attention: "Needs attention",
-  complete: "Captured"
+  complete: "Captured",
 };
 
 const readinessToneCopy: Record<DocumentPrePublicationReadiness, string> = {
   ready: "Ready",
   attention_required: "Needs attention",
-  blocked: "Blocked"
+  blocked: "Blocked",
 };
 
 const githubEligibilityCopy: Record<GitHubPublishEligibilityStatus, string> = {
   eligible: "GitHub eligible",
   eligible_with_warnings: "GitHub eligible with warnings",
-  not_eligible: "GitHub blocked"
+  not_eligible: "GitHub blocked",
 };
 
 const publishPreflightStatusCopy: Record<PublishPreflightStatus, string> = {
   ready: "Preflight clear",
   ready_with_warnings: "Preflight warnings",
-  blocked: "Preflight blocked"
+  blocked: "Preflight blocked",
 };
 
 const unresolvedApprovalToneCopy: Record<UnresolvedApprovalSnapshot["status"], string> = {
   missing: "Missing",
   pending: "Pending",
-  rejected: "Rejected"
+  rejected: "Rejected",
 };
 
 function formatTimestamp(value: string | null | undefined) {
@@ -65,7 +65,7 @@ function formatTimestamp(value: string | null | undefined) {
 
   return new Intl.DateTimeFormat("en-US", {
     dateStyle: "medium",
-    timeStyle: "short"
+    timeStyle: "short",
   }).format(new Date(value));
 }
 
@@ -89,7 +89,7 @@ function formatMembershipLabel(membership: WorkspaceMembership | null | undefine
 
 function getPublishActorLabel(
   membershipId: string | null | undefined,
-  memberships: WorkspaceMembership[]
+  memberships: WorkspaceMembership[],
 ) {
   if (!membershipId) {
     return "Unassigned";
@@ -125,8 +125,8 @@ function getUnresolvedApprovalCounts(unresolvedApprovals: UnresolvedApprovalSnap
     {
       missing: 0,
       pending: 0,
-      rejected: 0
-    }
+      rejected: 0,
+    },
   );
 }
 
@@ -135,11 +135,11 @@ export function PublishFlowWorkspace({
   aiEntryPoints,
   executionState,
   onExecutePublish,
-  onLaunchAITaskEntryPoint
+  onLaunchAITaskEntryPoint,
 }: PublishFlowWorkspaceProps) {
   const publishRecord = useMemo(() => getPublishRecord(workspaceGraph), [workspaceGraph]);
   const [selectedStageId, setSelectedStageId] = useState<PublishFlowStageId>(
-    getSelectedStageId(publishRecord)
+    getSelectedStageId(publishRecord),
   );
 
   useEffect(() => {
@@ -164,36 +164,38 @@ export function PublishFlowWorkspace({
   const selectedStage =
     publishRecord.stages.find((stage) => stage.id === selectedStageId) ?? publishRecord.stages[0];
   const memoSuggestion = publishRecord.memoSuggestionId
-    ? workspaceGraph.aiDraftSuggestions.find(
-        (suggestion) => suggestion.id === publishRecord.memoSuggestionId
-      ) ?? null
+    ? (workspaceGraph.aiDraftSuggestions.find(
+        (suggestion) => suggestion.id === publishRecord.memoSuggestionId,
+      ) ?? null)
     : null;
   const unresolvedApprovals = publishRecord.unresolvedApprovals ?? [];
   const unresolvedApprovalCounts = getUnresolvedApprovalCounts(unresolvedApprovals);
-  const leadMemberships = workspaceGraph.memberships.filter((membership) => membership.role === "Lead");
+  const leadMemberships = workspaceGraph.memberships.filter(
+    (membership) => membership.role === "Lead",
+  );
   const invalidations = workspaceGraph.documents.flatMap((document) =>
     document.lifecycle.review.freshness.invalidations.filter((invalidation) =>
-      publishRecord.invalidationIds.includes(invalidation.id)
-    )
+      publishRecord.invalidationIds.includes(invalidation.id),
+    ),
   );
   const staleDocuments = workspaceGraph.documents.filter((document) =>
-    publishRecord.staleDocumentIds.includes(document.id)
+    publishRecord.staleDocumentIds.includes(document.id),
   );
   const currentRationaleEntries = publishRecord.staleRationaleEntries.filter(
-    (entry) => entry.status === "current"
+    (entry) => entry.status === "current",
   );
   const outdatedRationaleEntries = publishRecord.staleRationaleEntries.filter(
-    (entry) => entry.status === "outdated"
+    (entry) => entry.status === "outdated",
   );
   const publishAIEntryPoints = aiEntryPoints.filter((entry) =>
-    entry.discoverableFrom.includes("publish_flow")
+    entry.discoverableFrom.includes("publish_flow"),
   );
   const publishPreflight = publishRecord.publication.preflight;
   const preflightBlockingCount = publishPreflight.findings.filter(
-    (finding) => finding.severity === "blocking"
+    (finding) => finding.severity === "blocking",
   ).length;
   const preflightWarningCount = publishPreflight.findings.filter(
-    (finding) => finding.severity === "warning"
+    (finding) => finding.severity === "warning",
   ).length;
 
   return (
@@ -201,7 +203,10 @@ export function PublishFlowWorkspace({
       <div className="publish-header">
         <article className="hero-card">
           <p className="eyebrow">Publish Flow</p>
-          <h3>Review the workspace publish batch before branch, commit, and pull request automation starts.</h3>
+          <h3>
+            Review the workspace publish batch before branch, commit, and pull request automation
+            starts.
+          </h3>
           <p>
             The app captures scope, freshness, approval state, and rationale first, then hands the
             final publish action to the mapped GitHub docs repository.
@@ -234,9 +239,7 @@ export function PublishFlowWorkspace({
               Status {formatStateLabel(publishRecord.lifecycle.status)} • validated{" "}
               {formatTimestamp(publishRecord.lifecycle.validatedAt)}
             </p>
-            <p>
-              Source {publishRecord.source.label}
-            </p>
+            <p>Source {publishRecord.source.label}</p>
             <p>
               Repo {publishRecord.publication.repository.owner}/
               {publishRecord.publication.repository.name}
@@ -317,9 +320,9 @@ export function PublishFlowWorkspace({
                 {publishRecord.artifacts.map((artifact) => {
                   const targetDocument =
                     artifact.kind === "document"
-                      ? workspaceGraph.documents.find(
-                          (document) => document.id === artifact.targetId
-                        ) ?? null
+                      ? (workspaceGraph.documents.find(
+                          (document) => document.id === artifact.targetId,
+                        ) ?? null)
                       : null;
                   const prePublication = targetDocument?.prePublication ?? null;
 
@@ -329,7 +332,7 @@ export function PublishFlowWorkspace({
                         <span className="document-type-chip">
                           {artifact.kind === "template"
                             ? "Template"
-                            : artifact.documentType ?? "Document"}
+                            : (artifact.documentType ?? "Document")}
                         </span>
                         {artifact.stalenessStatus ? (
                           <span className={`staleness-pill ${artifact.stalenessStatus}`}>
@@ -351,7 +354,9 @@ export function PublishFlowWorkspace({
                       ) : null}
                       <div className="document-row-meta">
                         <span>{artifact.linkedDocumentIds.length} linked docs</span>
-                        <span>{(artifact.unresolvedApprovals ?? []).length} unresolved approvals</span>
+                        <span>
+                          {(artifact.unresolvedApprovals ?? []).length} unresolved approvals
+                        </span>
                         <span>{artifact.invalidationIds.length} invalidations</span>
                       </div>
                     </article>
@@ -409,7 +414,7 @@ export function PublishFlowWorkspace({
                     {outdatedRationaleEntries.map((entry) => {
                       const supersedingDocument =
                         workspaceGraph.documents.find(
-                          (document) => document.id === entry.supersededByDocumentId
+                          (document) => document.id === entry.supersededByDocumentId,
                         ) ?? null;
 
                       return (
@@ -432,7 +437,7 @@ export function PublishFlowWorkspace({
                     {invalidations.map((invalidation) => {
                       const sourceDocument =
                         workspaceGraph.documents.find(
-                          (document) => document.id === invalidation.sourceDocumentId
+                          (document) => document.id === invalidation.sourceDocumentId,
                         ) ?? null;
 
                       return (
@@ -482,11 +487,11 @@ export function PublishFlowWorkspace({
                     {unresolvedApprovals.map((approval) => {
                       const membership =
                         workspaceGraph.memberships.find(
-                          (entry) => entry.id === approval.membershipId
+                          (entry) => entry.id === approval.membershipId,
                         ) ?? null;
                       const document =
                         workspaceGraph.documents.find(
-                          (entry) => entry.id === approval.documentId
+                          (entry) => entry.id === approval.documentId,
                         ) ?? null;
 
                       return (
@@ -495,7 +500,9 @@ export function PublishFlowWorkspace({
                             {approval.label} • {unresolvedApprovalToneCopy[approval.status]}
                           </span>
                           <span className="detail-pill">
-                            {membership ? formatMembershipLabel(membership) : formatStateLabel(approval.authority)}
+                            {membership
+                              ? formatMembershipLabel(membership)
+                              : formatStateLabel(approval.authority)}
                           </span>
                           <p className="muted">
                             {document?.title ?? "Document"} • {approval.summary}
@@ -505,7 +512,9 @@ export function PublishFlowWorkspace({
                       );
                     })}
                     {unresolvedApprovals.length === 0 ? (
-                      <p className="muted">No unresolved approvals are currently attached to this publish record.</p>
+                      <p className="muted">
+                        No unresolved approvals are currently attached to this publish record.
+                      </p>
                     ) : null}
                   </div>
                 </article>
@@ -532,7 +541,7 @@ export function PublishFlowWorkspace({
                     {memoSuggestion?.sections[0]?.markdown ??
                       getStaleRationaleMemoFallback(
                         publishRecord.staleRationaleEntries,
-                        publishRecord.staleRationale
+                        publishRecord.staleRationale,
                       )}
                   </p>
                 </article>
@@ -579,8 +588,8 @@ export function PublishFlowWorkspace({
                 <article className="approval-card">
                   <strong>Preflight result</strong>
                   <p className="muted">
-                    {publishPreflightStatusCopy[publishPreflight.status]} •{" "}
-                    {preflightBlockingCount} blocking • {preflightWarningCount} warnings
+                    {publishPreflightStatusCopy[publishPreflight.status]} • {preflightBlockingCount}{" "}
+                    blocking • {preflightWarningCount} warnings
                   </p>
                   <p className="muted">{publishPreflight.summary}</p>
                 </article>
@@ -598,7 +607,11 @@ export function PublishFlowWorkspace({
                   <strong>2. Create commit</strong>
                   <p className="muted">{publishRecord.publication.commit.message}</p>
                   <p className="muted">
-                    Author {getPublishActorLabel(publishRecord.publication.commit.authoredByMembershipId, workspaceGraph.memberships)}
+                    Author{" "}
+                    {getPublishActorLabel(
+                      publishRecord.publication.commit.authoredByMembershipId,
+                      workspaceGraph.memberships,
+                    )}
                   </p>
                 </article>
 
@@ -609,7 +622,7 @@ export function PublishFlowWorkspace({
                     Initiated by{" "}
                     {getPublishActorLabel(
                       publishRecord.publication.initiatedByMembershipId,
-                      workspaceGraph.memberships
+                      workspaceGraph.memberships,
                     )}
                   </p>
                 </article>
@@ -626,9 +639,7 @@ export function PublishFlowWorkspace({
                     onClick={onExecutePublish}
                     type="button"
                   >
-                    {executionState.status === "running"
-                      ? "Publishing..."
-                      : "Create GitHub PR"}
+                    {executionState.status === "running" ? "Publishing..." : "Create GitHub PR"}
                   </button>
                   {executionState.status === "failed" ? (
                     <p className="muted">{executionState.error}</p>
@@ -665,7 +676,9 @@ export function PublishFlowWorkspace({
                       </p>
                     ))}
                     {publishPreflight.findings.length === 0 ? (
-                      <p className="muted">No stale-rationale or approval findings remain for GitHub publication.</p>
+                      <p className="muted">
+                        No stale-rationale or approval findings remain for GitHub publication.
+                      </p>
                     ) : null}
                   </div>
                 </article>

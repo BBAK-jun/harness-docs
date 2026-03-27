@@ -7,7 +7,7 @@ import type {
   WorkspaceDocument,
   WorkspaceGraph,
   WorkspaceMembership,
-  WorkspaceSummary
+  WorkspaceSummary,
 } from "../types";
 
 const statusLabels: Record<DocumentStatus, string> = {
@@ -15,12 +15,12 @@ const statusLabels: Record<DocumentStatus, string> = {
   in_review: "In Review",
   approved: "Approved",
   published: "Published",
-  archived: "Archived"
+  archived: "Archived",
 };
 
 const stalenessLabels: Record<PublishStalenessStatus, string> = {
   current: "Current",
-  stale: "Stale"
+  stale: "Stale",
 };
 
 interface DocumentLibraryProps {
@@ -40,7 +40,7 @@ function formatTimestamp(value: string | null | undefined) {
 
   return new Intl.DateTimeFormat("en-US", {
     dateStyle: "medium",
-    timeStyle: "short"
+    timeStyle: "short",
   }).format(new Date(value));
 }
 
@@ -81,7 +81,7 @@ function getStaleRationaleRequired(document: WorkspaceDocument) {
 
 function getInvalidatedByDocumentIds(document: WorkspaceDocument) {
   return document.lifecycle.review.freshness.invalidations.map(
-    (invalidation) => invalidation.sourceDocumentId
+    (invalidation) => invalidation.sourceDocumentId,
   );
 }
 
@@ -100,31 +100,29 @@ export function DocumentLibrary({
   aiEntryPoints,
   onLaunchAITaskEntryPoint,
   onDocumentSelect,
-  onOpenDocument
+  onOpenDocument,
 }: DocumentLibraryProps) {
   const selectedDocument = activeDocument ?? workspaceGraph.documents[0] ?? null;
   const linkedDocuments = selectedDocument
     ? workspaceGraph.documents.filter((document) =>
-        selectedDocument.linkedDocumentIds.includes(document.id)
+        selectedDocument.linkedDocumentIds.includes(document.id),
       )
     : [];
   const invalidatingDocuments = selectedDocument
     ? workspaceGraph.documents.filter((document) =>
-        getInvalidatedByDocumentIds(selectedDocument).includes(document.id)
+        getInvalidatedByDocumentIds(selectedDocument).includes(document.id),
       )
     : [];
   const selectedApprovals = selectedDocument
-    ? workspaceGraph.approvals.filter((approval) =>
-        approval.documentId === selectedDocument.id
-      )
+    ? workspaceGraph.approvals.filter((approval) => approval.documentId === selectedDocument.id)
     : [];
   const unresolvedApprovals = selectedApprovals.filter((approval) =>
-    ["pending", "changes_requested", "invalidated"].includes(approval.lifecycle.state)
+    ["pending", "changes_requested", "invalidated"].includes(approval.lifecycle.state),
   );
   const documentAIEntryPoints = aiEntryPoints.filter(
     (entry) =>
       entry.discoverableFrom.includes("document_library") &&
-      (!selectedDocument || !entry.documentId || entry.documentId === selectedDocument.id)
+      (!selectedDocument || !entry.documentId || entry.documentId === selectedDocument.id),
   );
 
   if (!selectedDocument) {
@@ -134,8 +132,8 @@ export function DocumentLibrary({
           <p className="eyebrow">Document Library</p>
           <h3>No documents available</h3>
           <p className="muted">
-            This workspace is ready for document browsing, but no role-specific documents
-            have been created yet.
+            This workspace is ready for document browsing, but no role-specific documents have been
+            created yet.
           </p>
         </article>
       </section>
@@ -173,9 +171,18 @@ export function DocumentLibrary({
         <article className="status-card">
           <p className="eyebrow">Navigation Model</p>
           <div className="note-stack">
-            <p>Documents stay separated by type so PRDs, UX flows, specs, and policies remain distinct records.</p>
-            <p>Selection in the queue establishes the user’s path into the document-level editor, review, and approval surfaces.</p>
-            <p>Linked dependencies and invalidations are visible in browse mode before publish-time stale handling is needed.</p>
+            <p>
+              Documents stay separated by type so PRDs, UX flows, specs, and policies remain
+              distinct records.
+            </p>
+            <p>
+              Selection in the queue establishes the user’s path into the document-level editor,
+              review, and approval surfaces.
+            </p>
+            <p>
+              Linked dependencies and invalidations are visible in browse mode before publish-time
+              stale handling is needed.
+            </p>
           </div>
         </article>
       </div>
@@ -222,8 +229,8 @@ export function DocumentLibrary({
                           (approval) =>
                             approval.documentId === document.id &&
                             ["pending", "changes_requested", "invalidated"].includes(
-                              approval.lifecycle.state
-                            )
+                              approval.lifecycle.state,
+                            ),
                         ).length
                       }{" "}
                       approvals open
@@ -274,12 +281,8 @@ export function DocumentLibrary({
             <article className="detail-card">
               <p className="eyebrow">Readiness</p>
               <ul className="highlight-list">
-                <li>
-                  Review state: {formatStateLabel(getReviewStatus(selectedDocument))}
-                </li>
-                <li>
-                  Approval state: {unresolvedApprovals.length} unresolved
-                </li>
+                <li>Review state: {formatStateLabel(getReviewStatus(selectedDocument))}</li>
+                <li>Approval state: {unresolvedApprovals.length} unresolved</li>
                 <li>
                   Edit lock:{" "}
                   {selectedDocument.lifecycle.activeEditLock
@@ -287,11 +290,14 @@ export function DocumentLibrary({
                     : "Available to start editing"}
                 </li>
                 <li>
-                  Review requested:{" "}
-                  {formatTimestamp(selectedDocument.lifecycle.review.requestedAt)}
+                  Review requested: {formatTimestamp(selectedDocument.lifecycle.review.requestedAt)}
                 </li>
-                <li>Last reviewed: {formatTimestamp(selectedDocument.lifecycle.review.lastReviewedAt)}</li>
-                <li>Last published: {formatTimestamp(selectedDocument.lifecycle.lastPublishedAt)}</li>
+                <li>
+                  Last reviewed: {formatTimestamp(selectedDocument.lifecycle.review.lastReviewedAt)}
+                </li>
+                <li>
+                  Last published: {formatTimestamp(selectedDocument.lifecycle.lastPublishedAt)}
+                </li>
               </ul>
             </article>
 
@@ -299,9 +305,7 @@ export function DocumentLibrary({
               <p className="eyebrow">Traceability</p>
               <ul className="highlight-list">
                 <li>{linkedDocuments.length} linked supporting documents</li>
-                <li>
-                  {invalidatingDocuments.length} invalidations to evaluate at publish time
-                </li>
+                <li>{invalidatingDocuments.length} invalidations to evaluate at publish time</li>
                 <li>
                   {getStaleRationaleRequired(selectedDocument)
                     ? "Stale publish rationale will be required"
@@ -349,9 +353,7 @@ export function DocumentLibrary({
               <p className="eyebrow">Freshness</p>
               <ul className="highlight-list">
                 <li>{getFreshnessSummary(selectedDocument)}</li>
-                <li>
-                  Evaluated {formatTimestamp(getFreshnessEvaluatedAt(selectedDocument))}
-                </li>
+                <li>Evaluated {formatTimestamp(getFreshnessEvaluatedAt(selectedDocument))}</li>
                 <li>{unresolvedApprovals.length} approvals still require follow-up</li>
               </ul>
             </article>

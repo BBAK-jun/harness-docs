@@ -13,9 +13,7 @@ export interface DesktopKeyValueStore {
 }
 
 export interface DesktopWindowService {
-  subscribeToUserActivity: (
-    listener: DesktopUserActivityListener
-  ) => DesktopWindowSubscription;
+  subscribeToUserActivity: (listener: DesktopUserActivityListener) => DesktopWindowSubscription;
 }
 
 export interface DesktopInfrastructure {

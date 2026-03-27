@@ -1,10 +1,4 @@
-export type NavigationArea =
-  | "documents"
-  | "editor"
-  | "comments"
-  | "approvals"
-  | "publish"
-  | "ai";
+export type NavigationArea = "documents" | "editor" | "comments" | "approvals" | "publish" | "ai";
 
 export type WorkspaceId = string;
 export type MembershipId = string;
@@ -25,24 +19,11 @@ export type PublishRecordId = string;
 export type WorkspaceRole = "Lead" | "Editor" | "Reviewer";
 export type WorkspaceStatus = "active" | "provisioning" | "archived";
 export type MembershipStatus = "active" | "invited" | "suspended" | "removed";
-export type DocumentType =
-  | "PRD"
-  | "UX Flow"
-  | "Technical Spec"
-  | "Policy/Decision";
-export type DocumentStatus =
-  | "draft"
-  | "in_review"
-  | "approved"
-  | "published"
-  | "archived";
+export type DocumentType = "PRD" | "UX Flow" | "Technical Spec" | "Policy/Decision";
+export type DocumentStatus = "draft" | "in_review" | "approved" | "published" | "archived";
 export type TemplateSource = "system" | "workspace";
 export type TemplateStatus = "active" | "archived";
-export type DocumentReviewStatus =
-  | "idle"
-  | "review_requested"
-  | "changes_requested"
-  | "approved";
+export type DocumentReviewStatus = "idle" | "review_requested" | "changes_requested" | "approved";
 export type DocumentApprovalState =
   | "not_requested"
   | "pending"
@@ -71,11 +52,7 @@ export type AITaskEntryPointContext =
   | "document_library"
   | "document_workspace"
   | "publish_flow";
-export type AIDraftSuggestionStatus =
-  | "proposed"
-  | "reviewed"
-  | "accepted"
-  | "rejected";
+export type AIDraftSuggestionStatus = "proposed" | "reviewed" | "accepted" | "rejected";
 export type AIDraftSuggestionKind =
   | "document_content"
   | "document_links"
@@ -105,10 +82,7 @@ export type CommentBlockKind =
   | "code_block";
 export type MentionDeliveryStatus = "pending" | "delivered" | "read";
 export type PublishArtifactKind = "document" | "template";
-export type DocumentPrePublicationReadiness =
-  | "ready"
-  | "attention_required"
-  | "blocked";
+export type DocumentPrePublicationReadiness = "ready" | "attention_required" | "blocked";
 export type DocumentPrePublicationIssueSeverity = "warning" | "blocking";
 export type DocumentPrePublicationIssueKind =
   | "stale_rationale_required"
@@ -121,22 +95,10 @@ export type DocumentPrePublicationIssueKind =
   | "missing_repository_binding"
   | "github_auth_required";
 export type UnresolvedApprovalStatus = "missing" | "pending" | "rejected";
-export type GitHubPublishEligibilityStatus =
-  | "eligible"
-  | "eligible_with_warnings"
-  | "not_eligible";
-export type PublishFlowStageId =
-  | "scope"
-  | "freshness"
-  | "approvals"
-  | "memo"
-  | "github";
+export type GitHubPublishEligibilityStatus = "eligible" | "eligible_with_warnings" | "not_eligible";
+export type PublishFlowStageId = "scope" | "freshness" | "approvals" | "memo" | "github";
 export type PublishFlowStageStatus = "pending" | "ready" | "attention" | "complete";
-export type PublishRecordStatus =
-  | "draft"
-  | "ready_for_publish"
-  | "publishing"
-  | "published";
+export type PublishRecordStatus = "draft" | "ready_for_publish" | "publishing" | "published";
 export type PublishNotificationKind = "in_app" | "webhook";
 export type PublishNotificationStatus = "pending" | "queued" | "sent";
 export type MentionSubjectKind = "user" | "role";
@@ -294,8 +256,7 @@ export interface DocumentCommentAnchor {
   endOffset?: number | null;
 }
 
-export interface DocumentBlockCommentAnchor
-  extends Omit<DocumentCommentAnchor, "kind"> {
+export interface DocumentBlockCommentAnchor extends Omit<DocumentCommentAnchor, "kind"> {
   kind: "block";
 }
 

@@ -10,7 +10,7 @@ export interface HarnessDocsServicesProviderProps extends PropsWithChildren {
 
 export function HarnessDocsServicesProvider({
   services,
-  children
+  children,
 }: HarnessDocsServicesProviderProps) {
   return (
     <HarnessDocsServicesContext.Provider value={services}>

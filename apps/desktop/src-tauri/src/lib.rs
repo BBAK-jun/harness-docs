@@ -260,20 +260,18 @@ fn git_binary() -> String {
 
 fn get_github_identity() -> Result<Option<GitHubIdentity>, String> {
     let gh = gh_binary();
-    let status_json = run_command(
-        Command::new(&gh).args([
-            "auth",
-            "status",
-            "--json",
-            "hosts",
-            "--active",
-            "--hostname",
-            "github.com",
-        ]),
-    )?;
+    let status_json = run_command(Command::new(&gh).args([
+        "auth",
+        "status",
+        "--json",
+        "hosts",
+        "--active",
+        "--hostname",
+        "github.com",
+    ]))?;
 
-    let parsed: GhAuthStatusResponse =
-        serde_json::from_str(&status_json).map_err(|error| format!("invalid gh auth status payload: {error}"))?;
+    let parsed: GhAuthStatusResponse = serde_json::from_str(&status_json)
+        .map_err(|error| format!("invalid gh auth status payload: {error}"))?;
     let active_host = parsed
         .hosts
         .get("github.com")
@@ -289,21 +287,30 @@ fn get_github_identity() -> Result<Option<GitHubIdentity>, String> {
 
     let login = active_host.login.clone().unwrap_or_default();
     let user_profile_json = run_command(Command::new(&gh).args(["api", "user"]))?;
-    let user_profile: Value =
-        serde_json::from_str(&user_profile_json).map_err(|error| format!("invalid gh user payload: {error}"))?;
+    let user_profile: Value = serde_json::from_str(&user_profile_json)
+        .map_err(|error| format!("invalid gh user payload: {error}"))?;
 
-    let email = run_command(Command::new(&gh).args(["api", "user/emails"])).ok().and_then(|raw| {
-        let emails: Value = serde_json::from_str(&raw).ok()?;
-        emails.as_array().and_then(|items| {
-            items.iter().find_map(|item| {
-                if item.get("primary").and_then(Value::as_bool).unwrap_or(false) {
-                    return item.get("email").and_then(Value::as_str).map(str::to_string);
-                }
+    let email = run_command(Command::new(&gh).args(["api", "user/emails"]))
+        .ok()
+        .and_then(|raw| {
+            let emails: Value = serde_json::from_str(&raw).ok()?;
+            emails.as_array().and_then(|items| {
+                items.iter().find_map(|item| {
+                    if item
+                        .get("primary")
+                        .and_then(Value::as_bool)
+                        .unwrap_or(false)
+                    {
+                        return item
+                            .get("email")
+                            .and_then(Value::as_str)
+                            .map(str::to_string);
+                    }
 
-                None
+                    None
+                })
             })
-        })
-    });
+        });
 
     Ok(Some(GitHubIdentity {
         login,
@@ -396,13 +403,11 @@ fn sign_out_github() -> Result<GitHubAuthenticationSession, String> {
 #[tauri::command]
 fn run_ai_task(input: AITaskExecutionInput) -> Result<AITaskExecutionResult, String> {
     let started_at = now_rfc3339();
-    let working_directory = std::env::temp_dir()
-        .join("harness-docs-ai")
-        .join(format!(
-            "{}-{}",
-            input.provider.to_lowercase(),
-            Utc::now().timestamp_millis()
-        ));
+    let working_directory = std::env::temp_dir().join("harness-docs-ai").join(format!(
+        "{}-{}",
+        input.provider.to_lowercase(),
+        Utc::now().timestamp_millis()
+    ));
 
     fs::create_dir_all(&working_directory)
         .map_err(|error| format!("failed to create AI working directory: {error}"))?;
@@ -474,12 +479,16 @@ fn execute_github_publish(input: PublishExecutionInput) -> Result<PublishExecuti
     let repository_name = format!("{}/{}", input.repository.owner, input.repository.name);
     let repository_root = std::env::temp_dir()
         .join("harness-docs-github")
-        .join(format!("{}__{}", input.repository.owner, input.repository.name));
+        .join(format!(
+            "{}__{}",
+            input.repository.owner, input.repository.name
+        ));
 
     if !repository_root.join(".git").exists() {
         if let Some(parent) = repository_root.parent() {
-            fs::create_dir_all(parent)
-                .map_err(|error| format!("failed to prepare repository cache directory: {error}"))?;
+            fs::create_dir_all(parent).map_err(|error| {
+                format!("failed to prepare repository cache directory: {error}")
+            })?;
         }
 
         run_command(
@@ -496,10 +505,17 @@ fn execute_github_publish(input: PublishExecutionInput) -> Result<PublishExecuti
         "origin",
     ]))?;
 
-    let base_branch = if input.publish_record.publication.repository.base_branch.is_empty() {
+    let base_branch = if input
+        .publish_record
+        .publication
+        .repository
+        .base_branch
+        .is_empty()
+    {
         input.repository.default_branch.as_str()
     } else {
-        input.publish_record
+        input
+            .publish_record
             .publication
             .repository
             .base_branch
@@ -556,7 +572,9 @@ fn execute_github_publish(input: PublishExecutionInput) -> Result<PublishExecuti
         == false;
 
     if !has_changes {
-        return Err("No publishable file changes were detected for the current publish batch.".to_string());
+        return Err(
+            "No publishable file changes were detected for the current publish batch.".to_string(),
+        );
     }
 
     run_command(Command::new(&git).args([

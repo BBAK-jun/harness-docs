@@ -17,7 +17,7 @@ function formatKindLabel(value: AITaskEntryPoint["kind"]) {
 export function AITaskEntryPointList({
   entries,
   emptyMessage,
-  onLaunchEntryPoint
+  onLaunchEntryPoint,
 }: AITaskEntryPointListProps) {
   if (entries.length === 0) {
     return (

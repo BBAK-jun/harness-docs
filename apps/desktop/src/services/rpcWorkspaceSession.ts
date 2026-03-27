@@ -4,7 +4,7 @@ import type { SessionUser, WorkspaceGraph, WorkspaceSummary } from "../types";
 import type {
   AuthenticatedSessionSnapshot,
   WorkspaceSessionService,
-  WorkspaceSessionSnapshot
+  WorkspaceSessionSnapshot,
 } from "./contracts";
 
 interface CreateRpcWorkspaceSessionServiceOptions {
@@ -13,18 +13,18 @@ interface CreateRpcWorkspaceSessionServiceOptions {
 
 function mapBootstrapSession(
   session: AuthenticatedSessionSnapshot,
-  payload: BootstrapSessionDto
+  payload: BootstrapSessionDto,
 ): WorkspaceSessionSnapshot {
   return {
     user: session.user as SessionUser,
     workspaces: payload.workspaces as WorkspaceSummary[],
     workspaceGraphs: payload.workspaceGraphs as WorkspaceGraph[],
-    lastActiveWorkspaceId: payload.lastActiveWorkspaceId
+    lastActiveWorkspaceId: payload.lastActiveWorkspaceId,
   };
 }
 
 export function createRpcWorkspaceSessionService({
-  fallbackSnapshot
+  fallbackSnapshot,
 }: CreateRpcWorkspaceSessionServiceOptions): WorkspaceSessionService {
   return {
     async getSnapshot(session) {
@@ -46,9 +46,9 @@ export function createRpcWorkspaceSessionService({
 
         return {
           ...snapshot,
-          user: session.user
+          user: session.user,
         };
       }
-    }
+    },
   };
 }

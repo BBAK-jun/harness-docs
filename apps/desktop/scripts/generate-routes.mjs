@@ -7,7 +7,7 @@ const root = path.resolve(__dirname, "..");
 
 const generator = new Generator({
   config: getConfig({}, root),
-  root
+  root,
 });
 
 await generator.run();

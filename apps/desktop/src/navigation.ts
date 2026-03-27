@@ -5,7 +5,7 @@ import {
   GitPullRequestArrow,
   MessageSquare,
   PenSquare,
-  ShieldCheck
+  ShieldCheck,
 } from "lucide-react";
 import type { NavigationArea } from "./types";
 
@@ -21,7 +21,7 @@ export const navigationItems: NavigationItem[] = [
   { area: "comments", label: "Comments", icon: MessageSquare },
   { area: "approvals", label: "Approvals", icon: ShieldCheck },
   { area: "publish", label: "Publish", icon: GitPullRequestArrow },
-  { area: "ai", label: "AI Tasks", icon: Bot }
+  { area: "ai", label: "AI Tasks", icon: Bot },
 ];
 
 const documentWorkspaceAreas: NavigationArea[] = ["editor", "comments", "approvals"];

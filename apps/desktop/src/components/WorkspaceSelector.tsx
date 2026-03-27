@@ -15,7 +15,7 @@ export function WorkspaceSelector({
   user,
   workspaces,
   activeWorkspaceId,
-  onEnterWorkspace
+  onEnterWorkspace,
 }: WorkspaceSelectorProps) {
   return (
     <Card className="flex min-h-0 flex-1 flex-col overflow-hidden border-white/[0.08] bg-slate-950/35">
@@ -50,7 +50,7 @@ export function WorkspaceSelector({
                 "group grid gap-3 rounded-3xl border px-4 py-4 text-left transition-all",
                 isActive
                   ? "border-amber-200/30 bg-amber-200/12 shadow-[0_20px_60px_-38px_rgba(251,191,36,0.9)]"
-                  : "border-white/[0.08] bg-white/[0.04] hover:border-white/[0.16] hover:bg-white/[0.07]"
+                  : "border-white/[0.08] bg-white/[0.04] hover:border-white/[0.16] hover:bg-white/[0.07]",
               )}
               onClick={() => onEnterWorkspace(workspace.id)}
               type="button"
@@ -68,7 +68,9 @@ export function WorkspaceSelector({
 
               <div className="grid grid-cols-3 gap-2 text-xs text-slate-400">
                 <div className="rounded-2xl border border-white/[0.08] bg-slate-950/60 px-3 py-2">
-                  <p className="text-base font-semibold text-slate-100">{workspace.pendingDrafts}</p>
+                  <p className="text-base font-semibold text-slate-100">
+                    {workspace.pendingDrafts}
+                  </p>
                   <p>Drafts</p>
                 </div>
                 <div className="rounded-2xl border border-white/[0.08] bg-slate-950/60 px-3 py-2">
@@ -76,7 +78,9 @@ export function WorkspaceSelector({
                   <p>Reviews</p>
                 </div>
                 <div className="rounded-2xl border border-white/[0.08] bg-slate-950/60 px-3 py-2">
-                  <p className="text-base font-semibold text-slate-100">{workspace.staleDocuments}</p>
+                  <p className="text-base font-semibold text-slate-100">
+                    {workspace.staleDocuments}
+                  </p>
                   <p>Stale</p>
                 </div>
               </div>

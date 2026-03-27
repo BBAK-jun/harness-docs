@@ -4,7 +4,7 @@ import type { AITaskExecutionInput, AITaskExecutionResult, AITaskService } from 
 import type {
   PublishExecutionInput,
   PublishExecutionResult,
-  PublishingService
+  PublishingService,
 } from "../domain/publishing";
 import type {
   AppSessionSnapshot,
@@ -15,18 +15,18 @@ import type {
   AuthenticationSessionSnapshot,
   HarnessDocsServices,
   WorkspaceSessionService,
-  WorkspaceSessionSnapshot
+  WorkspaceSessionSnapshot,
 } from "./contracts";
 import {
   createMockApprovalService,
   createMockPublishingService,
-  createMockWorkspaceMembershipService
+  createMockWorkspaceMembershipService,
 } from "./mockDomainServices";
 import { createDesktopShellService } from "./tauriDesktopShell";
 import {
   defaultAppPreferences,
   readAppPreferences,
-  writeAppPreferences
+  writeAppPreferences,
 } from "../lib/appPreferences";
 import { createRpcWorkspaceSessionService } from "./rpcWorkspaceSession";
 
@@ -34,7 +34,7 @@ const githubAuthProvider: AuthenticationProviderDescriptor = {
   id: "github_oauth",
   label: "GitHub OAuth",
   kind: "oauth",
-  loginCtaLabel: "Sign in with GitHub"
+  loginCtaLabel: "Sign in with GitHub",
 };
 
 interface GitHubIdentity {
@@ -50,11 +50,7 @@ interface RawAuthenticationSession {
 }
 
 function createAvatarInitials(name: string, login: string) {
-  const parts = name
-    .trim()
-    .split(/\s+/)
-    .filter(Boolean)
-    .slice(0, 2);
+  const parts = name.trim().split(/\s+/).filter(Boolean).slice(0, 2);
 
   if (parts.length > 0) {
     return parts.map((part) => part.charAt(0).toUpperCase()).join("");
@@ -64,13 +60,13 @@ function createAvatarInitials(name: string, login: string) {
 }
 
 function mapAuthenticationSession(
-  rawSession: RawAuthenticationSession
+  rawSession: RawAuthenticationSession,
 ): AuthenticationSessionSnapshot {
   if (rawSession.status !== "authenticated" || !rawSession.user) {
     return {
       status: "signed_out",
       provider: githubAuthProvider,
-      user: null
+      user: null,
     };
   }
 
@@ -86,13 +82,13 @@ function mapAuthenticationSession(
       handle: `@${githubLogin}`,
       avatarInitials: createAvatarInitials(name, githubLogin),
       githubLogin,
-      primaryEmail: rawSession.user.email?.trim() || mockUser.primaryEmail
-    }
+      primaryEmail: rawSession.user.email?.trim() || mockUser.primaryEmail,
+    },
   };
 }
 
 function createTauriAuthenticationService(
-  desktopInfrastructure: DesktopInfrastructure
+  desktopInfrastructure: DesktopInfrastructure,
 ): AuthenticationService {
   return {
     async getProvider() {
@@ -103,14 +99,13 @@ function createTauriAuthenticationService(
         return {
           status: "signed_out",
           provider: githubAuthProvider,
-          user: null
+          user: null,
         };
       }
 
-      const rawSession =
-        await desktopInfrastructure.commands.invoke<RawAuthenticationSession>(
-          "get_github_authentication_session"
-        );
+      const rawSession = await desktopInfrastructure.commands.invoke<RawAuthenticationSession>(
+        "get_github_authentication_session",
+      );
 
       return mapAuthenticationSession(rawSession);
     },
@@ -125,7 +120,7 @@ function createTauriAuthenticationService(
 
       const rawSession =
         await desktopInfrastructure.commands.invoke<RawAuthenticationSession>(
-          "start_github_sign_in"
+          "start_github_sign_in",
         );
 
       return mapAuthenticationSession(rawSession);
@@ -135,17 +130,15 @@ function createTauriAuthenticationService(
         return {
           status: "signed_out",
           provider: githubAuthProvider,
-          user: null
+          user: null,
         };
       }
 
       const rawSession =
-        await desktopInfrastructure.commands.invoke<RawAuthenticationSession>(
-          "sign_out_github"
-        );
+        await desktopInfrastructure.commands.invoke<RawAuthenticationSession>("sign_out_github");
 
       return mapAuthenticationSession(rawSession);
-    }
+    },
   };
 }
 
@@ -155,13 +148,13 @@ function createTauriWorkspaceSessionService(): WorkspaceSessionService {
       user: mockSession.user,
       workspaces: mockSession.workspaces,
       workspaceGraphs: mockSession.workspaceGraphs,
-      lastActiveWorkspaceId: mockSession.lastActiveWorkspaceId
-    })
+      lastActiveWorkspaceId: mockSession.lastActiveWorkspaceId,
+    }),
   });
 }
 
 function createTauriPublishingService(
-  desktopInfrastructure: DesktopInfrastructure
+  desktopInfrastructure: DesktopInfrastructure,
 ): PublishingService {
   const mockPublishing = createMockPublishingService();
 
@@ -174,15 +167,13 @@ function createTauriPublishingService(
 
       return desktopInfrastructure.commands.invoke<PublishExecutionResult>(
         "execute_github_publish",
-        { input }
+        { input },
       );
-    }
+    },
   };
 }
 
-function createTauriAITaskService(
-  desktopInfrastructure: DesktopInfrastructure
-): AITaskService {
+function createTauriAITaskService(desktopInfrastructure: DesktopInfrastructure): AITaskService {
   return {
     async runEntryPoint(input: AITaskExecutionInput): Promise<AITaskExecutionResult> {
       if (desktopInfrastructure.runtime !== "tauri") {
@@ -194,7 +185,7 @@ function createTauriAITaskService(
           workingDirectory: "/browser-preview",
           startedAt: new Date().toISOString(),
           completedAt: new Date().toISOString(),
-          suggestion: null
+          suggestion: null,
         };
       }
 
@@ -202,15 +193,15 @@ function createTauriAITaskService(
         input: {
           provider: input.entry.provider,
           promptLabel: input.entry.title,
-          prompt: input.prompt
-        }
+          prompt: input.prompt,
+        },
       });
-    }
+    },
   };
 }
 
 export function createTauriHarnessDocsServices(
-  desktopInfrastructure: DesktopInfrastructure
+  desktopInfrastructure: DesktopInfrastructure,
 ): HarnessDocsServices {
   const authentication = createTauriAuthenticationService(desktopInfrastructure);
   const workspaceSession = createTauriWorkspaceSessionService();
@@ -225,7 +216,7 @@ export function createTauriHarnessDocsServices(
     preferences: {
       read: () => readAppPreferences(desktopInfrastructure.storage),
       write: (preferences: AppPreferences) =>
-        writeAppPreferences(desktopInfrastructure.storage, preferences)
+        writeAppPreferences(desktopInfrastructure.storage, preferences),
     },
     authentication,
     workspaceSession,
@@ -240,16 +231,16 @@ export function createTauriHarnessDocsServices(
         if (session.status !== "authenticated") {
           return {
             authentication: session,
-            workspace: null
+            workspace: null,
           };
         }
 
         return {
           authentication: session,
-          workspace: await workspaceSession.getSnapshot(session)
+          workspace: await workspaceSession.getSnapshot(session),
         };
-      }
-    }
+      },
+    },
   };
 }
 

@@ -4,13 +4,10 @@ import type {
   AITaskEntryPoint,
   DocumentTemplate,
   WorkspaceDocument,
-  WorkspaceGraph
+  WorkspaceGraph,
 } from "../types";
 
-function getDocumentSource(
-  document: WorkspaceDocument,
-  documentDrafts: Record<string, string>
-) {
+function getDocumentSource(document: WorkspaceDocument, documentDrafts: Record<string, string>) {
   return documentDrafts[document.id] ?? document.markdownSource;
 }
 
@@ -20,7 +17,7 @@ function renderTemplateMarkdown(template: DocumentTemplate) {
       (section) =>
         `## ${section.title}\n\n${section.defaultMarkdown}\n\nGuidance:\n${section.guidance
           .map((item) => `- ${item}`)
-          .join("\n")}`
+          .join("\n")}`,
     )
     .join("\n\n");
 
@@ -30,17 +27,17 @@ function renderTemplateMarkdown(template: DocumentTemplate) {
 function buildDocumentReferenceBlocks(
   entry: AITaskEntryPoint,
   workspaceGraph: WorkspaceGraph,
-  documentDrafts: Record<string, string>
+  documentDrafts: Record<string, string>,
 ) {
   const documentIds = Array.from(
-    new Set([
-      ...(entry.documentId ? [entry.documentId] : []),
-      ...entry.referenceDocumentIds
-    ])
+    new Set([...(entry.documentId ? [entry.documentId] : []), ...entry.referenceDocumentIds]),
   );
 
   return documentIds
-    .map((documentId) => workspaceGraph.documents.find((document) => document.id === documentId) ?? null)
+    .map(
+      (documentId) =>
+        workspaceGraph.documents.find((document) => document.id === documentId) ?? null,
+    )
     .filter((document): document is WorkspaceDocument => document !== null)
     .map((document) => {
       const source = getDocumentSource(document, documentDrafts);
@@ -53,7 +50,7 @@ function buildDocumentReferenceBlocks(
 export function buildAITaskPrompt(
   entry: AITaskEntryPoint,
   workspaceGraph: WorkspaceGraph,
-  documentDrafts: Record<string, string>
+  documentDrafts: Record<string, string>,
 ) {
   const referenceBlocks = buildDocumentReferenceBlocks(entry, workspaceGraph, documentDrafts);
 
@@ -67,15 +64,19 @@ export function buildAITaskPrompt(
     entry.invalidatedByDocumentIds.length > 0
       ? `Invalidated by document ids: ${entry.invalidatedByDocumentIds.join(", ")}`
       : "No invalidating documents are currently attached to this task.",
-    "Return a concise markdown response with explicit recommendations and any draft content."
+    "Return a concise markdown response with explicit recommendations and any draft content.",
   ]
-    .concat(["", "# Workspace References", referenceBlocks || "No internal documents were attached."])
+    .concat([
+      "",
+      "# Workspace References",
+      referenceBlocks || "No internal documents were attached.",
+    ])
     .join("\n");
 }
 
 function buildPublishFiles(
   workspaceGraph: WorkspaceGraph,
-  documentDrafts: Record<string, string>
+  documentDrafts: Record<string, string>,
 ): PublishRepositoryFile[] {
   const activePublishRecord = workspaceGraph.publishRecords[0] ?? null;
 
@@ -95,8 +96,8 @@ function buildPublishFiles(
       return [
         {
           path: `documents/${document.slug}.md`,
-          content: getDocumentSource(document, documentDrafts)
-        }
+          content: getDocumentSource(document, documentDrafts),
+        },
       ];
     }
 
@@ -110,8 +111,8 @@ function buildPublishFiles(
     return [
       {
         path: `templates/${template.id}.md`,
-        content: renderTemplateMarkdown(template)
-      }
+        content: renderTemplateMarkdown(template),
+      },
     ];
   });
 }
@@ -119,7 +120,7 @@ function buildPublishFiles(
 export function buildPublishExecutionInput(
   workspaceGraph: WorkspaceGraph,
   documentDrafts: Record<string, string>,
-  activeMembershipId: string | null
+  activeMembershipId: string | null,
 ): PublishExecutionInput | null {
   const publishRecord = workspaceGraph.publishRecords[0] ?? null;
 
@@ -133,21 +134,21 @@ export function buildPublishExecutionInput(
     publishRecord,
     documents: workspaceGraph.documents.map((document) => ({
       ...document,
-      markdownSource: getDocumentSource(document, documentDrafts)
+      markdownSource: getDocumentSource(document, documentDrafts),
     })),
     files: buildPublishFiles(workspaceGraph, documentDrafts),
-    initiatedByMembershipId: activeMembershipId
+    initiatedByMembershipId: activeMembershipId,
   };
 }
 
 export function buildAITaskExecutionInput(
   entry: AITaskEntryPoint,
   workspaceGraph: WorkspaceGraph,
-  documentDrafts: Record<string, string>
+  documentDrafts: Record<string, string>,
 ): AITaskExecutionInput {
   return {
     workspaceGraph,
     entry,
-    prompt: buildAITaskPrompt(entry, workspaceGraph, documentDrafts)
+    prompt: buildAITaskPrompt(entry, workspaceGraph, documentDrafts),
   };
 }

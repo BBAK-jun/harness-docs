@@ -3,7 +3,7 @@ import { mockSession } from "../data/mockSession";
 import {
   defaultAppPreferences,
   readAppPreferences,
-  writeAppPreferences
+  writeAppPreferences,
 } from "../lib/appPreferences";
 import type {
   AppSessionSnapshot,
@@ -14,13 +14,13 @@ import type {
   AuthenticationSessionSnapshot,
   HarnessDocsServices,
   WorkspaceSessionService,
-  WorkspaceSessionSnapshot
+  WorkspaceSessionSnapshot,
 } from "./contracts";
 import {
   createMockApprovalService,
   createMockAITaskService,
   createMockPublishingService,
-  createMockWorkspaceMembershipService
+  createMockWorkspaceMembershipService,
 } from "./mockDomainServices";
 import { createRpcWorkspaceSessionService } from "./rpcWorkspaceSession";
 import { createDesktopShellService } from "./tauriDesktopShell";
@@ -29,13 +29,13 @@ const mockAuthenticationProvider: AuthenticationProviderDescriptor = {
   id: "github_oauth",
   label: "GitHub OAuth",
   kind: "oauth",
-  loginCtaLabel: "Sign in with GitHub"
+  loginCtaLabel: "Sign in with GitHub",
 };
 
 const mockSessionStorageKey = "harness-docs/mock-auth-session";
 
 async function readStoredAuthenticationStatus(
-  desktopInfrastructure: DesktopInfrastructure
+  desktopInfrastructure: DesktopInfrastructure,
 ): Promise<AuthenticationSessionSnapshot["status"]> {
   const storedStatus = await desktopInfrastructure.storage.getItem(mockSessionStorageKey);
 
@@ -44,38 +44,40 @@ async function readStoredAuthenticationStatus(
 
 async function writeStoredAuthenticationStatus(
   desktopInfrastructure: DesktopInfrastructure,
-  status: AuthenticationSessionSnapshot["status"]
+  status: AuthenticationSessionSnapshot["status"],
 ) {
   await desktopInfrastructure.storage.setItem(mockSessionStorageKey, status);
 }
 
 function buildAuthenticationSession(
-  status: AuthenticationSessionSnapshot["status"]
+  status: AuthenticationSessionSnapshot["status"],
 ): AuthenticationSessionSnapshot {
   if (status === "authenticated") {
     return {
       status,
       provider: mockAuthenticationProvider,
-      user: mockSession.user
+      user: mockSession.user,
     };
   }
 
   return {
     status,
     provider: mockAuthenticationProvider,
-    user: null
+    user: null,
   };
 }
 
 function createMockAuthenticationService(
-  desktopInfrastructure: DesktopInfrastructure
+  desktopInfrastructure: DesktopInfrastructure,
 ): AuthenticationService {
   return {
     async getProvider() {
       return mockAuthenticationProvider;
     },
     async restoreSession() {
-      return buildAuthenticationSession(await readStoredAuthenticationStatus(desktopInfrastructure));
+      return buildAuthenticationSession(
+        await readStoredAuthenticationStatus(desktopInfrastructure),
+      );
     },
     async startSignIn(provider: AuthenticationProvider) {
       if (provider !== mockAuthenticationProvider.id) {
@@ -90,7 +92,7 @@ function createMockAuthenticationService(
       await writeStoredAuthenticationStatus(desktopInfrastructure, "signed_out");
 
       return buildAuthenticationSession("signed_out");
-    }
+    },
   };
 }
 
@@ -99,18 +101,18 @@ async function getWorkspaceSnapshot(): Promise<WorkspaceSessionSnapshot> {
     user: mockSession.user,
     workspaces: mockSession.workspaces,
     workspaceGraphs: mockSession.workspaceGraphs,
-    lastActiveWorkspaceId: mockSession.lastActiveWorkspaceId
+    lastActiveWorkspaceId: mockSession.lastActiveWorkspaceId,
   };
 }
 
 function createMockWorkspaceSessionService(): WorkspaceSessionService {
   return createRpcWorkspaceSessionService({
-    fallbackSnapshot: () => getWorkspaceSnapshot()
+    fallbackSnapshot: () => getWorkspaceSnapshot(),
   });
 }
 
 export function createMockHarnessDocsServices(
-  desktopInfrastructure: DesktopInfrastructure
+  desktopInfrastructure: DesktopInfrastructure,
 ): HarnessDocsServices {
   const authentication = createMockAuthenticationService(desktopInfrastructure);
   const workspaceSession = createMockWorkspaceSessionService();
@@ -124,7 +126,7 @@ export function createMockHarnessDocsServices(
     desktopWindow: desktopInfrastructure.windowing,
     preferences: {
       read: () => readAppPreferences(desktopInfrastructure.storage),
-      write: (preferences) => writeAppPreferences(desktopInfrastructure.storage, preferences)
+      write: (preferences) => writeAppPreferences(desktopInfrastructure.storage, preferences),
     },
     authentication,
     workspaceSession,
@@ -139,16 +141,16 @@ export function createMockHarnessDocsServices(
         if (session.status !== "authenticated") {
           return {
             authentication: session,
-            workspace: null
+            workspace: null,
           };
         }
 
         return {
           authentication: session,
-          workspace: await workspaceSession.getSnapshot(session)
+          workspace: await workspaceSession.getSnapshot(session),
         };
-      }
-    }
+      },
+    },
   };
 }
 

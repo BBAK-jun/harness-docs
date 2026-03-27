@@ -7,7 +7,7 @@ import type {
   AuthoringIntent,
   PublishRecord,
   WorkspaceDocument,
-  WorkspaceGraph
+  WorkspaceGraph,
 } from "../types";
 
 interface BuildAITaskEntryPointsOptions {
@@ -52,7 +52,7 @@ function createEntry({
   publishRecord = null,
   referenceDocumentIds = [],
   invalidatedByDocumentIds = [],
-  existingSuggestions = []
+  existingSuggestions = [],
 }: CreateEntryOptions): AITaskEntryPoint {
   return {
     id,
@@ -70,22 +70,22 @@ function createEntry({
     suggestedIntent,
     referenceDocumentIds,
     invalidatedByDocumentIds,
-    existingSuggestionIds: existingSuggestions.map((suggestion) => suggestion.id)
+    existingSuggestionIds: existingSuggestions.map((suggestion) => suggestion.id),
   };
 }
 
 function getExistingSuggestionsForDocument(
   workspaceGraph: WorkspaceGraph,
-  document: WorkspaceDocument
+  document: WorkspaceDocument,
 ) {
   return workspaceGraph.aiDraftSuggestions.filter((suggestion) =>
-    document.aiDraftSuggestionIds.includes(suggestion.id)
+    document.aiDraftSuggestionIds.includes(suggestion.id),
   );
 }
 
 function getDocumentInvalidationIds(document: WorkspaceDocument) {
   return document.lifecycle.review.freshness.invalidations.map(
-    (invalidation) => invalidation.sourceDocumentId
+    (invalidation) => invalidation.sourceDocumentId,
   );
 }
 
@@ -97,12 +97,12 @@ export function buildAITaskEntryPoints({
   workspaceGraph,
   activeDocument,
   preferredProvider,
-  activeMembershipId
+  activeMembershipId,
 }: BuildAITaskEntryPointsOptions): AITaskEntryPoint[] {
   const publishRecord = workspaceGraph.publishRecords[0] ?? null;
   const staleDocuments = publishRecord
     ? workspaceGraph.documents.filter((document) =>
-        publishRecord.staleDocumentIds.includes(document.id)
+        publishRecord.staleDocumentIds.includes(document.id),
       )
     : [];
   const candidateDocument =
@@ -118,21 +118,21 @@ export function buildAITaskEntryPoints({
     ? workspaceGraph.approvals.filter(
         (approval) =>
           approval.documentId === candidateDocument.id &&
-          ["pending", "changes_requested", "invalidated"].includes(approval.lifecycle.state)
+          ["pending", "changes_requested", "invalidated"].includes(approval.lifecycle.state),
       )
     : [];
   const publishMemoSuggestion =
     publishRecord?.memoSuggestionId != null
-      ? workspaceGraph.aiDraftSuggestions.find(
-          (suggestion) => suggestion.id === publishRecord.memoSuggestionId
-        ) ?? null
+      ? (workspaceGraph.aiDraftSuggestions.find(
+          (suggestion) => suggestion.id === publishRecord.memoSuggestionId,
+        ) ?? null)
       : null;
   const publishReferenceDocumentIds = dedupe(
     staleDocuments.flatMap((document) => [
       document.id,
       ...document.linkedDocumentIds,
-      ...getDocumentInvalidationIds(document)
-    ])
+      ...getDocumentInvalidationIds(document),
+    ]),
   );
   const entries: AITaskEntryPoint[] = [];
 
@@ -153,11 +153,11 @@ export function buildAITaskEntryPoints({
         suggestedIntent: "create_document",
         document: candidateDocument,
         referenceDocumentIds: dedupe(
-          workspaceGraph.documents.slice(0, 4).map((document) => document.id)
+          workspaceGraph.documents.slice(0, 4).map((document) => document.id),
         ),
         invalidatedByDocumentIds: [],
-        existingSuggestions: []
-      })
+        existingSuggestions: [],
+      }),
     );
 
     entries.push(
@@ -177,13 +177,13 @@ export function buildAITaskEntryPoints({
         document: candidateDocument,
         referenceDocumentIds: dedupe([
           ...candidateDocument.linkedDocumentIds,
-          ...getDocumentInvalidationIds(candidateDocument)
+          ...getDocumentInvalidationIds(candidateDocument),
         ]),
         invalidatedByDocumentIds: getDocumentInvalidationIds(candidateDocument),
         existingSuggestions: documentSuggestions.filter(
-          (suggestion) => suggestion.kind === "document_content"
-        )
-      })
+          (suggestion) => suggestion.kind === "document_content",
+        ),
+      }),
     );
 
     entries.push(
@@ -204,13 +204,13 @@ export function buildAITaskEntryPoints({
         referenceDocumentIds: dedupe([
           candidateDocument.id,
           ...candidateDocument.linkedDocumentIds,
-          ...getDocumentInvalidationIds(candidateDocument)
+          ...getDocumentInvalidationIds(candidateDocument),
         ]),
         invalidatedByDocumentIds: getDocumentInvalidationIds(candidateDocument),
         existingSuggestions: documentSuggestions.filter(
-          (suggestion) => suggestion.kind === "document_links"
-        )
-      })
+          (suggestion) => suggestion.kind === "document_links",
+        ),
+      }),
     );
 
     entries.push(
@@ -230,13 +230,13 @@ export function buildAITaskEntryPoints({
         document: candidateDocument,
         referenceDocumentIds: dedupe([
           ...candidateDocument.linkedDocumentIds,
-          ...getDocumentInvalidationIds(candidateDocument)
+          ...getDocumentInvalidationIds(candidateDocument),
         ]),
         invalidatedByDocumentIds: getDocumentInvalidationIds(candidateDocument),
         existingSuggestions: documentSuggestions.filter(
-          (suggestion) => suggestion.kind === "approver_suggestions"
-        )
-      })
+          (suggestion) => suggestion.kind === "approver_suggestions",
+        ),
+      }),
     );
   }
 
@@ -259,10 +259,10 @@ export function buildAITaskEntryPoints({
         document: candidateDocument,
         referenceDocumentIds: publishReferenceDocumentIds,
         invalidatedByDocumentIds: dedupe(
-          staleDocuments.flatMap((document) => getDocumentInvalidationIds(document))
+          staleDocuments.flatMap((document) => getDocumentInvalidationIds(document)),
         ),
-        existingSuggestions: publishMemoSuggestion ? [publishMemoSuggestion] : []
-      })
+        existingSuggestions: publishMemoSuggestion ? [publishMemoSuggestion] : [],
+      }),
     );
   }
 
@@ -272,7 +272,7 @@ export function buildAITaskEntryPoints({
 export function filterAITaskEntryPointsForContext(
   entries: AITaskEntryPoint[],
   context: AITaskEntryPointContext,
-  documentId?: string | null
+  documentId?: string | null,
 ) {
   return entries.filter((entry) => {
     if (!entry.discoverableFrom.includes(context)) {

@@ -7,7 +7,7 @@ import type {
   DocumentReviewState,
   MembershipId,
   UnresolvedApprovalSnapshot,
-  WorkspaceId
+  WorkspaceId,
 } from "../types";
 
 export interface ApprovalAuthorityRestorationPolicy {
@@ -39,6 +39,6 @@ export interface ApprovalService {
   listDocumentApprovalBundles: (workspaceId: WorkspaceId) => Promise<DocumentApprovalBundle[]>;
   getDocumentApprovalBundle: (
     workspaceId: WorkspaceId,
-    documentId: DocumentId
+    documentId: DocumentId,
   ) => Promise<DocumentApprovalBundle | null>;
 }

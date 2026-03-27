@@ -5,7 +5,7 @@ import type {
   MembershipId,
   NavigationArea,
   WorkspaceDocument,
-  WorkspaceGraph
+  WorkspaceGraph,
 } from "../types";
 
 const DEFAULT_INACTIVITY_TIMEOUT_MINUTES = 30;
@@ -56,8 +56,8 @@ function expireLock(lock: DocumentEditingLock, now: Date): DocumentEditingLock {
       ...lock.lifecycle,
       status: "expired",
       expiredAt: timestamp,
-      updatedAt: timestamp
-    }
+      updatedAt: timestamp,
+    },
   };
 }
 
@@ -72,8 +72,8 @@ function releaseTimedOutLock(lock: DocumentEditingLock, now: Date): DocumentEdit
       ...lock.lifecycle,
       status: "released",
       releasedAt: timestamp,
-      updatedAt: timestamp
-    }
+      updatedAt: timestamp,
+    },
   };
 }
 
@@ -81,7 +81,7 @@ function releaseLock(
   lock: DocumentEditingLock,
   membershipId: MembershipId,
   reason: DocumentEditingReleaseReason,
-  now: Date
+  now: Date,
 ): DocumentEditingLock {
   const timestamp = now.toISOString();
 
@@ -93,15 +93,15 @@ function releaseLock(
       ...lock.lifecycle,
       status: "released",
       releasedAt: timestamp,
-      updatedAt: timestamp
-    }
+      updatedAt: timestamp,
+    },
   };
 }
 
 function touchLock(lock: DocumentEditingLock, now: Date): DocumentEditingLock {
   const timestamp = now.toISOString();
   const expiresAt = new Date(
-    now.getTime() + lock.inactivityTimeoutMinutes * 60 * 1000
+    now.getTime() + lock.inactivityTimeoutMinutes * 60 * 1000,
   ).toISOString();
 
   return {
@@ -110,8 +110,8 @@ function touchLock(lock: DocumentEditingLock, now: Date): DocumentEditingLock {
     expiresAt,
     lifecycle: {
       ...lock.lifecycle,
-      updatedAt: timestamp
-    }
+      updatedAt: timestamp,
+    },
   };
 }
 
@@ -119,11 +119,11 @@ function createLock(
   document: WorkspaceDocument,
   membershipId: MembershipId,
   area: NavigationArea,
-  now: Date
+  now: Date,
 ): DocumentEditingLock {
   const timestamp = now.toISOString();
   const expiresAt = new Date(
-    now.getTime() + DEFAULT_INACTIVITY_TIMEOUT_MINUTES * 60 * 1000
+    now.getTime() + DEFAULT_INACTIVITY_TIMEOUT_MINUTES * 60 * 1000,
   ).toISOString();
 
   return {
@@ -139,8 +139,8 @@ function createLock(
     lifecycle: {
       status: "active",
       createdAt: timestamp,
-      updatedAt: timestamp
-    }
+      updatedAt: timestamp,
+    },
   };
 }
 
@@ -150,7 +150,7 @@ function collectInitialLockState(workspaceGraphs: WorkspaceGraph[]) {
       .map((document) => document.lifecycle.activeEditLock)
       .concat(graph.documentLocks)
       .filter((lock): lock is DocumentEditingLock => Boolean(lock))
-      .map((lock) => [lock.documentId, lock] as const)
+      .map((lock) => [lock.documentId, lock] as const),
   );
 
   return Object.fromEntries(initialEntries);
@@ -158,9 +158,8 @@ function collectInitialLockState(workspaceGraphs: WorkspaceGraph[]) {
 
 export function useDocumentEditingLocks(workspaceGraphs: WorkspaceGraph[]) {
   const initialLocks = useMemo(() => collectInitialLockState(workspaceGraphs), [workspaceGraphs]);
-  const [locksByDocumentId, setLocksByDocumentId] = useState<Record<string, DocumentEditingLock>>(
-    initialLocks
-  );
+  const [locksByDocumentId, setLocksByDocumentId] =
+    useState<Record<string, DocumentEditingLock>>(initialLocks);
 
   useEffect(() => {
     setLocksByDocumentId(initialLocks);
@@ -209,7 +208,7 @@ export function useDocumentEditingLocks(workspaceGraphs: WorkspaceGraph[]) {
   const acquireDocumentEditingLock = ({
     document,
     membershipId,
-    area = "editor"
+    area = "editor",
   }: AcquireDocumentEditingLockInput) => {
     const now = new Date();
     const nextLock = createLock(document, membershipId, area, now);
@@ -230,7 +229,7 @@ export function useDocumentEditingLocks(workspaceGraphs: WorkspaceGraph[]) {
 
       return {
         ...current,
-        [document.id]: nextLock
+        [document.id]: nextLock,
       };
     });
 
@@ -240,7 +239,7 @@ export function useDocumentEditingLocks(workspaceGraphs: WorkspaceGraph[]) {
   const releaseDocumentEditingLock = ({
     documentId,
     membershipId,
-    reason = "manual_release"
+    reason = "manual_release",
   }: ReleaseDocumentEditingLockInput) => {
     const now = new Date();
     let released = false;
@@ -260,7 +259,7 @@ export function useDocumentEditingLocks(workspaceGraphs: WorkspaceGraph[]) {
 
       return {
         ...current,
-        [documentId]: releaseLock(existingLock, membershipId, reason, now)
+        [documentId]: releaseLock(existingLock, membershipId, reason, now),
       };
     });
 
@@ -269,7 +268,7 @@ export function useDocumentEditingLocks(workspaceGraphs: WorkspaceGraph[]) {
 
   const touchDocumentEditingLock = ({
     documentId,
-    membershipId
+    membershipId,
   }: TouchDocumentEditingLockInput) => {
     const now = new Date();
 
@@ -286,7 +285,7 @@ export function useDocumentEditingLocks(workspaceGraphs: WorkspaceGraph[]) {
 
       return {
         ...current,
-        [documentId]: touchLock(existingLock, now)
+        [documentId]: touchLock(existingLock, now),
       };
     });
   };
@@ -297,6 +296,6 @@ export function useDocumentEditingLocks(workspaceGraphs: WorkspaceGraph[]) {
     getActiveLockForDocument,
     acquireDocumentEditingLock,
     releaseDocumentEditingLock,
-    touchDocumentEditingLock
+    touchDocumentEditingLock,
   };
 }
