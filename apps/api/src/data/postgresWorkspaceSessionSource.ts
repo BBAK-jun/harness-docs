@@ -999,16 +999,14 @@ export function createPostgresWorkspaceSessionSource(
       return null;
     }
 
-    const [approvalRows, invalidationRows] = await Promise.all([
-      executor
-        .select()
-        .from(approvalRequests)
-        .where(eq(approvalRequests.documentId, documentId)),
-      executor
-        .select()
-        .from(documentInvalidations)
-        .where(eq(documentInvalidations.documentId, documentId)),
-    ]);
+    const approvalRows = await executor
+      .select()
+      .from(approvalRequests)
+      .where(eq(approvalRequests.documentId, documentId));
+    const invalidationRows = await executor
+      .select()
+      .from(documentInvalidations)
+      .where(eq(documentInvalidations.documentId, documentId));
     const derivedState = deriveDocumentState({
       documentId,
       currentStatus: documentRow.status,
@@ -1087,20 +1085,18 @@ export function createPostgresWorkspaceSessionSource(
     }
 
     const matchedDocumentIds = documentRows.map((document: DocumentRow) => document.id);
-    const [linkRows, invalidationRows, approvalRows] = await Promise.all([
-      executor
-        .select()
-        .from(documentLinks)
-        .where(inArray(documentLinks.sourceDocumentId, matchedDocumentIds)),
-      executor
-        .select()
-        .from(documentInvalidations)
-        .where(inArray(documentInvalidations.documentId, matchedDocumentIds)),
-      executor
-        .select()
-        .from(approvalRequests)
-        .where(inArray(approvalRequests.documentId, matchedDocumentIds)),
-    ]);
+    const linkRows = await executor
+      .select()
+      .from(documentLinks)
+      .where(inArray(documentLinks.sourceDocumentId, matchedDocumentIds));
+    const invalidationRows = await executor
+      .select()
+      .from(documentInvalidations)
+      .where(inArray(documentInvalidations.documentId, matchedDocumentIds));
+    const approvalRows = await executor
+      .select()
+      .from(approvalRequests)
+      .where(inArray(approvalRequests.documentId, matchedDocumentIds));
     const linkRowsByDocumentId = groupBy(linkRows, "sourceDocumentId");
     const invalidationRowsByDocumentId = groupBy(invalidationRows, "documentId");
     const approvalRowsByDocumentId = groupBy(approvalRows, "documentId");
@@ -1277,43 +1273,40 @@ export function createPostgresWorkspaceSessionSource(
     },
     async createDocument(workspaceId, input) {
       const documentId = await db.transaction(async (tx) => {
-        const [workspaceRow, templateRow, ownerMembership, createdByMembership] =
-          await Promise.all([
-            tx
-              .select()
-              .from(workspaces)
-              .where(eq(workspaces.id, workspaceId))
-              .limit(1)
-              .then((rows: WorkspaceRow[]) => rows[0] ?? null),
-            tx
-              .select()
-              .from(templates)
-              .where(and(eq(templates.id, input.templateId), eq(templates.workspaceId, workspaceId)))
-              .limit(1)
-              .then((rows: TemplateRow[]) => rows[0] ?? null),
-            tx
-              .select()
-              .from(workspaceMemberships)
-              .where(
-                and(
-                  eq(workspaceMemberships.id, input.ownerMembershipId),
-                  eq(workspaceMemberships.workspaceId, workspaceId),
-                ),
-              )
-              .limit(1)
-              .then((rows: MembershipRow[]) => rows[0] ?? null),
-            tx
-              .select()
-              .from(workspaceMemberships)
-              .where(
-                and(
-                  eq(workspaceMemberships.id, input.createdByMembershipId),
-                  eq(workspaceMemberships.workspaceId, workspaceId),
-                ),
-              )
-              .limit(1)
-              .then((rows: MembershipRow[]) => rows[0] ?? null),
-          ]);
+        const workspaceRow = await tx
+          .select()
+          .from(workspaces)
+          .where(eq(workspaces.id, workspaceId))
+          .limit(1)
+          .then((rows: WorkspaceRow[]) => rows[0] ?? null);
+        const templateRow = await tx
+          .select()
+          .from(templates)
+          .where(and(eq(templates.id, input.templateId), eq(templates.workspaceId, workspaceId)))
+          .limit(1)
+          .then((rows: TemplateRow[]) => rows[0] ?? null);
+        const ownerMembership = await tx
+          .select()
+          .from(workspaceMemberships)
+          .where(
+            and(
+              eq(workspaceMemberships.id, input.ownerMembershipId),
+              eq(workspaceMemberships.workspaceId, workspaceId),
+            ),
+          )
+          .limit(1)
+          .then((rows: MembershipRow[]) => rows[0] ?? null);
+        const createdByMembership = await tx
+          .select()
+          .from(workspaceMemberships)
+          .where(
+            and(
+              eq(workspaceMemberships.id, input.createdByMembershipId),
+              eq(workspaceMemberships.workspaceId, workspaceId),
+            ),
+          )
+          .limit(1)
+          .then((rows: MembershipRow[]) => rows[0] ?? null);
 
         if (!workspaceRow || !templateRow || !ownerMembership || !createdByMembership) {
           return null;
@@ -1493,40 +1486,38 @@ export function createPostgresWorkspaceSessionSource(
     },
     async requestApproval(workspaceId, documentId, input) {
       const approvalId = await db.transaction(async (tx) => {
-        const [documentRow, membershipRow, requesterRow] = await Promise.all([
-          tx
-            .select()
-            .from(documents)
-            .where(and(eq(documents.id, documentId), eq(documents.workspaceId, workspaceId)))
-            .limit(1)
-            .then((rows: DocumentRow[]) => rows[0] ?? null),
-          input.membershipId
-            ? tx
-                .select()
-                .from(workspaceMemberships)
-                .where(
-                  and(
-                    eq(workspaceMemberships.id, input.membershipId),
-                    eq(workspaceMemberships.workspaceId, workspaceId),
-                  ),
-                )
-                .limit(1)
-                .then((rows: MembershipRow[]) => rows[0] ?? null)
-            : Promise.resolve(null),
-          input.requestedByMembershipId
-            ? tx
-                .select()
-                .from(workspaceMemberships)
-                .where(
-                  and(
-                    eq(workspaceMemberships.id, input.requestedByMembershipId),
-                    eq(workspaceMemberships.workspaceId, workspaceId),
-                  ),
-                )
-                .limit(1)
-                .then((rows: MembershipRow[]) => rows[0] ?? null)
-            : Promise.resolve(null),
-        ]);
+        const documentRow = await tx
+          .select()
+          .from(documents)
+          .where(and(eq(documents.id, documentId), eq(documents.workspaceId, workspaceId)))
+          .limit(1)
+          .then((rows: DocumentRow[]) => rows[0] ?? null);
+        const membershipRow = input.membershipId
+          ? await tx
+              .select()
+              .from(workspaceMemberships)
+              .where(
+                and(
+                  eq(workspaceMemberships.id, input.membershipId),
+                  eq(workspaceMemberships.workspaceId, workspaceId),
+                ),
+              )
+              .limit(1)
+              .then((rows: MembershipRow[]) => rows[0] ?? null)
+          : null;
+        const requesterRow = input.requestedByMembershipId
+          ? await tx
+              .select()
+              .from(workspaceMemberships)
+              .where(
+                and(
+                  eq(workspaceMemberships.id, input.requestedByMembershipId),
+                  eq(workspaceMemberships.workspaceId, workspaceId),
+                ),
+              )
+              .limit(1)
+              .then((rows: MembershipRow[]) => rows[0] ?? null)
+          : null;
 
         if (!documentRow) {
           return null;
@@ -1604,25 +1595,23 @@ export function createPostgresWorkspaceSessionSource(
     },
     async decideApproval(workspaceId, approvalId, input) {
       const mutatedApprovalId = await db.transaction(async (tx) => {
-        const [approvalRow, decisionMembership] = await Promise.all([
-          tx
-            .select()
-            .from(approvalRequests)
-            .where(and(eq(approvalRequests.id, approvalId), eq(approvalRequests.workspaceId, workspaceId)))
-            .limit(1)
-            .then((rows: ApprovalRow[]) => rows[0] ?? null),
-          tx
-            .select()
-            .from(workspaceMemberships)
-            .where(
-              and(
-                eq(workspaceMemberships.id, input.decisionByMembershipId),
-                eq(workspaceMemberships.workspaceId, workspaceId),
-              ),
-            )
-            .limit(1)
-            .then((rows: MembershipRow[]) => rows[0] ?? null),
-        ]);
+        const approvalRow = await tx
+          .select()
+          .from(approvalRequests)
+          .where(and(eq(approvalRequests.id, approvalId), eq(approvalRequests.workspaceId, workspaceId)))
+          .limit(1)
+          .then((rows: ApprovalRow[]) => rows[0] ?? null);
+        const decisionMembership = await tx
+          .select()
+          .from(workspaceMemberships)
+          .where(
+            and(
+              eq(workspaceMemberships.id, input.decisionByMembershipId),
+              eq(workspaceMemberships.workspaceId, workspaceId),
+            ),
+          )
+          .limit(1)
+          .then((rows: MembershipRow[]) => rows[0] ?? null);
 
         if (!approvalRow || !decisionMembership) {
           return null;
@@ -1686,33 +1675,31 @@ export function createPostgresWorkspaceSessionSource(
     },
     async createPublishRecord(workspaceId, input) {
       const publishRecordId = await db.transaction(async (tx) => {
-        const [workspaceRow, initiatorMembership] = await Promise.all([
-          tx
-            .select()
-            .from(workspaces)
-            .where(eq(workspaces.id, workspaceId))
-            .limit(1)
-            .then((rows: WorkspaceRow[]) => rows[0] ?? null),
-          tx
-            .select()
-            .from(workspaceMemberships)
-            .where(
-              and(
-                eq(workspaceMemberships.id, input.initiatedByMembershipId),
-                eq(workspaceMemberships.workspaceId, workspaceId),
-              ),
-            )
-            .limit(1)
-            .then((rows: MembershipRow[]) => rows[0] ?? null),
-        ]);
+        const workspaceRow = await tx
+          .select()
+          .from(workspaces)
+          .where(eq(workspaces.id, workspaceId))
+          .limit(1)
+          .then((rows: WorkspaceRow[]) => rows[0] ?? null);
+        const initiatorMembership = await tx
+          .select()
+          .from(workspaceMemberships)
+          .where(
+            and(
+              eq(workspaceMemberships.id, input.initiatedByMembershipId),
+              eq(workspaceMemberships.workspaceId, workspaceId),
+            ),
+          )
+          .limit(1)
+          .then((rows: MembershipRow[]) => rows[0] ?? null);
 
         if (!workspaceRow || !initiatorMembership) {
           return null;
         }
 
-        const [templateRows, membershipRows, documentSnapshots] = await Promise.all([
+        const templateRows =
           input.artifactTemplateIds.length > 0
-            ? tx
+            ? await tx
                 .select()
                 .from(templates)
                 .where(
@@ -1721,13 +1708,16 @@ export function createPostgresWorkspaceSessionSource(
                     inArray(templates.id, input.artifactTemplateIds),
                   ),
                 )
-            : Promise.resolve([] as TemplateRow[]),
-          tx
-            .select()
-            .from(workspaceMemberships)
-            .where(eq(workspaceMemberships.workspaceId, workspaceId)),
-          loadPublishDocumentSnapshots(tx, workspaceId, input.artifactDocumentIds),
-        ]);
+            : ([] as TemplateRow[]);
+        const membershipRows = await tx
+          .select()
+          .from(workspaceMemberships)
+          .where(eq(workspaceMemberships.workspaceId, workspaceId));
+        const documentSnapshots = await loadPublishDocumentSnapshots(
+          tx,
+          workspaceId,
+          input.artifactDocumentIds,
+        );
 
         if (templateRows.length === 0 && documentSnapshots.length === 0) {
           return null;
@@ -1874,25 +1864,23 @@ export function createPostgresWorkspaceSessionSource(
     },
     async executePublishRecord(workspaceId, publishRecordId, input) {
       const executionMeta = await db.transaction(async (tx) => {
-        const [workspaceRow, initiatorMembership] = await Promise.all([
-          tx
-            .select()
-            .from(workspaces)
-            .where(eq(workspaces.id, workspaceId))
-            .limit(1)
-            .then((rows: WorkspaceRow[]) => rows[0] ?? null),
-          tx
-            .select()
-            .from(workspaceMemberships)
-            .where(
-              and(
-                eq(workspaceMemberships.id, input.initiatedByMembershipId),
-                eq(workspaceMemberships.workspaceId, workspaceId),
-              ),
-            )
-            .limit(1)
-            .then((rows: MembershipRow[]) => rows[0] ?? null),
-        ]);
+        const workspaceRow = await tx
+          .select()
+          .from(workspaces)
+          .where(eq(workspaces.id, workspaceId))
+          .limit(1)
+          .then((rows: WorkspaceRow[]) => rows[0] ?? null);
+        const initiatorMembership = await tx
+          .select()
+          .from(workspaceMemberships)
+          .where(
+            and(
+              eq(workspaceMemberships.id, input.initiatedByMembershipId),
+              eq(workspaceMemberships.workspaceId, workspaceId),
+            ),
+          )
+          .limit(1)
+          .then((rows: MembershipRow[]) => rows[0] ?? null);
 
         if (!workspaceRow || !initiatorMembership) {
           return null;

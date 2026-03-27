@@ -1,5 +1,7 @@
 # 패키지 구성
 
+현재 구현 상태와 검증 범위는 [구현 현황](/reference/implementation-status) 문서에서 확인할 수 있습니다.
+
 ## 모노레포 패키지
 
 ### `apps/desktop`

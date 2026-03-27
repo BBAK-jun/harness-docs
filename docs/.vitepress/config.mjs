@@ -25,6 +25,7 @@ export default defineConfig({
       {
         text: "레퍼런스",
         items: [
+          { text: "구현 현황", link: "/reference/implementation-status" },
           { text: "패키지 구성", link: "/reference/packages" },
           { text: "문서 타입", link: "/reference/document-types" },
           { text: "원문 사양", link: "/reference/spec-sources" }
