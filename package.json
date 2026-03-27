@@ -1,0 +1,14 @@
+{
+  "name": "harness-docs-monorepo",
+  "private": true,
+  "packageManager": "pnpm@10.25.0",
+  "scripts": {
+    "dev:desktop": "pnpm --filter @harness-docs/desktop dev",
+    "build:desktop": "pnpm --filter @harness-docs/desktop build",
+    "tauri:build": "pnpm --filter @harness-docs/desktop tauri build --debug",
+    "dev:api": "pnpm --filter @harness-docs/api dev",
+    "start:api": "pnpm --filter @harness-docs/api start",
+    "check:api": "pnpm --filter @harness-docs/api build",
+    "build": "pnpm build:desktop && pnpm check:api"
+  }
+}

@@ -1,0 +1,182 @@
+goal: >-
+  Build the v1 Tauri desktop foundation for Harness Docs, a desktop
+  document-harness application for small cross-functional product teams that
+  manages structured role-specific product documents, AI-assisted drafting,
+  app-native approvals, and GitHub publication through a dedicated documentation
+  repository.
+task_type: code
+brownfield_context:
+  project_type: brownfield
+  context_references:
+    - path: /Users/sondi/Documents/github/projects/harness-docs
+      role: primary
+      summary: Primary Tauri application workspace for the Harness Docs desktop app.
+    - path: /Users/sondi/Documents/github/projects/docs
+      role: reference
+      summary: Product PRD and refined product seed that define the app requirements.
+  existing_patterns: []
+  existing_dependencies: []
+constraints:
+  - Build inside this harness-docs project directory
+  - Desktop shell must use Tauri v2
+  - Desktop UI must use React + TypeScript + Vite
+  - Node.js and pnpm are available locally
+  - Rust toolchain is required for Tauri and may need installation before execution
+  - GitHub OAuth remains the only login mechanism for v1
+  - Workspace source of truth lives in the app, not in GitHub
+  - One workspace maps to one dedicated GitHub documentation repository
+  - A user may belong to multiple workspaces
+  - GitHub is the only version-control integration in v1
+  - Publish flow must automate branch creation, commit creation, and PR creation
+  - Separate role-specific documents are required; no single canonical doc with role overlays
+  - First-class document types in v1 are PRD, UX Flow, Technical Spec, and Policy/Decision
+  - System-provided templates must exist for first-class docs
+  - Teams may customize templates, and template changes must also be versioned and published
+  - Markdown source editing with preview is the default editor model
+  - Real-time simultaneous co-editing is out of scope for v1
+  - Editing requires an explicit lock via Start Editing
+  - Lock auto-release occurs after 30 minutes of inactivity
+  - Paragraph- or block-level comments and mentions are required
+  - Notifications are in-app plus outbound webhook notifications only
+  - Linked document changes must create review requests and notifications
+  - Approval authority is app-native and restored by a lead-level decision-maker
+  - GitHub collaborators or teams may be imported as initial approval candidates only
+  - Stale vs current status is evaluated at publish time, not on every edit
+  - Stale publish must remain allowed and must not hard-block users
+  - Stale publish must require rationale and record unresolved invalidations or approvals
+  - AI harness must support both Codex and Claude in v1
+  - User selects Codex or Claude per AI task
+  - AI UX is action-button first with optional free-form chat
+  - AI may only search internal workspace documents in v1
+  - AI may draft document content, document links, approver suggestions, and publish memo text
+acceptance_criteria:
+  - A Tauri v2 app is scaffolded in this project and launches successfully
+  - The desktop UI is implemented with React + TypeScript + Vite
+  - The app contains a foundation information architecture for workspace selection, document list, document editor, comments, approvals, publish flow, and AI task entry points
+  - Markdown source editing plus preview is wired into the primary editor screen
+  - The codebase contains domain models for workspace, membership, document, template, lock, comment, approval, stale status, publish record, and AI draft suggestions
+  - The app includes explicit Start Editing lock UX and 30-minute idle-release handling in its client state or service layer
+  - The app includes block-comment and mention primitives in the UI or state model
+  - The app includes provider-selection UX for Codex vs Claude
+  - The app includes a publish flow model that captures stale rationale and unresolved approvals before GitHub publication
+  - The project is structured so a later backend/service implementation can attach GitHub OAuth, workspace membership, approvals, and PR publishing without rewriting the desktop shell
+ontology_schema:
+  name: HarnessDocsDesktopFoundation
+  description: >-
+    A domain model for the Tauri-based desktop foundation of Harness Docs,
+    including document, approval, lock, publish, and AI-assistance concepts.
+  fields:
+    - name: workspace_id
+      type: string
+      description: Unique identifier for a workspace
+      required: true
+    - name: member_id
+      type: string
+      description: Unique identifier for a workspace member
+      required: true
+    - name: auth_identity
+      type: object
+      description: GitHub OAuth identity metadata for a signed-in user
+      required: true
+    - name: app_session
+      type: object
+      description: App-managed desktop session state
+      required: true
+    - name: document_id
+      type: string
+      description: Unique identifier for a document
+      required: true
+    - name: document_type
+      type: string
+      description: PRD UX Flow Technical Spec or Policy Decision
+      required: true
+    - name: template_id
+      type: string
+      description: Template definition applied to the document
+      required: true
+    - name: content_markdown
+      type: string
+      description: Markdown source for the document
+      required: true
+    - name: preview_state
+      type: object
+      description: Derived preview state for rendered Markdown
+      required: true
+    - name: link_edges
+      type: array
+      description: Traceable document relationships including invalidation semantics
+      required: true
+    - name: lock_state
+      type: object
+      description: Edit lock holder and expiry metadata
+      required: true
+    - name: comment_threads
+      type: array
+      description: Block-level comments and mentions
+      required: true
+    - name: approval_status
+      type: string
+      description: Current approval state inside the app
+      required: true
+    - name: stale_status
+      type: string
+      description: Current-or-stale state evaluated for publish
+      required: true
+    - name: publish_record
+      type: object
+      description: Branch commit PR rationale and unresolved-state record
+      required: true
+    - name: ai_provider
+      type: string
+      description: Selected AI provider for a user task, Codex or Claude
+      required: true
+    - name: ai_draft
+      type: object
+      description: AI-generated document and governance draft suggestions
+      required: true
+evaluation_principles:
+  - name: desktop_foundation_quality
+    description: >-
+      The project should establish a clean Tauri + React foundation that can
+      absorb later service integrations without major rewrites.
+    weight: 0.22
+  - name: structure_and_traceability
+    description: >-
+      The domain model and UI structure should preserve the product's document
+      structure and invalidation relationships.
+    weight: 0.22
+  - name: governance_visibility
+    description: >-
+      Approval, stale state, and publish rationale should be represented clearly
+      in the client foundation.
+    weight: 0.18
+  - name: markdown_workflow_fidelity
+    description: >-
+      Markdown editing and preview should feel like a first-class workflow from
+      the start.
+    weight: 0.18
+  - name: ai_harness_extensibility
+    description: >-
+      The architecture should leave clear extension points for Codex and Claude
+      task execution.
+    weight: 0.2
+exit_conditions:
+  - name: tauri_stack_defined
+    description: Desktop stack is concretely established
+    criteria: Tauri v2 React TypeScript Vite foundation exists and launches
+  - name: product_domain_mapped
+    description: Core product domain is encoded in app models and information architecture
+    criteria: workspace document template lock comment approval stale publish and ai entities exist
+  - name: editor_flow_defined
+    description: Markdown editing and lock-based authoring flow is implemented at foundation level
+    criteria: source-plus-preview editor and Start Editing lock UX exist
+  - name: publish_flow_defined
+    description: Publish-state and GitHub publication model is represented in the client
+    criteria: stale rationale unresolved approval and PR publication concepts are visible in the app
+metadata:
+  seed_id: seed_harness_docs_tauri_foundation_v1
+  version: 1.0.1
+  created_at: '2026-03-27T08:35:00+09:00'
+  ambiguity_score: 0.12
+  interview_id: interview_20260326_222352
+  parent_seed_id: seed_product_doc_harness_v2

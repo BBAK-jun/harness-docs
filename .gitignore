@@ -1,0 +1,8 @@
+**/.omx/
+**/.pnpm-store/
+path/
+.DS_Store
+**/.vite/
+**/node_modules/
+**/dist/
+**/target/

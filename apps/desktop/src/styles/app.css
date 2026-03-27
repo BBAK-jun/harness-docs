@@ -1,0 +1,560 @@
+@import "tailwindcss";
+
+:root {
+  color-scheme: dark;
+  color: #e5eef7;
+  font-family:
+    "Avenir Next", "SF Pro Display", "IBM Plex Sans", "Segoe UI", sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  min-height: 100%;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+  background: #020617;
+}
+
+button,
+textarea,
+input {
+  font: inherit;
+}
+
+#root {
+  min-height: 100vh;
+}
+
+.shell,
+.empty-state,
+.document-library,
+.document-queue,
+.document-detail-card,
+.document-queue-card,
+.linked-document-stack,
+.editor-shell,
+.editor-sidebar,
+.editor-main,
+.document-workspace-overview,
+.selected-document-grid,
+.document-side-rail,
+.comment-thread-list,
+.approval-card-list,
+.approval-candidate-list,
+.publish-workspace,
+.publish-layout,
+.publish-main,
+.publish-stage-list,
+.publish-artifact-list,
+.ai-workspace,
+.ai-workspace-grid,
+.ai-entry-list,
+.ai-suggestion-list,
+.publish-freshness-grid,
+.publish-approval-grid,
+.publish-memo-grid,
+.publish-github-grid,
+.editor-workspace,
+.editor-pane,
+.editor-meta-grid,
+.publish-guidance-list {
+  display: grid;
+  gap: 1.25rem;
+}
+
+.eyebrow {
+  margin: 0;
+  color: #f8d27a;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  font-size: 0.72rem;
+  font-weight: 600;
+}
+
+h1,
+h2,
+h3,
+p,
+ul {
+  margin: 0;
+}
+
+h3 {
+  font-size: 1.3rem;
+  line-height: 1.2;
+}
+
+.muted {
+  color: rgba(203, 213, 225, 0.76);
+}
+
+.workspace-overview,
+.detail-grid,
+.empty-state-grid,
+.document-library-header,
+.document-library-grid,
+.document-context-grid,
+.document-link-grid {
+  display: grid;
+  gap: 1rem;
+}
+
+.workspace-card,
+.nav-pill,
+.primary-button,
+.ghost-button,
+.editor-document-card,
+.document-row,
+.linked-document,
+.publish-stage-card {
+  cursor: pointer;
+  border: 0;
+  transition:
+    transform 160ms ease,
+    background 160ms ease,
+    border-color 160ms ease,
+    box-shadow 160ms ease;
+}
+
+.workspace-card:hover,
+.nav-pill:hover,
+.primary-button:hover,
+.ghost-button:hover,
+.editor-document-card:hover,
+.document-row:hover,
+.linked-document:hover,
+.publish-stage-card:hover {
+  transform: translateY(-1px);
+}
+
+.hero-card,
+.status-card,
+.detail-card,
+.document-queue-card,
+.document-detail-card,
+.editor-sidebar,
+.editor-header-card,
+.editor-pane {
+  padding: 1.5rem;
+  border-radius: 1.75rem;
+  background: rgba(15, 23, 42, 0.62);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 24px 80px -52px rgba(15, 23, 42, 0.95);
+  backdrop-filter: blur(18px);
+}
+
+.workspace-overview,
+.detail-grid,
+.empty-state-grid,
+.document-library-header,
+.document-context-grid,
+.document-link-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.ghost-button,
+.nav-pill {
+  padding: 0.7rem 1rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.04);
+  color: #dbe4ef;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.primary-button {
+  width: fit-content;
+  padding: 0.82rem 1.15rem;
+  border-radius: 1rem;
+  background: linear-gradient(135deg, #fde68a, #fbbf24);
+  color: #0f172a;
+  font-weight: 700;
+  box-shadow: 0 24px 50px -30px rgba(251, 191, 36, 0.85);
+}
+
+.primary-button.is-active {
+  background: rgba(253, 230, 138, 0.12);
+  color: #fef3c7;
+  border: 1px solid rgba(253, 230, 138, 0.3);
+  box-shadow: none;
+}
+
+.primary-button:disabled,
+.ghost-button:disabled,
+.editor-document-card:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+  transform: none;
+}
+
+.stat-list,
+.highlight-list,
+.note-stack,
+.settings-panel,
+.provider-option-list,
+.provider-option-copy,
+.settings-fieldset {
+  display: grid;
+  gap: 0.9rem;
+}
+
+.stat-list,
+.highlight-list {
+  padding: 0;
+  list-style: none;
+}
+
+.stat-list li,
+.highlight-list li {
+  display: grid;
+  gap: 0.2rem;
+}
+
+.stat-list strong {
+  font-size: 1.8rem;
+  color: #f8fafc;
+}
+
+.document-library-grid {
+  grid-template-columns: minmax(20rem, 25rem) minmax(0, 1fr);
+  align-items: start;
+}
+
+.document-summary-strip,
+.document-panel-header,
+.document-row-topline,
+.document-row-meta,
+.document-detail-meta,
+.document-detail-breadcrumb {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.document-panel-header,
+.document-summary-strip {
+  justify-content: space-between;
+}
+
+.document-summary-strip div {
+  min-width: 8rem;
+  padding: 1rem;
+  border-radius: 1.25rem;
+  background: rgba(2, 6, 23, 0.56);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  display: grid;
+  gap: 0.25rem;
+}
+
+.document-summary-strip strong {
+  font-size: 1.5rem;
+  color: #f8fafc;
+}
+
+.document-row,
+.linked-document,
+.workspace-card,
+.editor-document-card,
+.publish-stage-card,
+.ai-entry-card,
+.publish-artifact-card,
+.comment-thread-card,
+.approval-card {
+  display: grid;
+  gap: 0.8rem;
+  width: 100%;
+  padding: 1rem;
+  border-radius: 1.35rem;
+  text-align: left;
+  color: inherit;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.document-row.active,
+.linked-document.attention,
+.linked-document.attention:hover,
+.workspace-card.active,
+.editor-document-card.active,
+.publish-stage-card.active {
+  border-color: rgba(253, 230, 138, 0.26);
+  background: rgba(253, 230, 138, 0.1);
+  box-shadow: 0 24px 60px -42px rgba(251, 191, 36, 0.75);
+}
+
+.document-row-copy,
+.document-row-meta,
+.linked-document {
+  color: rgba(203, 213, 225, 0.78);
+}
+
+.document-row-copy {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.document-type-chip,
+.detail-pill,
+.queue-chip,
+.staleness-pill,
+.publish-stage-status,
+.repo-chip,
+.role-pill {
+  padding: 0.34rem 0.72rem;
+  border-radius: 999px;
+  font-size: 0.78rem;
+}
+
+.document-type-chip,
+.queue-chip,
+.publish-stage-status.is-ready,
+.repo-chip {
+  background: rgba(56, 189, 248, 0.16);
+  color: #c7f0ff;
+}
+
+.detail-pill,
+.role-pill,
+.publish-stage-status.is-pending,
+.muted-chip {
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(226, 232, 240, 0.85);
+}
+
+.staleness-pill.current,
+.publish-stage-status.is-complete {
+  background: rgba(52, 211, 153, 0.16);
+  color: #c6f6df;
+}
+
+.staleness-pill.stale,
+.publish-stage-status.is-attention {
+  background: rgba(251, 146, 60, 0.16);
+  color: #fed7aa;
+}
+
+.document-detail-breadcrumb,
+.document-row-meta {
+  font-size: 0.88rem;
+}
+
+.editor-shell {
+  grid-template-columns: 18rem minmax(0, 1fr);
+  align-items: start;
+}
+
+.editor-sidebar-header,
+.editor-document-list,
+.editor-badges,
+.editor-lock-banner,
+.editor-lock-copy,
+.editor-lock-actions,
+.editor-pane-header,
+.editor-preview-surface {
+  display: grid;
+  gap: 0.9rem;
+}
+
+.editor-document-type {
+  color: #fcd34d;
+  font-size: 0.78rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.editor-header-card,
+.editor-pane-header {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.editor-lock-banner {
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  padding: 1rem;
+  border-radius: 1.25rem;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.editor-lock-banner.is-released {
+  background: rgba(251, 146, 60, 0.14);
+  border-color: rgba(251, 146, 60, 0.34);
+}
+
+.editor-lock-copy strong {
+  font-size: 1rem;
+}
+
+.editor-lock-actions {
+  justify-items: stretch;
+}
+
+.editor-workspace,
+.editor-meta-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.document-workspace-overview {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.selected-document-grid {
+  grid-template-columns: minmax(0, 1.6fr) minmax(22rem, 0.95fr);
+  align-items: start;
+}
+
+.document-region {
+  border-color: rgba(255, 255, 255, 0.06);
+}
+
+.region-focused {
+  border-color: rgba(253, 230, 138, 0.24);
+  box-shadow: 0 0 0 1px rgba(253, 230, 138, 0.12);
+}
+
+.editor-subpane {
+  padding: 0;
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+}
+
+.markdown-editor,
+.editor-preview-surface,
+.comment-composer-input {
+  min-height: 28rem;
+  border-radius: 1.25rem;
+  background: rgba(2, 6, 23, 0.78);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: inherit;
+}
+
+.markdown-editor {
+  width: 100%;
+  resize: vertical;
+  padding: 1rem;
+  font: 0.95rem/1.6 "JetBrains Mono", "SFMono-Regular", "SF Mono", "Consolas", monospace;
+}
+
+.markdown-editor.is-readonly {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.markdown-editor.is-readonly:focus {
+  outline: none;
+}
+
+.editor-preview-surface {
+  overflow: auto;
+  padding: 1rem 1.1rem;
+}
+
+.publish-header {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: minmax(0, 1.5fr) minmax(18rem, 0.75fr);
+}
+
+.publish-layout {
+  grid-template-columns: 18rem minmax(0, 1fr);
+  align-items: start;
+}
+
+.publish-stage-rail,
+.publish-stage-detail,
+.publish-artifact-card,
+.comment-composer {
+  display: grid;
+  gap: 1rem;
+}
+
+.publish-guidance-list {
+  gap: 0.75rem;
+}
+
+.publish-artifact-list,
+.publish-freshness-grid,
+.publish-approval-grid,
+.publish-memo-grid,
+.publish-github-grid,
+.ai-workspace-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.publish-github-grid .approval-card:first-child {
+  grid-column: 1 / -1;
+}
+
+.comment-composer {
+  padding: 1rem;
+  border-radius: 1.25rem;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.comment-composer-input {
+  width: 100%;
+  min-height: 6.5rem;
+  resize: vertical;
+  padding: 0.9rem 1rem;
+}
+
+.approval-candidate {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.editor-empty-state {
+  grid-template-columns: 1fr;
+}
+
+@media (max-width: 960px) {
+  .workspace-overview,
+  .detail-grid,
+  .empty-state-grid,
+  .document-library-header,
+  .document-library-grid,
+  .document-context-grid,
+  .document-link-grid,
+  .document-workspace-overview,
+  .selected-document-grid,
+  .editor-shell,
+  .editor-workspace,
+  .editor-meta-grid,
+  .publish-header,
+  .publish-layout,
+  .ai-workspace-grid,
+  .publish-artifact-list,
+  .publish-freshness-grid,
+  .publish-approval-grid,
+  .publish-memo-grid,
+  .publish-github-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .editor-lock-banner {
+    grid-template-columns: 1fr;
+  }
+}

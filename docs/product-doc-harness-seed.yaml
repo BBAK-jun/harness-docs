@@ -1,0 +1,210 @@
+goal: >-
+  Build a desktop document-harness application for small cross-functional product
+  teams that manages structured role-specific product documents, AI-assisted
+  drafting, app-native approvals, and GitHub publication through a dedicated
+  documentation repository.
+task_type: code
+brownfield_context:
+  project_type: greenfield
+  context_references: []
+  existing_patterns: []
+  existing_dependencies: []
+constraints:
+  - Desktop app with primary UX for non-developers
+  - Desktop shell must use Tauri v2
+  - Desktop UI should use React + TypeScript + Vite in v1
+  - Cloud-hosted workspaces with GitHub OAuth as the only login mechanism in v1
+  - Workspace source of truth lives in the app, not in GitHub
+  - One workspace maps to one dedicated GitHub documentation repository
+  - A user may belong to multiple workspaces
+  - GitHub is the only version-control integration in v1
+  - Publish flow must automate branch creation, commit creation, and PR creation
+  - Separate role-specific documents are required; no single canonical doc with role overlays
+  - First-class document types in v1 are PRD, UX Flow, Technical Spec, and Policy/Decision
+  - External design tools such as Figma are reference-only artifacts
+  - System-provided templates must exist for first-class docs
+  - Teams may customize templates, and template changes must also be versioned and published
+  - Markdown source editing with preview is the default editor model
+  - Real-time simultaneous co-editing is out of scope for v1
+  - Editing requires an explicit lock via Start Editing
+  - Lock auto-release occurs after 30 minutes of inactivity
+  - Paragraph- or block-level comments and mentions are required
+  - Notifications are in-app plus outbound webhook notifications only
+  - Linked document changes must create review requests and notifications
+  - Approval authority is app-native and restored by a lead-level decision-maker
+  - GitHub collaborators or teams may be imported as initial approval candidates only
+  - Stale vs current status is evaluated at publish time, not on every edit
+  - Stale publish must remain allowed and must not hard-block users
+  - Stale publish must require rationale and record unresolved invalidations or approvals
+  - AI harness must support both Codex and Claude in v1
+  - User selects Codex or Claude per AI task
+  - AI UX is action-button first with optional free-form chat
+  - AI may only search internal workspace documents in v1
+  - AI may draft document content, document links, approver suggestions, and publish memo text
+acceptance_criteria:
+  - A Tauri desktop app foundation exists for the product and renders a React + TypeScript UI
+  - Workspace members can sign in through GitHub OAuth and participate in multiple workspaces
+  - After GitHub OAuth completes, the desktop app establishes a persistent app session and loads active workspace memberships
+  - A GitHub-authenticated user can enter any workspace where they are an active app-managed member without manual token handling
+  - A GitHub-authenticated user with no workspace memberships is guided into workspace creation or invitation acceptance
+  - Each workspace can connect to exactly one dedicated GitHub documentation repository
+  - Users can create PRD, UX Flow, Technical Spec, and Policy/Decision documents from system templates
+  - Teams can edit system templates and publish template changes through the same publication pipeline as documents
+  - Users can open Markdown documents with source editing and preview in the desktop app
+  - A user must click Start Editing to acquire a document lock
+  - While a lock is active, other users cannot edit the same document
+  - The app shows the lock holder and releases the lock after 30 minutes of inactivity
+  - Users can create paragraph- or block-level comments and mentions on documents
+  - Linked document changes trigger review requests and notifications to affected users
+  - The app imports GitHub collaborators or teams as suggested approvers for setup flows
+  - A downstream document becomes current again only after app-native approval by a lead-level decision-maker
+  - The app computes stale vs current state during publish based on invalidations and unresolved approvals
+  - The app visibly marks stale state but does not hard-block publication
+  - Publishing a stale document requires explicit rationale and stores unresolved invalidations or missing approvals
+  - Publishing to GitHub automatically creates a branch, a commit, and a pull request
+  - Users can choose Codex or Claude for AI-assisted tasks from the primary UI
+  - AI can interview users, search internal workspace documents, and draft content, links, approvers, and publish memo suggestions
+ontology_schema:
+  name: ProductDocHarness
+  description: >-
+    A domain model for an AI-assisted desktop documentation system with
+    workspace-owned documents, app-native governance, document locks, structured
+    templates, and GitHub publication.
+  fields:
+    - name: workspace_id
+      type: string
+      description: Unique identifier for a workspace
+      required: true
+    - name: workspace_settings
+      type: object
+      description: Workspace-owned settings including a single optional connected GitHub documentation repository reference
+      required: true
+    - name: member_id
+      type: string
+      description: Unique identifier for a workspace member
+      required: true
+    - name: auth_identity
+      type: object
+      description: GitHub OAuth identity metadata used to authenticate the user into the app
+      required: true
+    - name: app_session
+      type: object
+      description: Persistent app-managed desktop session established after GitHub OAuth
+      required: true
+    - name: membership_state
+      type: string
+      description: Whether the authenticated user is active invited removed or has no workspace membership
+      required: true
+    - name: approver_candidate_source
+      type: array
+      description: GitHub teams or collaborators imported as initial approval candidates
+      required: true
+    - name: document_id
+      type: string
+      description: Unique identifier for a document
+      required: true
+    - name: document_type
+      type: string
+      description: PRD UX Flow Technical Spec or Policy Decision
+      required: true
+    - name: template_id
+      type: string
+      description: System or team-customized template used to create a document
+      required: true
+    - name: template_version
+      type: string
+      description: Version identifier for the template definition
+      required: true
+    - name: content_markdown
+      type: string
+      description: Markdown source for the document
+      required: true
+    - name: link_edges
+      type: array
+      description: Traceable document relationships including invalidation semantics
+      required: true
+    - name: lock_state
+      type: object
+      description: Current edit lock holder and inactivity-expiration metadata
+      required: true
+    - name: comment_threads
+      type: array
+      description: Paragraph- or block-level comments and mentions
+      required: true
+    - name: approval_rule
+      type: object
+      description: App-native rule for who may restore current status
+      required: true
+    - name: approval_status
+      type: string
+      description: Current approval state inside the app
+      required: true
+    - name: stale_status
+      type: string
+      description: Current-or-stale state evaluated for publish
+      required: true
+    - name: notification_targets
+      type: array
+      description: In-app and webhook destinations for review and mention events
+      required: true
+    - name: publish_record
+      type: object
+      description: Branch commit pull request rationale and unresolved-state record
+      required: true
+    - name: ai_draft
+      type: object
+      description: Draft content and governance suggestions produced by Codex or Claude
+      required: true
+    - name: external_references
+      type: array
+      description: Non-first-class links such as Figma references
+      required: true
+evaluation_principles:
+  - name: cross_functional_usability
+    description: >-
+      The product must remain easy to use for PMs designers developers and leads
+      without requiring developer-native tooling knowledge.
+    weight: 0.2
+  - name: structure_and_traceability
+    description: >-
+      Structured templates and document links must preserve clear lineage between
+      requirements UX flows technical specs and decisions.
+    weight: 0.22
+  - name: governance_without_hard_blocking
+    description: >-
+      The product must make stale state approvals and risks explicit while still
+      allowing teams to publish intentionally.
+    weight: 0.2
+  - name: markdown_and_publish_fidelity
+    description: >-
+      Markdown editing export quality and GitHub PR publication must be reliable
+      and understandable.
+    weight: 0.18
+  - name: ai_harness_effectiveness
+    description: >-
+      AI assistance must help users interview explore existing docs and propose
+      useful structured drafts without overreaching beyond internal documents.
+    weight: 0.2
+exit_conditions:
+  - name: workspace_model_defined
+    description: Identity workspace and repository ownership model are fixed
+    criteria: GitHub OAuth app-managed desktop session cloud workspace one repo per workspace multi-workspace users
+  - name: document_model_defined
+    description: First-class documents templates and invalidation rules are fully specified
+    criteria: PRD UX Flow Technical Spec Policy Decision plus template customization and link rules
+  - name: editing_model_defined
+    description: Editing collaboration and comment behavior are fully specified
+    criteria: Markdown editor preview lock-based editing 30-minute idle unlock block comments and mentions
+  - name: publish_governance_defined
+    description: Publish and stale governance are fully specified
+    criteria: App-native approvals stale warning rationale capture and automated GitHub branch commit PR flow
+  - name: ai_harness_defined
+    description: AI provider and AI task boundaries are fully specified
+    criteria: User chooses Codex or Claude and AI may interview search internal docs and draft structured suggestions
+metadata:
+  seed_id: seed_product_doc_harness_v2
+  version: 1.2.0
+  created_at: '2026-03-26T23:22:57Z'
+  ambiguity_score: 0.19
+  interview_id: interview_20260326_222352
+  parent_seed_id: seed_293e399a510e
