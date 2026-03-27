@@ -3,16 +3,20 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-xl text-sm font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-200/70 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
+  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-[calc(var(--radius)-0.25rem)] text-sm font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--background)] disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
   {
     variants: {
       variant: {
         default:
-          "bg-amber-200 text-slate-950 shadow-[0_18px_50px_-24px_rgba(251,191,36,0.9)] hover:bg-amber-100",
-        secondary: "border border-white/10 bg-white/[0.08] text-slate-100 hover:bg-white/[0.12]",
-        ghost: "text-slate-300 hover:bg-white/[0.08] hover:text-white",
+          "bg-[var(--primary)] text-[var(--primary-foreground)] shadow-[0_18px_50px_-24px_rgba(180,83,9,0.48)] hover:brightness-105",
+        secondary:
+          "border border-[var(--border)] bg-[var(--secondary)] text-[var(--secondary-foreground)] hover:bg-[var(--card)]",
+        ghost:
+          "text-[var(--muted-foreground)] hover:bg-[var(--secondary)] hover:text-[var(--popover-foreground)]",
         outline:
-          "border border-white/[0.12] bg-slate-950/40 text-slate-100 hover:border-white/20 hover:bg-slate-900/70",
+          "border border-[var(--border)] bg-[var(--card)] text-[var(--foreground)] hover:border-[var(--app-border-strong)] hover:bg-[var(--secondary)]",
+        destructive:
+          "bg-[var(--destructive)] text-[var(--destructive-foreground)] shadow-[0_18px_50px_-24px_rgba(127,29,29,0.55)] hover:brightness-105",
       },
       size: {
         default: "h-10 px-4 py-2",

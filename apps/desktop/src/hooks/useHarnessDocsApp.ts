@@ -427,6 +427,16 @@ export function useHarnessDocsApp(
     writePreferencesMutation.mutate(nextPreferences);
   };
 
+  const handleAppearanceModeChange = (appearanceMode: AppPreferences["appearanceMode"]) => {
+    const nextPreferences = {
+      ...preferences,
+      appearanceMode,
+    };
+
+    setPreferences(nextPreferences);
+    writePreferencesMutation.mutate(nextPreferences);
+  };
+
   const handleLaunchAITaskEntryPoint = async (entry: AITaskEntryPoint) => {
     if (entry.documentId && activeWorkspaceGraph) {
       setSelectedDocumentIds((current) => ({
@@ -535,6 +545,7 @@ export function useHarnessDocsApp(
     activeWorkspace,
     activeWorkspaceGraph,
     activeArea: routeState.activeArea,
+    appearanceMode: preferences.appearanceMode,
     preferredAIProvider: preferences.preferredAIProvider,
     aiEntryPoints,
     aiTaskState,
@@ -544,6 +555,7 @@ export function useHarnessDocsApp(
     activeDocumentSource,
     activeDocumentLock,
     handlePreferredAIProviderChange,
+    handleAppearanceModeChange,
     handleSignIn,
     handleSignOut,
     handleWorkspaceEnter,

@@ -15,9 +15,11 @@ export type DesktopRuntime = "tauri" | "browser";
 export type VersionControlProvider = "github";
 export type AuthenticationProvider = "github_oauth";
 export type AuthenticationSessionStatus = "authenticated" | "signed_out";
+export type AppearanceMode = "dark" | "light";
 
 export interface AppPreferences {
   preferredAIProvider: AIProvider;
+  appearanceMode: AppearanceMode;
 }
 
 export interface AuthenticationProviderDescriptor {
