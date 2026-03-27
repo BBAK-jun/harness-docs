@@ -30,6 +30,7 @@ interface DocumentLibraryProps {
   aiEntryPoints: AITaskEntryPoint[];
   onLaunchAITaskEntryPoint: (entry: AITaskEntryPoint) => void;
   onDocumentSelect: (documentId: string) => void;
+  onOpenDocument: (documentId: string) => void;
 }
 
 function formatTimestamp(value: string | null | undefined) {
@@ -98,7 +99,8 @@ export function DocumentLibrary({
   activeDocument,
   aiEntryPoints,
   onLaunchAITaskEntryPoint,
-  onDocumentSelect
+  onDocumentSelect,
+  onOpenDocument
 }: DocumentLibraryProps) {
   const selectedDocument = activeDocument ?? workspaceGraph.documents[0] ?? null;
   const linkedDocuments = selectedDocument
@@ -240,7 +242,11 @@ export function DocumentLibrary({
               <p className="eyebrow">Selected Document</p>
               <h3>{selectedDocument.title}</h3>
             </div>
-            <button className="primary-button" type="button">
+            <button
+              className="primary-button"
+              onClick={() => onOpenDocument(selectedDocument.id)}
+              type="button"
+            >
               Open {selectedDocument.type}
             </button>
           </div>

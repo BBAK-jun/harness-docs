@@ -12,6 +12,8 @@
   },
   "dependencies": {
     "@harness-docs/contracts": "workspace:*",
+    "@tanstack/react-query": "^5.81.5",
+    "@tanstack/react-router": "^1.120.5",
     "@tauri-apps/api": "2.10.1",
     "@tauri-apps/plugin-opener": "2.5.3",
     "class-variance-authority": "^0.7.1",
@@ -23,6 +25,7 @@
   },
   "devDependencies": {
     "@tailwindcss/vite": "^4.2.2",
+    "@tanstack/router-plugin": "^1.167.8",
     "@tauri-apps/cli": "2.10.1",
     "@types/react": "18.3.18",
     "@types/react-dom": "18.3.5",

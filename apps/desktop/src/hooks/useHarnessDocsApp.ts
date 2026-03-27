@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { AITaskExecutionResult } from "../domain/aiTasks";
 import type { PublishExecutionResult } from "../domain/publishing";
 import { buildAITaskEntryPoints } from "../lib/aiTaskEntryPoints";
@@ -29,11 +30,10 @@ import { useDocumentEditingLocks } from "./useDocumentEditingLocks";
 
 const defaultArea: NavigationArea = "documents";
 
-interface HarnessDocsBootstrapState {
+interface HarnessDocsBootstrapData {
   desktopShell: DesktopShellMetadata | null;
   appSession: AppSessionSnapshot | null;
   preferences: AppPreferences;
-  isReady: boolean;
 }
 
 type AsyncTaskState<TResult> = {
@@ -86,80 +86,132 @@ function buildSelectedDocumentMap(snapshot: WorkspaceSessionSnapshot) {
   );
 }
 
-export function useHarnessDocsApp() {
+interface HarnessDocsAppRouteState {
+  activeWorkspaceId: string | null;
+  activeArea: NavigationArea;
+  selectedDocumentId: string | null;
+}
+
+interface HarnessDocsAppNavigation {
+  onAreaChange: (area: NavigationArea) => void;
+  onSelectedDocumentChange: (documentId: string) => void;
+  onWorkspaceEnter: (workspaceId: string) => void;
+  onWorkspaceLeave: () => void;
+}
+
+async function loadBootstrapState(
+  services: ReturnType<typeof useHarnessDocsServices>
+): Promise<HarnessDocsBootstrapData> {
+  const [desktopShell, appSession, preferences] = await Promise.all([
+    services.desktopShell.getMetadata(),
+    services.appSession.getSnapshot(),
+    services.preferences.read()
+  ]);
+
+  return {
+    desktopShell,
+    appSession,
+    preferences
+  };
+}
+
+export function useHarnessDocsApp(
+  routeState: HarnessDocsAppRouteState,
+  navigation: HarnessDocsAppNavigation
+) {
   const services = useHarnessDocsServices();
-  const [bootstrap, setBootstrap] = useState<HarnessDocsBootstrapState>({
-    desktopShell: null,
-    appSession: null,
-    preferences: fallbackAppPreferences,
-    isReady: false
+  const queryClient = useQueryClient();
+  const bootstrapQuery = useQuery({
+    queryKey: ["desktop-bootstrap"],
+    queryFn: () => loadBootstrapState(services)
   });
-  const [activeWorkspaceId, setActiveWorkspaceId] = useState<string | null>(null);
-  const [activeArea, setActiveArea] = useState<NavigationArea>(defaultArea);
+  const [preferences, setPreferences] = useState<AppPreferences>(fallbackAppPreferences);
   const [selectedDocumentIds, setSelectedDocumentIds] = useState<Record<string, string>>({});
   const [documentDrafts, setDocumentDrafts] = useState<Record<string, string>>({});
-  const [aiTaskState, setAITaskState] = useState<AsyncTaskState<AITaskExecutionResult>>({
-    status: "idle",
-    error: null,
-    result: null,
-    entryId: null
-  });
-  const [publishState, setPublishState] = useState<AsyncTaskState<PublishExecutionResult>>({
-    status: "idle",
-    error: null,
-    result: null
-  });
   const lastInteractionTouchMsRef = useRef(0);
 
-  const loadBootstrapState = async (preserveWorkspaceSelection = false) => {
-    const [desktopShell, appSession, preferences] = await Promise.all([
-      services.desktopShell.getMetadata(),
-      services.appSession.getSnapshot(),
-      services.preferences.read()
-    ]);
-
-    setBootstrap({
-      desktopShell,
-      appSession,
-      preferences,
-      isReady: true
-    });
-
-    if (appSession.workspace) {
-      setSelectedDocumentIds(buildSelectedDocumentMap(appSession.workspace));
-      setActiveWorkspaceId((current) =>
-        preserveWorkspaceSelection && current ? current : appSession.workspace.lastActiveWorkspaceId
-      );
-    } else {
-      setSelectedDocumentIds({});
-      setActiveWorkspaceId(null);
-    }
-  };
-
   useEffect(() => {
-    let isMounted = true;
-
-    void loadBootstrapState().then(() => {
-      if (!isMounted) {
-        return;
-      }
-    });
-
-    return () => {
-      isMounted = false;
-    };
-  }, [services]);
-
-  useEffect(() => {
-    if (!bootstrap.isReady) {
+    if (!bootstrapQuery.data) {
       return;
     }
 
-    void services.preferences.write(bootstrap.preferences);
-  }, [bootstrap.isReady, bootstrap.preferences, services]);
+    setPreferences(bootstrapQuery.data.preferences);
+  }, [bootstrapQuery.data]);
 
-  const authentication = bootstrap.appSession?.authentication ?? null;
-  const session = bootstrap.appSession?.workspace ?? null;
+  useEffect(() => {
+    const workspaceSession = bootstrapQuery.data?.appSession?.workspace;
+
+    if (!workspaceSession) {
+      setSelectedDocumentIds({});
+      return;
+    }
+
+    setSelectedDocumentIds(buildSelectedDocumentMap(workspaceSession));
+  }, [bootstrapQuery.data?.appSession?.workspace]);
+
+  const writePreferencesMutation = useMutation({
+    mutationFn: async (nextPreferences: AppPreferences) => {
+      await services.preferences.write(nextPreferences);
+    }
+  });
+
+  const authenticationMutation = useMutation({
+    mutationFn: async (
+      action:
+        | {
+            type: "sign-in";
+            provider: AuthenticationSessionSnapshot["provider"]["id"];
+          }
+        | { type: "sign-out" }
+    ) => {
+      if (action.type === "sign-in") {
+        await services.authentication.startSignIn(action.provider);
+      } else {
+        await services.authentication.signOut();
+      }
+
+      const nextBootstrap = await loadBootstrapState(services);
+      queryClient.setQueryData(["desktop-bootstrap"], nextBootstrap);
+
+      return nextBootstrap;
+    }
+  });
+
+  const aiTaskMutation = useMutation({
+    mutationFn: async ({
+      entry,
+      workspaceGraph,
+      drafts
+    }: {
+      entry: AITaskEntryPoint;
+      workspaceGraph: WorkspaceGraph;
+      drafts: Record<string, string>;
+    }) => services.aiTasks.runEntryPoint(buildAITaskExecutionInput(entry, workspaceGraph, drafts))
+  });
+
+  const publishMutation = useMutation({
+    mutationFn: async ({
+      workspaceGraph,
+      drafts,
+      membershipId
+    }: {
+      workspaceGraph: WorkspaceGraph;
+      drafts: Record<string, string>;
+      membershipId: string | null;
+    }) => {
+      const input = buildPublishExecutionInput(workspaceGraph, drafts, membershipId);
+
+      if (!input) {
+        throw new Error("No publish record is available for the active workspace.");
+      }
+
+      return services.publishing.executePublish(input);
+    }
+  });
+
+  const isReady = bootstrapQuery.isSuccess;
+  const authentication = bootstrapQuery.data?.appSession?.authentication ?? null;
+  const session = bootstrapQuery.data?.appSession?.workspace ?? null;
   const workspaces = session?.workspaces ?? [];
   const user = authentication?.user ?? null;
   const { workspaceGraphs, createBlockCommentThread } = useDocumentComments(
@@ -174,12 +226,13 @@ export function useHarnessDocsApp() {
   } = useDocumentEditingLocks(workspaceGraphs);
 
   const activeWorkspace = useMemo(
-    () => workspaces.find((workspace) => workspace.id === activeWorkspaceId) ?? null,
-    [activeWorkspaceId, workspaces]
+    () => workspaces.find((workspace) => workspace.id === routeState.activeWorkspaceId) ?? null,
+    [routeState.activeWorkspaceId, workspaces]
   );
   const activeWorkspaceGraph = useMemo(
-    () => workspaceGraphs.find((graph) => graph.workspace.id === activeWorkspaceId) ?? null,
-    [activeWorkspaceId, workspaceGraphs]
+    () =>
+      workspaceGraphs.find((graph) => graph.workspace.id === routeState.activeWorkspaceId) ?? null,
+    [routeState.activeWorkspaceId, workspaceGraphs]
   );
   const activeMembership = useMemo(() => {
     if (!activeWorkspaceGraph || !user) {
@@ -198,7 +251,8 @@ export function useHarnessDocsApp() {
       return null;
     }
 
-    const selectedDocumentId = selectedDocumentIds[activeWorkspaceGraph.workspace.id];
+    const selectedDocumentId =
+      routeState.selectedDocumentId ?? selectedDocumentIds[activeWorkspaceGraph.workspace.id];
 
     return (
       activeWorkspaceGraph.documents.find((document) => document.id === selectedDocumentId) ??
@@ -226,11 +280,11 @@ export function useHarnessDocsApp() {
         ? buildAITaskEntryPoints({
             workspaceGraph: activeWorkspaceGraph,
             activeDocument,
-            preferredProvider: bootstrap.preferences.preferredAIProvider,
+            preferredProvider: preferences.preferredAIProvider,
             activeMembershipId: activeMembership?.id ?? null
           })
         : [],
-    [activeDocument, activeMembership, activeWorkspaceGraph, bootstrap.preferences.preferredAIProvider]
+    [activeDocument, activeMembership, activeWorkspaceGraph, preferences.preferredAIProvider]
   );
 
   useEffect(() => {
@@ -262,23 +316,25 @@ export function useHarnessDocsApp() {
   }, [activeDocument, activeDocumentLock, activeMembership, services, touchDocumentEditingLock]);
 
   const handleWorkspaceEnter = (workspaceId: string) => {
-    setActiveWorkspaceId(workspaceId);
-    setActiveArea(defaultArea);
+    navigation.onWorkspaceEnter(workspaceId);
   };
 
   const handleWorkspaceLeave = () => {
-    setActiveWorkspaceId(null);
-    setActiveArea(defaultArea);
+    navigation.onWorkspaceLeave();
   };
 
   const handleSignIn = async (provider: AuthenticationSessionSnapshot["provider"]["id"]) => {
-    await services.authentication.startSignIn(provider);
-    await loadBootstrapState();
+    await authenticationMutation.mutateAsync({
+      type: "sign-in",
+      provider
+    });
   };
 
   const handleSignOut = async () => {
-    await services.authentication.signOut();
-    await loadBootstrapState();
+    await authenticationMutation.mutateAsync({
+      type: "sign-out"
+    });
+    navigation.onWorkspaceLeave();
   };
 
   const handleDocumentSelect = (documentId: string) => {
@@ -290,6 +346,7 @@ export function useHarnessDocsApp() {
       ...current,
       [activeWorkspaceGraph.workspace.id]: documentId
     }));
+    navigation.onSelectedDocumentChange(documentId);
   };
 
   const handleDocumentSourceChange = (document: WorkspaceDocument, nextSource: string) => {
@@ -361,55 +418,36 @@ export function useHarnessDocsApp() {
   const handlePreferredAIProviderChange = (
     preferredAIProvider: AppPreferences["preferredAIProvider"]
   ) => {
-    setBootstrap((current) => ({
-      ...current,
-      preferences: {
-        ...current.preferences,
-        preferredAIProvider
-      }
-    }));
+    const nextPreferences = {
+      ...preferences,
+      preferredAIProvider
+    };
+
+    setPreferences(nextPreferences);
+    writePreferencesMutation.mutate(nextPreferences);
   };
 
-  const handleLaunchAITaskEntryPoint = (entry: AITaskEntryPoint) => {
+  const handleLaunchAITaskEntryPoint = async (entry: AITaskEntryPoint) => {
     if (entry.documentId && activeWorkspaceGraph) {
       setSelectedDocumentIds((current) => ({
         ...current,
         [activeWorkspaceGraph.workspace.id]: entry.documentId ?? ""
       }));
+      navigation.onSelectedDocumentChange(entry.documentId);
     }
 
     handlePreferredAIProviderChange(entry.provider);
-    setActiveArea("ai");
+    navigation.onAreaChange("ai");
 
     if (!activeWorkspaceGraph) {
       return;
     }
 
-    setAITaskState({
-      status: "running",
-      error: null,
-      result: null,
-      entryId: entry.id
+    await aiTaskMutation.mutateAsync({
+      entry,
+      workspaceGraph: activeWorkspaceGraph,
+      drafts: documentDrafts
     });
-
-    void services.aiTasks
-      .runEntryPoint(buildAITaskExecutionInput(entry, activeWorkspaceGraph, documentDrafts))
-      .then((result) => {
-        setAITaskState({
-          status: "succeeded",
-          error: null,
-          result,
-          entryId: entry.id
-        });
-      })
-      .catch((error: unknown) => {
-        setAITaskState({
-          status: "failed",
-          error: error instanceof Error ? error.message : "AI task execution failed.",
-          result: null,
-          entryId: entry.id
-        });
-      });
   };
 
   const handleExecutePublish = async () => {
@@ -417,56 +455,87 @@ export function useHarnessDocsApp() {
       return;
     }
 
-    const input = buildPublishExecutionInput(
-      activeWorkspaceGraph,
-      documentDrafts,
-      activeMembership?.id ?? null
-    );
-
-    if (!input) {
-      setPublishState({
-        status: "failed",
-        error: "No publish record is available for the active workspace.",
-        result: null
-      });
-      return;
-    }
-
-    setPublishState({
-      status: "running",
-      error: null,
-      result: null
-    });
-
     try {
-      const result = await services.publishing.executePublish(input);
-
-      setPublishState({
-        status: "succeeded",
-        error: null,
-        result
+      await publishMutation.mutateAsync({
+        workspaceGraph: activeWorkspaceGraph,
+        drafts: documentDrafts,
+        membershipId: activeMembership?.id ?? null
       });
-      setActiveArea("publish");
+      navigation.onAreaChange("publish");
     } catch (error) {
-      setPublishState({
-        status: "failed",
-        error: error instanceof Error ? error.message : "GitHub publish failed.",
-        result: null
-      });
+      void error;
     }
   };
 
+  const aiTaskState: AsyncTaskState<AITaskExecutionResult> = aiTaskMutation.isPending
+    ? {
+        status: "running",
+        error: null,
+        result: null,
+        entryId: aiTaskMutation.variables?.entry.id ?? null
+      }
+    : aiTaskMutation.isError
+      ? {
+          status: "failed",
+          error:
+            aiTaskMutation.error instanceof Error
+              ? aiTaskMutation.error.message
+              : "AI task execution failed.",
+          result: null,
+          entryId: aiTaskMutation.variables?.entry.id ?? null
+        }
+      : aiTaskMutation.isSuccess
+        ? {
+            status: "succeeded",
+            error: null,
+            result: aiTaskMutation.data,
+            entryId: aiTaskMutation.variables?.entry.id ?? null
+          }
+        : {
+            status: "idle",
+            error: null,
+            result: null,
+            entryId: null
+          };
+
+  const publishState: AsyncTaskState<PublishExecutionResult> = publishMutation.isPending
+    ? {
+        status: "running",
+        error: null,
+        result: null
+      }
+    : publishMutation.isError
+      ? {
+          status: "failed",
+          error:
+            publishMutation.error instanceof Error
+              ? publishMutation.error.message
+              : "GitHub publish failed.",
+          result: null
+        }
+      : publishMutation.isSuccess
+        ? {
+            status: "succeeded",
+            error: null,
+            result: publishMutation.data
+          }
+        : {
+            status: "idle",
+            error: null,
+            result: null
+          };
+
   return {
-    isReady: bootstrap.isReady,
-    desktopShell: bootstrap.desktopShell,
+    isReady,
+    desktopShell: bootstrapQuery.data?.desktopShell ?? null,
     authentication,
     user,
     workspaces,
-    activeWorkspaceId,
+    activeWorkspaceId: routeState.activeWorkspaceId,
     activeWorkspace,
     activeWorkspaceGraph,
-    activeArea,
-    preferredAIProvider: bootstrap.preferences.preferredAIProvider,
+    activeArea: routeState.activeArea,
+    preferredAIProvider: preferences.preferredAIProvider,
     aiEntryPoints,
     aiTaskState,
     publishState,
@@ -474,7 +543,6 @@ export function useHarnessDocsApp() {
     activeMembershipId: activeMembership?.id ?? null,
     activeDocumentSource,
     activeDocumentLock,
-    setActiveArea,
     handlePreferredAIProviderChange,
     handleSignIn,
     handleSignOut,
@@ -486,6 +554,7 @@ export function useHarnessDocsApp() {
     handleDocumentSourceChange,
     handleStartEditing,
     handleReleaseEditing,
-    handleCreateBlockComment
+    handleCreateBlockComment,
+    handleAreaChange: navigation.onAreaChange
   };
 }

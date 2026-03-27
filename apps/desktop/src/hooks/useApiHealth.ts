@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { unwrapApiResponse } from "@harness-docs/contracts";
 import { harnessApiBaseUrl, harnessRpcClient } from "../lib/rpc/client";
 
@@ -9,61 +9,43 @@ type ApiHealthState =
   | { status: "unreachable"; message: string };
 
 export function useApiHealth() {
-  const [state, setState] = useState<ApiHealthState>({
-    status: "idle",
-    message: `RPC target ${harnessApiBaseUrl}`
+  const healthQuery = useQuery({
+    queryKey: ["api-health", harnessApiBaseUrl],
+    queryFn: async () => {
+      const response = await harnessRpcClient.health.$get();
+
+      if (!response.ok) {
+        throw new Error(`API responded with ${response.status}`);
+      }
+
+      return unwrapApiResponse<{
+        service: string;
+        transport: string;
+      }>(await response.json());
+    },
+    retry: false,
+    refetchInterval: 30_000
   });
 
-  useEffect(() => {
-    let cancelled = false;
+  if (healthQuery.isPending) {
+    return {
+      status: healthQuery.fetchStatus === "fetching" ? "checking" : "idle",
+      message: `Checking ${harnessApiBaseUrl}`
+    } satisfies ApiHealthState;
+  }
 
-    async function checkHealth() {
-      setState({
-        status: "checking",
-        message: `Checking ${harnessApiBaseUrl}`
-      });
+  if (healthQuery.isError) {
+    return {
+      status: "unreachable",
+      message:
+        healthQuery.error instanceof Error
+          ? healthQuery.error.message
+          : `Unable to reach ${harnessApiBaseUrl}`
+    } satisfies ApiHealthState;
+  }
 
-      try {
-        const response = await harnessRpcClient.health.$get();
-
-        if (!response.ok) {
-          if (!cancelled) {
-            setState({
-              status: "unreachable",
-              message: `API responded with ${response.status}`
-            });
-          }
-          return;
-        }
-
-        const data = unwrapApiResponse<{
-          service: string;
-          transport: string;
-        }>(await response.json());
-
-        if (!cancelled) {
-          setState({
-            status: "healthy",
-            message: `${data.service} via ${data.transport}`
-          });
-        }
-      } catch (error) {
-        if (!cancelled) {
-          setState({
-            status: "unreachable",
-            message:
-              error instanceof Error ? error.message : `Unable to reach ${harnessApiBaseUrl}`
-          });
-        }
-      }
-    }
-
-    void checkHealth();
-
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
-  return state;
+  return {
+    status: "healthy",
+    message: `${healthQuery.data.service} via ${healthQuery.data.transport}`
+  } satisfies ApiHealthState;
 }

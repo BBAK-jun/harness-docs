@@ -1,3 +1,4 @@
+import { useNavigate } from "@tanstack/react-router";
 import { Bot, FolderKanban, GitBranch, LogOut, ShieldCheck } from "lucide-react";
 import { AppShell } from "./components/AppShell";
 import { WorkspaceEmptyState } from "./components/WorkspaceEmptyState";
@@ -7,8 +8,35 @@ import { Button } from "./components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "./components/ui/card";
 import { useApiHealth } from "./hooks/useApiHealth";
 import { useHarnessDocsApp } from "./hooks/useHarnessDocsApp";
+import type { NavigationArea } from "./types";
 
-export default function App() {
+interface AppProps {
+  routeState: {
+    activeArea: NavigationArea;
+    activeWorkspaceId: string | null;
+    selectedDocumentId: string | null;
+  };
+}
+
+export default function App({ routeState }: AppProps) {
+  const navigate = useNavigate();
+  const navigateToWorkspaceArea = (
+    workspaceId: string,
+    area: NavigationArea,
+    documentId?: string | null
+  ) => {
+    void navigate({
+      params: {
+        area,
+        workspaceId
+      },
+      search: {
+        documentId: documentId ?? undefined
+      },
+      to: "/workspaces/$workspaceId/$area"
+    });
+  };
+
   const {
     isReady,
     desktopShell,
@@ -27,7 +55,6 @@ export default function App() {
     activeMembershipId,
     activeDocumentSource,
     activeDocumentLock,
-    setActiveArea,
     handlePreferredAIProviderChange,
     handleSignIn,
     handleSignOut,
@@ -39,15 +66,43 @@ export default function App() {
     handleDocumentSourceChange,
     handleStartEditing,
     handleReleaseEditing,
-    handleCreateBlockComment
-  } = useHarnessDocsApp();
+    handleCreateBlockComment,
+    handleAreaChange
+  } = useHarnessDocsApp(routeState, {
+    onAreaChange: (area) => {
+      if (!routeState.activeWorkspaceId) {
+        return;
+      }
+
+      navigateToWorkspaceArea(
+        routeState.activeWorkspaceId,
+        area,
+        activeDocument?.id ?? routeState.selectedDocumentId
+      );
+    },
+    onSelectedDocumentChange: (documentId) => {
+      if (!routeState.activeWorkspaceId) {
+        return;
+      }
+
+      navigateToWorkspaceArea(routeState.activeWorkspaceId, routeState.activeArea, documentId);
+    },
+    onWorkspaceEnter: (workspaceId) => {
+      navigateToWorkspaceArea(workspaceId, "documents");
+    },
+    onWorkspaceLeave: () => {
+      void navigate({
+        to: "/"
+      });
+    }
+  });
   const apiHealth = useApiHealth();
 
   return (
     <main className="relative min-h-screen overflow-hidden bg-[radial-gradient(circle_at_top_left,rgba(251,191,36,0.18),transparent_24rem),radial-gradient(circle_at_bottom_right,rgba(56,189,248,0.12),transparent_28rem),linear-gradient(180deg,#020617_0%,#0f172a_45%,#111827_100%)] text-slate-100">
-      <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent" />
+      <div className="absolute inset-x-0 top-0 h-px from-transparent via-white/20 to-transparent" />
       <div className="grid min-h-screen gap-6 p-4 lg:grid-cols-[23rem_minmax(0,1fr)] lg:p-6">
-        <aside className="flex flex-col gap-5 rounded-[32px] border border-white/10 bg-slate-950/55 p-5 shadow-[0_35px_120px_-60px_rgba(2,6,23,0.95)] backdrop-blur-xl">
+        <aside className="flex flex-col gap-5 border border-white/10 bg-slate-950/55 p-5 shadow-[0_35px_120px_-60px_rgba(2,6,23,0.95)] backdrop-blur-xl">
           <Card className="overflow-hidden border-amber-200/10 bg-slate-950/30">
             <CardHeader className="gap-4">
               <div className="flex items-start justify-between gap-4">
@@ -71,7 +126,7 @@ export default function App() {
               </div>
 
               {desktopShell ? (
-                <div className="grid gap-3 rounded-2xl border border-white/[0.08] bg-white/[0.05] p-4">
+                <div className="grid gap-3 rounded-2xl border p-4">
                   <div className="flex flex-wrap items-center gap-2">
                     <Badge variant="secondary">
                       {desktopShell.runtime === "tauri" ? "Tauri shell" : "Browser preview"}
@@ -191,7 +246,7 @@ export default function App() {
               activeMembershipId={activeMembershipId}
               activeDocumentSource={activeDocumentSource}
               activeDocumentLock={activeDocumentLock}
-              onAreaChange={setActiveArea}
+              onAreaChange={handleAreaChange}
               onPreferredAIProviderChange={handlePreferredAIProviderChange}
               onDocumentSelect={handleDocumentSelect}
               onLaunchAITaskEntryPoint={handleLaunchAITaskEntryPoint}
@@ -200,6 +255,10 @@ export default function App() {
               onStartEditing={handleStartEditing}
               onReleaseEditing={handleReleaseEditing}
               onCreateBlockComment={handleCreateBlockComment}
+              onOpenDocument={(documentId) => {
+                handleDocumentSelect(documentId);
+                handleAreaChange("editor");
+              }}
               onLeaveWorkspace={handleWorkspaceLeave}
             />
           ) : (
