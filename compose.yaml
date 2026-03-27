@@ -1,0 +1,22 @@
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: harness-docs-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: harness_docs
+      POSTGRES_PASSWORD: harness_docs
+      POSTGRES_DB: harness_docs
+    ports:
+      - "5432:5432"
+    volumes:
+      - harness-docs-postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U harness_docs -d harness_docs"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 5s
+
+volumes:
+  harness-docs-postgres:

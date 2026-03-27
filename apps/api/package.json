@@ -6,11 +6,15 @@
   "scripts": {
     "dev": "node --watch --import tsx src/server.ts",
     "start": "node --import tsx src/server.ts",
-    "build": "tsc --noEmit -p tsconfig.json"
+    "build": "tsc --noEmit -p tsconfig.json",
+    "seed:demo": "node --import tsx src/bootstrap/seedDemoWorkspace.ts",
+    "test": "node --import tsx --test src/test/*.test.ts"
   },
   "dependencies": {
     "@harness-docs/contracts": "workspace:*",
-    "@hono/node-server": "^1.19.11"
+    "@harness-docs/db": "workspace:*",
+    "@hono/node-server": "^1.19.11",
+    "drizzle-orm": "^0.44.6"
   },
   "devDependencies": {
     "@types/node": "^25.5.0",

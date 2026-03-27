@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { unwrapApiResponse } from "@harness-docs/contracts";
 import { harnessApiBaseUrl, harnessRpcClient } from "../lib/rpc/client";
+import { rpcQueryKeys } from "../queries/queryKeys";
 
 type ApiHealthState =
   | { status: "idle"; message: string }
@@ -10,7 +11,7 @@ type ApiHealthState =
 
 export function useApiHealth() {
   const healthQuery = useQuery({
-    queryKey: ["api-health", harnessApiBaseUrl],
+    queryKey: rpcQueryKeys.health(harnessApiBaseUrl),
     queryFn: async () => {
       const response = await harnessRpcClient.health.$get();
 

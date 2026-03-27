@@ -56,3 +56,21 @@ pnpm --filter @harness-docs/desktop check:rust
 - 이 패키지는 사용자 경험과 화면 상태를 담당합니다.
 - 승인 규칙, stale/current 판정, publish preflight 같은 정책 판단은 장기적으로 API에 둡니다.
 - 데스크톱은 API 결과를 표시하고 사용자 입력을 수집하는 역할에 집중합니다.
+
+## Query 경계 규칙
+
+이 패키지의 TanStack Query 키는 데이터 경계를 드러내는 방식으로 관리합니다.
+
+- 모든 `queryKey`와 `mutationKey`는 `src/queries/queryKeys.ts`에서 정의합니다.
+- 키는 화면 이름이 아니라 데이터 경계 기준으로 나눕니다.
+- 순서는 `boundary -> resource -> action`을 유지합니다.
+- 컴포넌트나 훅 내부에 리터럴 배열 키를 직접 쓰지 않습니다.
+
+현재 기준 예시는 다음과 같습니다.
+
+- `desktop/bootstrap`
+- `desktop/preferences/write`
+- `desktop/authentication/session`
+- `desktop/ai/run-entry-point`
+- `desktop/publishing/execute`
+- `rpc/health`

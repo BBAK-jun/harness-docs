@@ -15,6 +15,7 @@ Small product teams often keep product requirements, UX flows, technical specs, 
 Primary customer: small cross-functional product teams.
 
 Primary users:
+
 - PMs and product owners
 - Designers
 - Developers
@@ -33,11 +34,13 @@ Primary users:
 ## Implementation Direction
 
 V1 desktop client stack:
+
 - Tauri v2 as the desktop shell
 - React + TypeScript + Vite for the desktop UI
 - Markdown source editing plus preview as the primary document editor
 
 Implementation note:
+
 - Cloud-hosted workspace and approval services remain required, but Tauri is the fixed desktop application container for v1.
 
 ## Non-Goals For V1
@@ -69,6 +72,7 @@ Workspace settings persist at most one connected GitHub documentation repository
 ### First-Class Document Types
 
 V1 must support these first-class document types:
+
 - PRD
 - UX Flow
 - Technical Spec
@@ -85,6 +89,7 @@ The system ships with default templates for each first-class document type. Team
 Documents can create explicit traceable links to one another. Link rules determine which downstream documents may become stale when an upstream document changes.
 
 V1 invalidation rules:
+
 - PRD changes may invalidate UX Flow and Technical Spec documents.
 - UX Flow changes may invalidate Technical Spec documents.
 - Policy/Decision changes may invalidate any linked downstream document that depends on that decision.
@@ -128,6 +133,7 @@ The user should not need Git knowledge, PAT creation, or manual OAuth app setup 
 After GitHub authentication, the system creates an app session tied to the cloud-hosted workspace service. The app session, not a raw GitHub access token shown to the user, is the mechanism used for day-to-day access to workspaces, documents, approvals, comments, and publish actions.
 
 Session requirements:
+
 - The app must persist a secure signed-in session across desktop restarts until explicit sign-out, session expiry, or admin revocation.
 - The app must restore the last active workspace context after session recovery when that membership is still valid.
 - The app must let a signed-in user switch between workspaces they belong to without re-running OAuth each time.
@@ -138,6 +144,7 @@ Session requirements:
 Workspace membership is app-managed and independent from GitHub repository collaborator status after initial identity verification.
 
 Membership requirements:
+
 - A GitHub-authenticated user can be added to more than one workspace.
 - A user can establish a usable app session only for workspaces where they are an active member.
 - If a user authenticates successfully but belongs to no workspace yet, the app must route them to create a workspace or accept an invitation.

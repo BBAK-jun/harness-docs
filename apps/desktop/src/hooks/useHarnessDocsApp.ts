@@ -4,6 +4,7 @@ import type { AITaskExecutionResult } from "../domain/aiTasks";
 import type { PublishExecutionResult } from "../domain/publishing";
 import { buildAITaskEntryPoints } from "../lib/aiTaskEntryPoints";
 import { buildAITaskExecutionInput, buildPublishExecutionInput } from "../lib/runtimePayloads";
+import { desktopMutationKeys, desktopQueryKeys } from "../queries/queryKeys";
 import { useHarnessDocsServices } from "../services/HarnessDocsServicesProvider";
 import type {
   AppSessionSnapshot,
@@ -119,7 +120,7 @@ export function useHarnessDocsApp(
   const services = useHarnessDocsServices();
   const queryClient = useQueryClient();
   const bootstrapQuery = useQuery({
-    queryKey: ["desktop-bootstrap"],
+    queryKey: desktopQueryKeys.bootstrap(),
     queryFn: () => loadBootstrapState(services),
   });
   const [preferences, setPreferences] = useState<AppPreferences>(fallbackAppPreferences);
@@ -147,12 +148,14 @@ export function useHarnessDocsApp(
   }, [bootstrapQuery.data?.appSession?.workspace]);
 
   const writePreferencesMutation = useMutation({
+    mutationKey: desktopMutationKeys.preferences.write(),
     mutationFn: async (nextPreferences: AppPreferences) => {
       await services.preferences.write(nextPreferences);
     },
   });
 
   const authenticationMutation = useMutation({
+    mutationKey: desktopMutationKeys.authentication.session(),
     mutationFn: async (
       action:
         | {
@@ -168,13 +171,14 @@ export function useHarnessDocsApp(
       }
 
       const nextBootstrap = await loadBootstrapState(services);
-      queryClient.setQueryData(["desktop-bootstrap"], nextBootstrap);
+      queryClient.setQueryData(desktopQueryKeys.bootstrap(), nextBootstrap);
 
       return nextBootstrap;
     },
   });
 
   const aiTaskMutation = useMutation({
+    mutationKey: desktopMutationKeys.ai.runEntryPoint(),
     mutationFn: async ({
       entry,
       workspaceGraph,
@@ -187,6 +191,7 @@ export function useHarnessDocsApp(
   });
 
   const publishMutation = useMutation({
+    mutationKey: desktopMutationKeys.publishing.execute(),
     mutationFn: async ({
       workspaceGraph,
       drafts,
