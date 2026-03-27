@@ -10,6 +10,7 @@
 - 문서 편집 경험
 - publish flow 표현
 - AI 작업 진입점
+- publish governance RPC consumer
 
 관련 소스:
 
@@ -20,6 +21,7 @@
 - authoritative backend
 - 세션, 권한, publish orchestration
 - stale/current 및 preflight 판단
+- publish governance preflight projection
 
 관련 소스:
 
@@ -29,6 +31,7 @@
 
 - desktop과 API 사이 공유 계약
 - DTO, route contract, client factory
+- publish governance 상태 기계와 projection snapshot
 
 관련 소스:
 
@@ -51,3 +54,7 @@
 ```bash
 pnpm docs:dev
 ```
+
+추가 문서:
+
+- [Publish Governance RPC](/reference/publish-governance-rpc)

@@ -1,6 +1,6 @@
 # 구현 현황
 
-_최종 업데이트: 2026-03-27_
+_최종 업데이트: 2026-03-28_
 
 ## 현재 어디까지 왔나
 
@@ -13,6 +13,7 @@ Harness Docs는 현재 `데스크톱 앱 골격 + authoritative API + PostgreSQL
 - approval request and decision
 - publish record create
 - publish execute
+- publish governance preflight read
 
 ## 완료된 범위
 
@@ -42,6 +43,7 @@ Harness Docs는 현재 `데스크톱 앱 골격 + authoritative API + PostgreSQL
 ```
 
 - `packages/contracts`에 shared DTO와 route contract 정리 완료
+- `packages/contracts`에 publish governance 상태 기계와 projection snapshot 타입 정리 완료
 
 ### 저장 모델과 DDD 경계
 
@@ -57,6 +59,8 @@ Harness Docs는 현재 `데스크톱 앱 골격 + authoritative API + PostgreSQL
 - `apps/api/src/domain/documentAggregate.ts`
 - `apps/api/src/domain/publishAggregate.ts`
 - `apps/api/src/domain/shared.ts`
+- `apps/api/src/domain/publishGovernanceProjection.ts`
+- `apps/api/src/domain/publishGovernanceAdapter.ts`
 
 현재 datasource는 persistence adapter 역할만 하도록 정리했습니다.
 
@@ -73,6 +77,36 @@ Harness Docs는 현재 `데스크톱 앱 골격 + authoritative API + PostgreSQL
 - approval decision
 - publish record create
 - publish execute
+- document publish preflight read
+
+### Publish Governance Contracts
+
+publish governance는 현재 contracts 중심으로 문서화되고 있습니다.
+
+- `DocumentStatusView`
+- `PublishEligibility`
+- `PublishPreflightView`
+- `PublishAttemptResult`
+- `PublishGovernanceDocumentSnapshot`
+- `PublishGovernancePublishRecordSnapshot`
+
+추가로 아래 endpoint가 연결됐습니다.
+
+- `GET /api/workspaces/:workspaceId/documents/:documentId/publish-preflight`
+
+이 endpoint는 authoritative publish preflight를 반환합니다.
+
+### Desktop RPC 연결 현황
+
+desktop은 아직 file-based route 리팩터링 중이므로 화면 연결은 완료되지 않았습니다.
+
+다만 서비스 계층까지는 연결됐습니다.
+
+- `apps/desktop/src/domain/publishing.ts`
+- `apps/desktop/src/services/rpcPublishing.ts`
+- `apps/desktop/src/services/mockDomainServices.ts`
+
+즉, route 리팩터링이 끝나면 UI에서 바로 `PublishPreflightView`를 읽을 수 있는 상태입니다.
 
 ### 로컬 개발 bootstrap
 
@@ -133,6 +167,7 @@ integration test는 아래 시나리오를 검증합니다.
 - mock service를 실제 RPC write flow로 완전 전환
 - GitHub OAuth 실제 연결
 - publish와 approval 화면의 실데이터 연결
+- publish route에서 `PublishPreflightView` 직접 사용
 - Codex and Claude adapter 연결
 
 ## 현재 추천되는 다음 작업
@@ -143,10 +178,12 @@ integration test는 아래 시나리오를 검증합니다.
 2. comment와 lock write API 추가
 3. GitHub publish execute를 outbox 기반 실제 adapter로 교체
 4. desktop mock state를 API RPC로 점진 전환
+5. publish route를 contracts-driven preflight view로 전환
 
 ## 관련 문서
 
 - [패키지 구성](/reference/packages)
+- [Publish Governance RPC](/reference/publish-governance-rpc)
 - [아키텍처](/guide/architecture)
 - [도메인 모델](/guide/domain-model)
 - [원문 사양](/reference/spec-sources)

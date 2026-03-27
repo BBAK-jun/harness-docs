@@ -70,5 +70,6 @@ API가 해야 하는 일:
 - stale/current 계산
 - unresolved approval snapshot 생성
 - publish 가능 여부 판정
+- stale publish 시 rationale 요구 여부 판정
 - publish record 저장
 - GitHub 자동화 실행
