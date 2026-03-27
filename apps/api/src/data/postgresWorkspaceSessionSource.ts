@@ -25,10 +25,7 @@ import type {
 } from "@harness-docs/contracts";
 import { defaultWorkspaceCatalog } from "@harness-docs/contracts";
 import { and, desc, eq, inArray } from "drizzle-orm";
-import {
-  buildDocumentMarkdown,
-  deriveDocumentState,
-} from "../domain/documentAggregate.ts";
+import { buildDocumentMarkdown, deriveDocumentState } from "../domain/documentAggregate.ts";
 import type {
   PublishDocumentSnapshot,
   PublishPreflightStatus,
@@ -40,13 +37,7 @@ import {
   buildPublishStages,
   createPublishDraft,
 } from "../domain/publishAggregate.ts";
-import {
-  buildId,
-  isDefined,
-  nowIso,
-  slugify,
-  toDate,
-} from "../domain/shared.ts";
+import { buildId, isDefined, nowIso, slugify, toDate } from "../domain/shared.ts";
 
 const fallbackSessionUser: SessionUserDto = {
   id: "usr_demo",
@@ -944,12 +935,7 @@ export function createPostgresWorkspaceSessionSource(
     const rows = await executor
       .select({ id: documents.id })
       .from(documents)
-      .where(
-        and(
-          eq(documents.workspaceId, workspaceId),
-          inArray(documents.id, dedupedIds),
-        ),
-      );
+      .where(and(eq(documents.workspaceId, workspaceId), inArray(documents.id, dedupedIds)));
     const rowIds = new Set(rows.map((row: { id: string }) => row.id));
 
     return dedupedIds.filter((documentId) => rowIds.has(documentId));
@@ -1073,12 +1059,7 @@ export function createPostgresWorkspaceSessionSource(
     const documentRows = await executor
       .select()
       .from(documents)
-      .where(
-        and(
-          eq(documents.workspaceId, workspaceId),
-          inArray(documents.id, documentIds),
-        ),
-      );
+      .where(and(eq(documents.workspaceId, workspaceId), inArray(documents.id, documentIds)));
 
     if (documentRows.length === 0) {
       return [];
@@ -1122,25 +1103,27 @@ export function createPostgresWorkspaceSessionSource(
             respondedAt: asIso(approval.respondedAt),
           }),
         ),
-        invalidations: ((invalidationRowsByDocumentId.get(document.id) ?? []) as InvalidationRow[]).map(
-          (invalidation) => ({
-            id: invalidation.id,
-            reason: invalidation.reason as
-              | "linked_document_updated"
-              | "approval_invalidated"
-              | "publish_evaluation_pending",
-            summary: invalidation.summary,
-            detectedAt: asIso(invalidation.detectedAt) ?? nowIso(),
-            affectsApprovalIds: castJsonArray<string>(invalidation.affectsApprovalIds),
-          }),
-        ),
+        invalidations: (
+          (invalidationRowsByDocumentId.get(document.id) ?? []) as InvalidationRow[]
+        ).map((invalidation) => ({
+          id: invalidation.id,
+          reason: invalidation.reason as
+            | "linked_document_updated"
+            | "approval_invalidated"
+            | "publish_evaluation_pending",
+          summary: invalidation.summary,
+          detectedAt: asIso(invalidation.detectedAt) ?? nowIso(),
+          affectsApprovalIds: castJsonArray<string>(invalidation.affectsApprovalIds),
+        })),
       });
 
       return {
         id: document.id,
         title: document.title,
         type: document.type,
-        linkedDocumentIds: ((linkRowsByDocumentId.get(document.id) ?? []) as LinkRow[]).map((link) => link.targetDocumentId),
+        linkedDocumentIds: ((linkRowsByDocumentId.get(document.id) ?? []) as LinkRow[]).map(
+          (link) => link.targetDocumentId,
+        ),
         freshnessStatus: derivedState.freshnessStatus,
         unresolvedApprovalIds: derivedState.unresolvedApprovalIds,
         unresolvedApprovals: derivedState.unresolvedApprovals,
@@ -1177,7 +1160,9 @@ export function createPostgresWorkspaceSessionSource(
       targetedDocumentIds,
     );
     const staleRationaleEntries = castJsonArray<any>(recordRow.staleRationaleEntries);
-    const unresolvedApprovals = documentSnapshots.flatMap((document) => document.unresolvedApprovals);
+    const unresolvedApprovals = documentSnapshots.flatMap(
+      (document) => document.unresolvedApprovals,
+    );
     const staleDocumentIds = documentSnapshots
       .filter((document) => document.freshnessStatus === "stale")
       .map((document) => document.id);
@@ -1598,7 +1583,9 @@ export function createPostgresWorkspaceSessionSource(
         const approvalRow = await tx
           .select()
           .from(approvalRequests)
-          .where(and(eq(approvalRequests.id, approvalId), eq(approvalRequests.workspaceId, workspaceId)))
+          .where(
+            and(eq(approvalRequests.id, approvalId), eq(approvalRequests.workspaceId, workspaceId)),
+          )
           .limit(1)
           .then((rows: ApprovalRow[]) => rows[0] ?? null);
         const decisionMembership = await tx

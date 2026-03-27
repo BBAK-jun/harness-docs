@@ -1,5 +1,6 @@
 **/.omx/
 **/.pnpm-store/
+**/.vitepress/
 path/
 .DS_Store
 .env
@@ -9,3 +10,4 @@ path/
 **/node_modules/
 **/dist/
 **/target/
+scripts/.cache/

@@ -3,6 +3,7 @@ import { after, before, beforeEach, describe, test } from "node:test";
 import { createDatabaseContext } from "@harness-docs/db";
 import { createApiApp } from "@harness-docs/contracts";
 import { createPostgresWorkspaceSessionSource } from "../data/postgresWorkspaceSessionSource.ts";
+import { createPublishGovernanceAdapter } from "../domain/publishGovernanceAdapter.ts";
 import {
   demoWorkspaceFixture,
   resetHarnessDocsDatabase,
@@ -12,6 +13,7 @@ import {
 const { db, pool } = createDatabaseContext();
 const app = createApiApp({
   dataSource: createPostgresWorkspaceSessionSource(db),
+  publishGovernanceAdapter: createPublishGovernanceAdapter(),
 });
 
 async function requestJson(
@@ -58,6 +60,41 @@ after(async () => {
 });
 
 describe("workspace flow integration", () => {
+  test("returns contracts-driven publish preflight for a document", async () => {
+    const result = (await requestJson(
+      `/api/workspaces/${demoWorkspaceFixture.workspace.id}/documents/${demoWorkspaceFixture.documents.prd}/publish-preflight`,
+    )) as {
+      preflight: {
+        currentState: string;
+        document: {
+          id: string;
+          publishEligibility: {
+            status: string;
+            requiresRationale: boolean;
+          };
+        };
+        allowedTransitions: Array<{
+          from: string;
+          trigger: string;
+          to: string;
+        }>;
+      };
+    };
+
+    assert.equal(result.preflight.document.id, demoWorkspaceFixture.documents.prd);
+    assert.ok(
+      ["ready_to_publish", "stale_requires_rationale", "blocked"].includes(
+        result.preflight.currentState,
+      ),
+    );
+    assert.ok(
+      ["allowed", "requires_rationale", "blocked"].includes(
+        result.preflight.document.publishEligibility.status,
+      ),
+    );
+    assert.ok(Array.isArray(result.preflight.allowedTransitions));
+  });
+
   test("bootstraps the workspace and executes document -> approval -> publish flow", async () => {
     const bootstrap = (await requestJson("/api/session/bootstrap")) as {
       user: { id: string };

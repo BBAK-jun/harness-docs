@@ -159,22 +159,16 @@ function buildTemplateSections(templateId: string) {
 }
 
 function buildInitialDocuments() {
-  const prdMarkdown = buildDocumentMarkdown(
-    "Document Publish Workflow Refresh",
-    {
-      description:
-        "A shared product document for improving publish workflow visibility inside the Harness Docs desktop app.",
-      sections: buildTemplateSections(demoWorkspaceFixture.templates.prd),
-    },
-  );
-  const technicalSpecMarkdown = buildDocumentMarkdown(
-    "Publish Pipeline Persistence Contract",
-    {
-      description:
-        "A technical spec that describes how the API stores publish state, approval state, and GitHub handoff metadata.",
-      sections: buildTemplateSections(demoWorkspaceFixture.templates.technicalSpec),
-    },
-  );
+  const prdMarkdown = buildDocumentMarkdown("Document Publish Workflow Refresh", {
+    description:
+      "A shared product document for improving publish workflow visibility inside the Harness Docs desktop app.",
+    sections: buildTemplateSections(demoWorkspaceFixture.templates.prd),
+  });
+  const technicalSpecMarkdown = buildDocumentMarkdown("Publish Pipeline Persistence Contract", {
+    description:
+      "A technical spec that describes how the API stores publish state, approval state, and GitHub handoff metadata.",
+    sections: buildTemplateSections(demoWorkspaceFixture.templates.technicalSpec),
+  });
 
   const prdDerivedState = deriveDocumentState({
     documentId: demoWorkspaceFixture.documents.prd,

@@ -1,0 +1,131 @@
+import { useEffect, useState } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { desktopMutationKeys, desktopQueryKeys } from "../queries/queryKeys";
+import { useHarnessDocsServices } from "../services/HarnessDocsServicesProvider";
+import type {
+  AppSessionSnapshot,
+  AppPreferences,
+  AuthenticationSessionSnapshot,
+  DesktopShellMetadata,
+} from "../services/contracts";
+import { fallbackAppPreferences } from "../services/mockHarnessDocsServices";
+
+export interface HarnessDocsBootstrapData {
+  desktopShell: DesktopShellMetadata | null;
+  appSession: AppSessionSnapshot | null;
+  preferences: AppPreferences;
+}
+
+export async function loadBootstrapState(
+  services: ReturnType<typeof useHarnessDocsServices>,
+): Promise<HarnessDocsBootstrapData> {
+  const [desktopShell, appSession, preferences] = await Promise.all([
+    services.desktopShell.getMetadata(),
+    services.appSession.getSnapshot(),
+    services.preferences.read(),
+  ]);
+
+  return {
+    desktopShell,
+    appSession,
+    preferences,
+  };
+}
+
+export function useAppBootstrap() {
+  const services = useHarnessDocsServices();
+  const queryClient = useQueryClient();
+  const bootstrapQuery = useQuery({
+    queryKey: desktopQueryKeys.bootstrap(),
+    queryFn: () => loadBootstrapState(services),
+  });
+  const [preferences, setPreferences] = useState<AppPreferences>(fallbackAppPreferences);
+
+  useEffect(() => {
+    if (!bootstrapQuery.data) {
+      return;
+    }
+
+    setPreferences(bootstrapQuery.data.preferences);
+  }, [bootstrapQuery.data]);
+
+  const writePreferencesMutation = useMutation({
+    mutationKey: desktopMutationKeys.preferences.write(),
+    mutationFn: async (nextPreferences: AppPreferences) => {
+      await services.preferences.write(nextPreferences);
+    },
+  });
+
+  const authenticationMutation = useMutation({
+    mutationKey: desktopMutationKeys.authentication.session(),
+    mutationFn: async (
+      action:
+        | {
+            type: "sign-in";
+            provider: AuthenticationSessionSnapshot["provider"]["id"];
+          }
+        | { type: "sign-out" },
+    ) => {
+      if (action.type === "sign-in") {
+        await services.authentication.startSignIn(action.provider);
+      } else {
+        await services.authentication.signOut();
+      }
+
+      const nextBootstrap = await loadBootstrapState(services);
+      queryClient.setQueryData(desktopQueryKeys.bootstrap(), nextBootstrap);
+
+      return nextBootstrap;
+    },
+  });
+
+  const handleSignIn = async (provider: AuthenticationSessionSnapshot["provider"]["id"]) => {
+    await authenticationMutation.mutateAsync({
+      type: "sign-in",
+      provider,
+    });
+  };
+
+  const handleSignOut = async () => {
+    await authenticationMutation.mutateAsync({
+      type: "sign-out",
+    });
+  };
+
+  const handlePreferredAIProviderChange = (
+    preferredAIProvider: AppPreferences["preferredAIProvider"],
+  ) => {
+    const nextPreferences = {
+      ...preferences,
+      preferredAIProvider,
+    };
+
+    setPreferences(nextPreferences);
+    writePreferencesMutation.mutate(nextPreferences);
+  };
+
+  const handleAppearanceModeChange = (appearanceMode: AppPreferences["appearanceMode"]) => {
+    const nextPreferences = {
+      ...preferences,
+      appearanceMode,
+    };
+
+    setPreferences(nextPreferences);
+    writePreferencesMutation.mutate(nextPreferences);
+  };
+
+  return {
+    services,
+    isReady: bootstrapQuery.isSuccess,
+    desktopShell: bootstrapQuery.data?.desktopShell ?? null,
+    authentication: bootstrapQuery.data?.appSession?.authentication ?? null,
+    session: bootstrapQuery.data?.appSession?.workspace ?? null,
+    preferences,
+    appearanceMode: preferences.appearanceMode,
+    preferredAIProvider: preferences.preferredAIProvider,
+    handleSignIn,
+    handleSignOut,
+    handlePreferredAIProviderChange,
+    handleAppearanceModeChange,
+  };
+}

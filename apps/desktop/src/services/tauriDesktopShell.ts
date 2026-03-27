@@ -29,9 +29,7 @@ interface RawDesktopShellMetadata {
   supportsGithubPublishAutomation?: boolean;
 }
 
-function normalizeDesktopShellMetadata(
-  rawMetadata: RawDesktopShellMetadata,
-): DesktopShellMetadata {
+function normalizeDesktopShellMetadata(rawMetadata: RawDesktopShellMetadata): DesktopShellMetadata {
   return {
     runtime: rawMetadata.runtime ?? browserShellMetadata.runtime,
     platform: rawMetadata.platform ?? browserShellMetadata.platform,

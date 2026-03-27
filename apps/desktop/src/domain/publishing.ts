@@ -1,3 +1,4 @@
+import type { PublishPreflightView } from "@harness-docs/contracts";
 import type {
   MembershipId,
   PublishRecord,
@@ -61,6 +62,10 @@ export interface PublishingService {
   getWorkspacePublishingSnapshot: (
     workspaceId: WorkspaceId,
   ) => Promise<WorkspacePublishingSnapshot>;
+  getDocumentPublishPreflight: (
+    workspaceId: WorkspaceId,
+    documentId: string,
+  ) => Promise<PublishPreflightView | null>;
   getPublishRecord: (
     workspaceId: WorkspaceId,
     publishRecordId: PublishRecordId,

@@ -1,11 +1,7 @@
 import { dedupeByKey, dedupeStrings } from "./shared.ts";
 
 export type DocumentStatus = "draft" | "in_review" | "approved" | "published" | "archived";
-export type DocumentReviewStatus =
-  | "idle"
-  | "review_requested"
-  | "changes_requested"
-  | "approved";
+export type DocumentReviewStatus = "idle" | "review_requested" | "changes_requested" | "approved";
 export type DocumentApprovalState =
   | "not_requested"
   | "pending"
@@ -113,7 +109,7 @@ export interface DeriveDocumentStateInput {
 export function buildDocumentMarkdown(
   title: string,
   template: TemplateSnapshot,
-  providedMarkdown?: string
+  providedMarkdown?: string,
 ) {
   if (providedMarkdown && providedMarkdown.trim().length > 0) {
     return providedMarkdown;
@@ -137,7 +133,7 @@ function buildBlockingIssues(unresolved: UnresolvedApprovalSnapshot[]) {
       summary: entry.summary,
       requiredAction: entry.requiredAction,
       relatedApprovalIds: entry.approvalId ? [entry.approvalId] : [],
-      relatedInvalidationIds: [...entry.invalidationIds]
+      relatedInvalidationIds: [...entry.invalidationIds],
     }));
 }
 
@@ -145,37 +141,38 @@ function buildUnresolvedApprovals(
   documentId: string,
   approvals: ApprovalSnapshot[],
   invalidations: InvalidationSnapshot[],
-  preservedMissingApprovals: UnresolvedApprovalSnapshot[]
+  preservedMissingApprovals: UnresolvedApprovalSnapshot[],
 ) {
   const derived = approvals
-    .filter((approval) =>
-      ["pending", "changes_requested", "invalidated"].includes(approval.state)
-    )
-    .map((approval) => ({
-      id: `unresolved-${approval.id}`,
-      status: approval.state === "pending" ? "pending" : "rejected",
-      documentId,
-      label: approval.reviewerLabel,
-      authority: approval.authority,
-      summary:
-        approval.decisionNote ??
-        (approval.state === "pending"
-          ? `${approval.reviewerLabel} has not responded yet.`
-          : `${approval.reviewerLabel} still requires follow-up before the document is fully current.`),
-      requiredAction:
-        approval.state === "pending"
-          ? "Collect the reviewer decision or preserve the open approval in the publish record."
-          : "Resolve the approval issue in-app or disclose the unresolved state during publish.",
-      approvalId: approval.id,
-      membershipId: approval.membershipId,
-      invalidationIds: invalidations
-        .filter((invalidation) => invalidation.affectsApprovalIds.includes(approval.id))
-        .map((invalidation) => invalidation.id)
-    }) satisfies UnresolvedApprovalSnapshot);
+    .filter((approval) => ["pending", "changes_requested", "invalidated"].includes(approval.state))
+    .map(
+      (approval) =>
+        ({
+          id: `unresolved-${approval.id}`,
+          status: approval.state === "pending" ? "pending" : "rejected",
+          documentId,
+          label: approval.reviewerLabel,
+          authority: approval.authority,
+          summary:
+            approval.decisionNote ??
+            (approval.state === "pending"
+              ? `${approval.reviewerLabel} has not responded yet.`
+              : `${approval.reviewerLabel} still requires follow-up before the document is fully current.`),
+          requiredAction:
+            approval.state === "pending"
+              ? "Collect the reviewer decision or preserve the open approval in the publish record."
+              : "Resolve the approval issue in-app or disclose the unresolved state during publish.",
+          approvalId: approval.id,
+          membershipId: approval.membershipId,
+          invalidationIds: invalidations
+            .filter((invalidation) => invalidation.affectsApprovalIds.includes(approval.id))
+            .map((invalidation) => invalidation.id),
+        }) satisfies UnresolvedApprovalSnapshot,
+    );
 
   return dedupeByKey(
     [...derived, ...preservedMissingApprovals.filter((entry) => entry.status === "missing")],
-    (entry) => entry.id
+    (entry) => entry.id,
   );
 }
 
@@ -196,16 +193,16 @@ export function deriveDocumentState(input: DeriveDocumentStateInput): DocumentDe
     input.documentId,
     input.approvals,
     input.invalidations,
-    input.preservedMissingApprovals ?? []
+    input.preservedMissingApprovals ?? [],
   );
   const hasInvalidated = input.approvals.some((approval) => approval.state === "invalidated");
   const hasChangesRequested = input.approvals.some(
-    (approval) => approval.state === "changes_requested"
+    (approval) => approval.state === "changes_requested",
   );
   const hasPending = input.approvals.some((approval) => approval.state === "pending");
   const hasRestored = input.approvals.some((approval) => approval.state === "restored");
   const hasApproved = input.approvals.some((approval) =>
-    ["approved", "restored"].includes(approval.state)
+    ["approved", "restored"].includes(approval.state),
   );
   const requestedApprovals = input.approvals.filter((approval) => approval.requestedAt != null);
   const respondedApprovals = input.approvals
@@ -265,12 +262,14 @@ export function deriveDocumentState(input: DeriveDocumentStateInput): DocumentDe
     requestedByMembershipId: requestedApprovals[0]?.requestedByMembershipId ?? null,
     lastReviewedAt: latestReviewedApproval?.respondedAt ?? null,
     lastReviewedByMembershipId: latestReviewedApproval?.decisionByMembershipId ?? null,
-    approvedAt: reviewStatus === "approved" ? latestReviewedApproval?.respondedAt ?? null : null,
+    approvedAt: reviewStatus === "approved" ? (latestReviewedApproval?.respondedAt ?? null) : null,
     freshnessStatus,
     staleRationaleRequired: freshnessStatus === "stale",
     staleEvaluatedAt: input.timestamp,
     staleSummary: buildFreshnessSummary(input.invalidations),
-    staleReasons: dedupeStrings(input.invalidations.map((entry) => entry.reason)) as DocumentFreshnessReason[],
+    staleReasons: dedupeStrings(
+      input.invalidations.map((entry) => entry.reason),
+    ) as DocumentFreshnessReason[],
     unresolvedApprovals,
     unresolvedApprovalIds: dedupeStrings(unresolvedApprovals.map((entry) => entry.approvalId)),
     invalidationIds: input.invalidations.map((entry) => entry.id),
@@ -281,6 +280,6 @@ export function deriveDocumentState(input: DeriveDocumentStateInput): DocumentDe
         ? `This document retains ${unresolvedApprovals.length} unresolved approval item${unresolvedApprovals.length === 1 ? "" : "s"} in the app-native review log.`
         : freshnessStatus === "stale"
           ? "This document is stale and requires rationale before GitHub publication begins."
-          : "No unresolved approval or freshness issue is currently attached to this document."
+          : "No unresolved approval or freshness issue is currently attached to this document.",
   };
 }

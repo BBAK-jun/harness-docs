@@ -3,6 +3,7 @@ import { serve } from "@hono/node-server";
 import { createApiApp } from "@harness-docs/contracts";
 import { createMockWorkspaceSessionSource } from "./data/mockWorkspaceSessionSource.ts";
 import { createPostgresWorkspaceSessionSource } from "./data/postgresWorkspaceSessionSource.ts";
+import { createPublishGovernanceAdapter } from "./domain/publishGovernanceAdapter.ts";
 
 const port = Number(process.env.PORT ?? 4020);
 const hostname = process.env.HOST ?? "127.0.0.1";
@@ -13,6 +14,7 @@ const app = createApiApp({
     dataSourceMode === "mock"
       ? createMockWorkspaceSessionSource()
       : createPostgresWorkspaceSessionSource(),
+  publishGovernanceAdapter: createPublishGovernanceAdapter(),
 });
 
 const server = serve(

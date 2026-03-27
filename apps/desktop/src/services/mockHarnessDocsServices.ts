@@ -22,6 +22,7 @@ import {
   createMockPublishingService,
   createMockWorkspaceMembershipService,
 } from "./mockDomainServices";
+import { createRpcPublishingService } from "./rpcPublishing";
 import { createRpcWorkspaceSessionService } from "./rpcWorkspaceSession";
 import { createDesktopShellService } from "./tauriDesktopShell";
 
@@ -118,7 +119,9 @@ export function createMockHarnessDocsServices(
   const workspaceSession = createMockWorkspaceSessionService();
   const workspaceMemberships = createMockWorkspaceMembershipService();
   const approvals = createMockApprovalService();
-  const publishing = createMockPublishingService();
+  const publishing = createRpcPublishingService({
+    fallbackService: createMockPublishingService(),
+  });
   const aiTasks = createMockAITaskService();
 
   return {

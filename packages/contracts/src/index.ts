@@ -4,6 +4,9 @@ import { Hono } from "hono";
 import { hc } from "hono/client";
 import { cors } from "hono/cors";
 import { z } from "zod";
+import type { PublishPreflightEnvelopeDto, PublishPreflightView } from "./publish-governance";
+
+export * from "./publish-governance";
 
 export type NavigationAreaKey =
   | "documents"
@@ -190,6 +193,15 @@ export interface WorkspaceSessionDataSource {
     publishRecordId: string,
     input: PublishRecordExecuteRequestDto,
   ) => Promise<PublishExecutionEnvelopeDto | null>;
+}
+
+export interface PublishGovernanceAdapter {
+  projectDocumentPublishPreflight: (params: {
+    workspaceId: string;
+    documentId: string;
+    workspaceGraph: unknown;
+    documents: unknown[];
+  }) => PublishPreflightView | null;
 }
 
 export const intakePreviewRequestSchema = z.object({
@@ -396,6 +408,7 @@ function createDefaultDataSource(): WorkspaceSessionDataSource {
 
 export interface CreateApiAppOptions {
   dataSource?: WorkspaceSessionDataSource;
+  publishGovernanceAdapter?: PublishGovernanceAdapter;
 }
 
 const workspaceParamSchema = z.object({
@@ -533,6 +546,7 @@ function findEntityById(items: unknown[] | null, id: string) {
 
 export function createApiApp(options: CreateApiAppOptions = {}) {
   const dataSource = options.dataSource ?? createDefaultDataSource();
+  const publishGovernanceAdapter = options.publishGovernanceAdapter;
   const app = new Hono();
 
   app.use("*", cors());
@@ -578,6 +592,54 @@ export function createApiApp(options: CreateApiAppOptions = {}) {
         return successResponse(c, {
           workspaceGraph,
         } satisfies WorkspaceGraphEnvelopeDto);
+      },
+    )
+    .get(
+      "/api/workspaces/:workspaceId/documents/:documentId/publish-preflight",
+      validateRequest("param", workspaceDocumentParamSchema),
+      async (c) => {
+        const { workspaceId, documentId } = c.req.valid("param");
+        const [workspaceGraph, documents] = await Promise.all([
+          dataSource.getWorkspaceGraph(workspaceId),
+          dataSource.getWorkspaceDocuments(workspaceId),
+        ]);
+
+        if (!workspaceGraph || !documents) {
+          return workspaceNotFound(c, workspaceId);
+        }
+
+        if (!findEntityById(documents, documentId)) {
+          return documentNotFound(c, documentId);
+        }
+
+        if (!publishGovernanceAdapter) {
+          return errorResponse(
+            c,
+            500,
+            "publish_governance_adapter_missing",
+            "Publish governance projection is not configured for this API instance.",
+          );
+        }
+
+        const preflight = publishGovernanceAdapter.projectDocumentPublishPreflight({
+          workspaceId,
+          documentId,
+          workspaceGraph,
+          documents,
+        });
+
+        if (!preflight) {
+          return errorResponse(
+            c,
+            404,
+            "publish_preflight_not_found",
+            `Publish preflight for document '${documentId}' is not available.`,
+          );
+        }
+
+        return successResponse(c, {
+          preflight,
+        } satisfies PublishPreflightEnvelopeDto);
       },
     )
     .get(

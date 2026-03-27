@@ -27,9 +27,7 @@ interface SheetProps {
 }
 
 function Sheet({ children, onOpenChange, open }: SheetProps) {
-  return (
-    <SheetContext.Provider value={{ onOpenChange, open }}>{children}</SheetContext.Provider>
-  );
+  return <SheetContext.Provider value={{ onOpenChange, open }}>{children}</SheetContext.Provider>;
 }
 
 const sheetContentVariants = cva(
@@ -95,7 +93,10 @@ const SheetTitle = React.forwardRef<HTMLHeadingElement, React.HTMLAttributes<HTM
   ({ className, ...props }, ref) => (
     <h2
       ref={ref}
-      className={cn("text-lg font-semibold tracking-tight text-[var(--popover-foreground)]", className)}
+      className={cn(
+        "text-lg font-semibold tracking-tight text-[var(--popover-foreground)]",
+        className,
+      )}
       {...props}
     />
   ),

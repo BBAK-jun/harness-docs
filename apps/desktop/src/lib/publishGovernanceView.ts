@@ -1,4 +1,7 @@
 import {
+  type PublishGovernanceBlockingIssueSnapshot,
+  type PublishGovernanceDocumentSnapshot,
+  type PublishGovernancePublishRecordSnapshot,
   type DocumentStatusView,
   type DocumentStaleReason,
   type PublishBlockingIssue,
@@ -53,57 +56,29 @@ function buildStaleReasons(document: WorkspaceDocument, nowIso: string): Documen
   return reasons;
 }
 
-function toEligibility(document: WorkspaceDocument, staleReasons: DocumentStaleReason[]): PublishEligibility {
-  const blockingIssues: PublishBlockingIssue[] = document.prePublication.blockingIssues.map(
-    (issue) => ({
-      code:
-        issue.kind === "approval_missing"
-          ? "approval_missing"
-          : issue.kind === "changes_requested"
-            ? "approval_changes_requested"
-            : issue.kind === "stale_rationale_required"
-              ? "metadata_refresh_required"
-              : "validation_failed",
-      summary: issue.summary,
-      requiredAction: issue.requiredAction,
-    }),
-  );
-
-  if (document.prePublication.readiness === "blocked") {
-    return {
-      status: "blocked",
-      canPublish: false,
-      requiresRationale: false,
-      staleReasons,
-      blockingIssues,
-      summary: document.prePublication.summary,
-    };
-  }
-
-  if (document.prePublication.staleRationaleRequired) {
-    return {
-      status: "requires_rationale",
-      canPublish: true,
-      requiresRationale: true,
-      staleReasons,
-      blockingIssues,
-      summary: document.prePublication.summary,
-    };
-  }
-
-  return {
-    status: "allowed",
-    canPublish: true,
-    requiresRationale: false,
-    staleReasons,
-    blockingIssues,
-    summary: document.prePublication.summary,
-  };
+function toBlockingIssueSnapshots(
+  document: WorkspaceDocument,
+): PublishGovernanceBlockingIssueSnapshot[] {
+  return document.prePublication.blockingIssues.map((issue) => ({
+    code:
+      issue.kind === "approval_missing"
+        ? "approval_missing"
+        : issue.kind === "changes_requested"
+          ? "approval_changes_requested"
+          : issue.kind === "stale_rationale_required"
+            ? "metadata_refresh_required"
+            : "validation_failed",
+    summary: issue.summary,
+    requiredAction: issue.requiredAction,
+    severity: issue.severity,
+  }));
 }
 
-export function toDocumentStatusView(document: WorkspaceDocument, nowIso: string): DocumentStatusView {
+export function toGovernanceDocumentSnapshot(
+  document: WorkspaceDocument,
+  nowIso: string,
+): PublishGovernanceDocumentSnapshot {
   const staleReasons = buildStaleReasons(document, nowIso);
-  const publishEligibility = toEligibility(document, staleReasons);
 
   return {
     id: document.id,
@@ -112,18 +87,20 @@ export function toDocumentStatusView(document: WorkspaceDocument, nowIso: string
     type: document.type,
     updatedAt: document.lifecycle.updatedAt,
     lastSyncedAt: document.lifecycle.review.freshness.evaluatedAt ?? null,
-    storedStatus:
-      document.lifecycle.status === "published" ? "published_pr_created" : "draft",
+    storedStatus: document.lifecycle.status === "published" ? "published_pr_created" : "draft",
     freshnessStatus:
       document.lifecycle.review.freshness.status === "stale"
         ? "stale"
-        : document.prePublication.blockingIssues.some((issue) => issue.kind === "stale_rationale_required")
+        : document.prePublication.blockingIssues.some(
+              (issue) => issue.kind === "stale_rationale_required",
+            )
           ? "sync_required"
           : "fresh",
-    isStale: staleReasons.length > 0,
     staleReasons,
     validation: {
-      status: document.prePublication.blockingIssues.some((issue) => issue.kind === "review_request_required")
+      status: document.prePublication.blockingIssues.some(
+        (issue) => issue.kind === "review_request_required",
+      )
         ? "failed"
         : "passed",
       checkedAt: document.prePublication.evaluatedAt,
@@ -146,6 +123,94 @@ export function toDocumentStatusView(document: WorkspaceDocument, nowIso: string
           ]
         : [],
     },
+    blockingIssues: toBlockingIssueSnapshots(document),
+    summary: document.prePublication.summary,
+    requiresRationale: document.prePublication.staleRationaleRequired,
+  };
+}
+
+export function toGovernancePublishRecordSnapshot(
+  publishRecord: PublishRecord | null,
+): PublishGovernancePublishRecordSnapshot | null {
+  if (!publishRecord) {
+    return null;
+  }
+
+  return {
+    status:
+      publishRecord.lifecycle.status === "published"
+        ? "published_pr_created"
+        : publishRecord.lifecycle.status === "ready_for_publish"
+          ? "draft"
+          : publishRecord.lifecycle.status,
+    pullRequest:
+      publishRecord.publication.pullRequest.url != null &&
+      publishRecord.publication.pullRequest.number != null
+        ? {
+            id: `${publishRecord.id}-pr`,
+            number: publishRecord.publication.pullRequest.number,
+            url: publishRecord.publication.pullRequest.url,
+            branchName: publishRecord.publication.repository.branchName,
+          }
+        : null,
+  };
+}
+
+function toEligibility(document: PublishGovernanceDocumentSnapshot): PublishEligibility {
+  const blockingIssues: PublishBlockingIssue[] = document.blockingIssues.map(
+    ({ code, summary, requiredAction }) => ({ code, summary, requiredAction }),
+  );
+
+  if (document.blockingIssues.some((issue) => issue.severity === "blocking")) {
+    return {
+      status: "blocked",
+      canPublish: false,
+      requiresRationale: false,
+      staleReasons: document.staleReasons,
+      blockingIssues,
+      summary: document.summary,
+    };
+  }
+
+  if (document.requiresRationale) {
+    return {
+      status: "requires_rationale",
+      canPublish: true,
+      requiresRationale: true,
+      staleReasons: document.staleReasons,
+      blockingIssues,
+      summary: document.summary,
+    };
+  }
+
+  return {
+    status: "allowed",
+    canPublish: true,
+    requiresRationale: false,
+    staleReasons: document.staleReasons,
+    blockingIssues,
+    summary: document.summary,
+  };
+}
+
+export function toDocumentStatusView(
+  snapshot: PublishGovernanceDocumentSnapshot,
+): DocumentStatusView {
+  const publishEligibility = toEligibility(snapshot);
+
+  return {
+    id: snapshot.id,
+    workspaceId: snapshot.workspaceId,
+    title: snapshot.title,
+    type: snapshot.type,
+    updatedAt: snapshot.updatedAt,
+    lastSyncedAt: snapshot.lastSyncedAt,
+    storedStatus: snapshot.storedStatus,
+    freshnessStatus: snapshot.freshnessStatus,
+    isStale: snapshot.staleReasons.length > 0,
+    staleReasons: snapshot.staleReasons,
+    validation: snapshot.validation,
+    metadata: snapshot.metadata,
     publishEligibility,
     activePullRequest: null,
   };
@@ -191,7 +256,7 @@ export function toPublishPreflightView(
   publishRecord: PublishRecord | null,
   nowIso: string,
 ): PublishPreflightView {
-  const documentView = toDocumentStatusView(document, nowIso);
+  const documentView = toDocumentStatusView(toGovernanceDocumentSnapshot(document, nowIso));
   const currentState = getPublishFlowState(documentView, publishRecord);
 
   return {
@@ -262,7 +327,9 @@ export function getDefaultPublishGovernanceSnapshot(workspaceGraph: WorkspaceGra
     workspaceGraph.documents.find((entry) =>
       publishRecord ? publishRecord.staleDocumentIds.includes(entry.id) : false,
     ) ??
-    workspaceGraph.documents.find((entry) => entry.prePublication.publishRecordId === publishRecord?.id) ??
+    workspaceGraph.documents.find(
+      (entry) => entry.prePublication.publishRecordId === publishRecord?.id,
+    ) ??
     workspaceGraph.documents[0];
 
   if (!document) {

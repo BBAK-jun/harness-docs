@@ -1,38 +1,20 @@
-import { useEffect, useMemo, useRef, useState } from "react";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useEffect, useMemo } from "react";
+import { useMutation } from "@tanstack/react-query";
 import type { AITaskExecutionResult } from "../domain/aiTasks";
 import type { PublishExecutionResult } from "../domain/publishing";
 import { buildAITaskEntryPoints } from "../lib/aiTaskEntryPoints";
 import { buildAITaskExecutionInput, buildPublishExecutionInput } from "../lib/runtimePayloads";
-import { desktopMutationKeys, desktopQueryKeys } from "../queries/queryKeys";
-import { useHarnessDocsServices } from "../services/HarnessDocsServicesProvider";
+import { desktopMutationKeys } from "../queries/queryKeys";
 import type {
-  AppSessionSnapshot,
   AppPreferences,
-  AuthenticationSessionSnapshot,
-  DesktopShellMetadata,
-  WorkspaceSessionSnapshot,
 } from "../services/contracts";
-import { fallbackAppPreferences } from "../services/mockHarnessDocsServices";
 import type {
   AITaskEntryPoint,
-  CommentBlockKind,
-  ContentSectionKind,
-  DocumentBlockCommentAnchor,
   NavigationArea,
-  WorkspaceDocument,
   WorkspaceGraph,
 } from "../types";
-import { useDocumentComments } from "./useDocumentComments";
-import { useDocumentEditingLocks } from "./useDocumentEditingLocks";
-
-const defaultArea: NavigationArea = "documents";
-
-interface HarnessDocsBootstrapData {
-  desktopShell: DesktopShellMetadata | null;
-  appSession: AppSessionSnapshot | null;
-  preferences: AppPreferences;
-}
+import { useAppBootstrap } from "./useAppBootstrap";
+import { useWorkspaceLocalState } from "./useWorkspaceLocalState";
 
 type AsyncTaskState<TResult> = {
   status: "idle" | "running" | "succeeded" | "failed";
@@ -41,141 +23,25 @@ type AsyncTaskState<TResult> = {
   entryId?: string | null;
 };
 
-function mapSectionKindToBlockKind(kind: ContentSectionKind | undefined): CommentBlockKind {
-  switch (kind) {
-    case "list":
-      return "list_item";
-    case "checklist":
-      return "checklist_item";
-    case "decision":
-      return "decision";
-    default:
-      return "paragraph";
-  }
-}
-
-function buildDefaultBlockCommentAnchor(
-  workspaceGraph: WorkspaceGraph,
-  document: WorkspaceDocument,
-): DocumentBlockCommentAnchor {
-  const template = workspaceGraph.templates.find((entry) => entry.id === document.templateId);
-  const section = template?.sections[0];
-  const excerpt =
-    document.markdownSource
-      .split("\n")
-      .map((line) => line.trim())
-      .find((line) => line.length > 0 && !line.startsWith("#")) ?? document.title;
-
-  return {
-    documentId: document.id,
-    kind: "block",
-    blockId: section?.id ?? `${document.slug}_block`,
-    blockKind: mapSectionKindToBlockKind(section?.kind),
-    headingPath: [section?.title ?? document.title],
-    excerpt,
-    startOffset: null,
-    endOffset: null,
-  };
-}
-
-function buildSelectedDocumentMap(snapshot: WorkspaceSessionSnapshot) {
-  return Object.fromEntries(
-    snapshot.workspaceGraphs.map((graph) => [graph.workspace.id, graph.documents[0]?.id ?? ""]),
-  );
-}
-
-interface HarnessDocsAppRouteState {
+export interface HarnessDocsAppRouteState {
   activeWorkspaceId: string | null;
   activeArea: NavigationArea;
   selectedDocumentId: string | null;
 }
 
-interface HarnessDocsAppNavigation {
+export interface HarnessDocsAppNavigation {
   onAreaChange: (area: NavigationArea) => void;
   onSelectedDocumentChange: (documentId: string) => void;
   onWorkspaceEnter: (workspaceId: string) => void;
   onWorkspaceLeave: () => void;
 }
 
-async function loadBootstrapState(
-  services: ReturnType<typeof useHarnessDocsServices>,
-): Promise<HarnessDocsBootstrapData> {
-  const [desktopShell, appSession, preferences] = await Promise.all([
-    services.desktopShell.getMetadata(),
-    services.appSession.getSnapshot(),
-    services.preferences.read(),
-  ]);
-
-  return {
-    desktopShell,
-    appSession,
-    preferences,
-  };
-}
-
 export function useHarnessDocsApp(
   routeState: HarnessDocsAppRouteState,
   navigation: HarnessDocsAppNavigation,
 ) {
-  const services = useHarnessDocsServices();
-  const queryClient = useQueryClient();
-  const bootstrapQuery = useQuery({
-    queryKey: desktopQueryKeys.bootstrap(),
-    queryFn: () => loadBootstrapState(services),
-  });
-  const [preferences, setPreferences] = useState<AppPreferences>(fallbackAppPreferences);
-  const [selectedDocumentIds, setSelectedDocumentIds] = useState<Record<string, string>>({});
-  const [documentDrafts, setDocumentDrafts] = useState<Record<string, string>>({});
-  const lastInteractionTouchMsRef = useRef(0);
-
-  useEffect(() => {
-    if (!bootstrapQuery.data) {
-      return;
-    }
-
-    setPreferences(bootstrapQuery.data.preferences);
-  }, [bootstrapQuery.data]);
-
-  useEffect(() => {
-    const workspaceSession = bootstrapQuery.data?.appSession?.workspace;
-
-    if (!workspaceSession) {
-      setSelectedDocumentIds({});
-      return;
-    }
-
-    setSelectedDocumentIds(buildSelectedDocumentMap(workspaceSession));
-  }, [bootstrapQuery.data?.appSession?.workspace]);
-
-  const writePreferencesMutation = useMutation({
-    mutationKey: desktopMutationKeys.preferences.write(),
-    mutationFn: async (nextPreferences: AppPreferences) => {
-      await services.preferences.write(nextPreferences);
-    },
-  });
-
-  const authenticationMutation = useMutation({
-    mutationKey: desktopMutationKeys.authentication.session(),
-    mutationFn: async (
-      action:
-        | {
-            type: "sign-in";
-            provider: AuthenticationSessionSnapshot["provider"]["id"];
-          }
-        | { type: "sign-out" },
-    ) => {
-      if (action.type === "sign-in") {
-        await services.authentication.startSignIn(action.provider);
-      } else {
-        await services.authentication.signOut();
-      }
-
-      const nextBootstrap = await loadBootstrapState(services);
-      queryClient.setQueryData(desktopQueryKeys.bootstrap(), nextBootstrap);
-
-      return nextBootstrap;
-    },
-  });
+  const bootstrap = useAppBootstrap();
+  const { services } = bootstrap;
 
   const aiTaskMutation = useMutation({
     mutationKey: desktopMutationKeys.ai.runEntryPoint(),
@@ -211,31 +77,41 @@ export function useHarnessDocsApp(
     },
   });
 
-  const isReady = bootstrapQuery.isSuccess;
-  const authentication = bootstrapQuery.data?.appSession?.authentication ?? null;
-  const session = bootstrapQuery.data?.appSession?.workspace ?? null;
+  const authentication = bootstrap.authentication;
+  const session = bootstrap.session;
   const workspaces = session?.workspaces ?? [];
   const user = authentication?.user ?? null;
-  const { workspaceGraphs, createBlockCommentThread } = useDocumentComments(
-    session?.workspaceGraphs ?? [],
-  );
-  const {
-    getDocumentLockForDocument,
-    getActiveLockForDocument,
-    acquireDocumentEditingLock,
-    releaseDocumentEditingLock,
-    touchDocumentEditingLock,
-  } = useDocumentEditingLocks(workspaceGraphs);
-
   const activeWorkspace = useMemo(
     () => workspaces.find((workspace) => workspace.id === routeState.activeWorkspaceId) ?? null,
     [routeState.activeWorkspaceId, workspaces],
   );
-  const activeWorkspaceGraph = useMemo(
-    () =>
-      workspaceGraphs.find((graph) => graph.workspace.id === routeState.activeWorkspaceId) ?? null,
-    [routeState.activeWorkspaceId, workspaceGraphs],
-  );
+  const activeMembershipId = useMemo(() => {
+    if (!activeWorkspace || !user) {
+      return null;
+    }
+
+    const graph = session?.workspaceGraphs.find((entry) => entry.workspace.id === activeWorkspace.id);
+    return (
+      graph?.memberships.find(
+        (membership) => membership.userId === user.id && membership.lifecycle.status === "active",
+      )?.id ?? null
+    );
+  }, [activeWorkspace, session?.workspaceGraphs, user]);
+  const localState = useWorkspaceLocalState(session?.workspaceGraphs ?? [], {
+    activeWorkspaceId: routeState.activeWorkspaceId,
+    selectedDocumentId: routeState.selectedDocumentId,
+    userId: user?.id ?? null,
+    activeMembershipId,
+    onSelectedDocumentChange: navigation.onSelectedDocumentChange,
+  });
+  const {
+    workspaceGraphs,
+    activeWorkspaceGraph,
+    activeDocument,
+    activeDocumentSource,
+    activeDocumentLock,
+  } =
+    localState;
   const activeMembership = useMemo(() => {
     if (!activeWorkspaceGraph || !user) {
       return null;
@@ -247,45 +123,17 @@ export function useHarnessDocsApp(
       ) ?? null
     );
   }, [activeWorkspaceGraph, user]);
-  const activeDocument = useMemo(() => {
-    if (!activeWorkspaceGraph) {
-      return null;
-    }
-
-    const selectedDocumentId =
-      routeState.selectedDocumentId ?? selectedDocumentIds[activeWorkspaceGraph.workspace.id];
-
-    return (
-      activeWorkspaceGraph.documents.find((document) => document.id === selectedDocumentId) ??
-      activeWorkspaceGraph.documents[0] ??
-      null
-    );
-  }, [activeWorkspaceGraph, selectedDocumentIds]);
-  const activeDocumentSource = useMemo(() => {
-    if (!activeDocument) {
-      return "";
-    }
-
-    return documentDrafts[activeDocument.id] ?? activeDocument.markdownSource;
-  }, [activeDocument, documentDrafts]);
-  const activeDocumentLock = useMemo(() => {
-    if (!activeDocument) {
-      return null;
-    }
-
-    return getDocumentLockForDocument(activeDocument.id);
-  }, [activeDocument, getDocumentLockForDocument]);
   const aiEntryPoints = useMemo(
     () =>
       activeWorkspaceGraph
         ? buildAITaskEntryPoints({
             workspaceGraph: activeWorkspaceGraph,
             activeDocument,
-            preferredProvider: preferences.preferredAIProvider,
+            preferredProvider: bootstrap.preferredAIProvider,
             activeMembershipId: activeMembership?.id ?? null,
           })
         : [],
-    [activeDocument, activeMembership, activeWorkspaceGraph, preferences.preferredAIProvider],
+    [activeDocument, activeMembership, activeWorkspaceGraph, bootstrap.preferredAIProvider],
   );
 
   useEffect(() => {
@@ -302,151 +150,33 @@ export function useHarnessDocsApp(
     const touchActiveLock = () => {
       const now = Date.now();
 
-      if (now - lastInteractionTouchMsRef.current < 60_000) {
+      if (now - localState.lastInteractionTouchMsRef.current < 60_000) {
         return;
       }
 
-      lastInteractionTouchMsRef.current = now;
-      touchDocumentEditingLock({
+      localState.lastInteractionTouchMsRef.current = now;
+      localState.touchDocumentEditingLock({
         documentId: activeDocument.id,
         membershipId: activeMembership.id,
       });
     };
 
     return services.desktopWindow.subscribeToUserActivity(touchActiveLock);
-  }, [activeDocument, activeDocumentLock, activeMembership, services, touchDocumentEditingLock]);
-
-  const handleWorkspaceEnter = (workspaceId: string) => {
-    navigation.onWorkspaceEnter(workspaceId);
-  };
-
-  const handleWorkspaceLeave = () => {
-    navigation.onWorkspaceLeave();
-  };
-
-  const handleSignIn = async (provider: AuthenticationSessionSnapshot["provider"]["id"]) => {
-    await authenticationMutation.mutateAsync({
-      type: "sign-in",
-      provider,
-    });
-  };
-
-  const handleSignOut = async () => {
-    await authenticationMutation.mutateAsync({
-      type: "sign-out",
-    });
-    navigation.onWorkspaceLeave();
-  };
-
-  const handleDocumentSelect = (documentId: string) => {
-    if (!activeWorkspaceGraph) {
-      return;
-    }
-
-    setSelectedDocumentIds((current) => ({
-      ...current,
-      [activeWorkspaceGraph.workspace.id]: documentId,
-    }));
-    navigation.onSelectedDocumentChange(documentId);
-  };
-
-  const handleDocumentSourceChange = (document: WorkspaceDocument, nextSource: string) => {
-    const workspaceGraph = workspaceGraphs.find(
-      (graph) => graph.workspace.id === document.workspaceId,
-    );
-    const currentMembership =
-      workspaceGraph?.memberships.find(
-        (membership) => membership.userId === user?.id && membership.lifecycle.status === "active",
-      ) ?? null;
-    const activeLock = getActiveLockForDocument(document.id);
-
-    if (!currentMembership || activeLock?.lockedByMembershipId !== currentMembership.id) {
-      return;
-    }
-
-    touchDocumentEditingLock({
-      documentId: document.id,
-      membershipId: currentMembership.id,
-    });
-
-    setDocumentDrafts((current) => ({
-      ...current,
-      [document.id]: nextSource,
-    }));
-  };
-
-  const handleStartEditing = (document: WorkspaceDocument) => {
-    if (!activeMembership) {
-      return;
-    }
-
-    acquireDocumentEditingLock({
-      document,
-      membershipId: activeMembership.id,
-      area: "editor",
-    });
-  };
-
-  const handleReleaseEditing = (document: WorkspaceDocument) => {
-    if (!activeMembership) {
-      return;
-    }
-
-    releaseDocumentEditingLock({
-      documentId: document.id,
-      membershipId: activeMembership.id,
-      reason: "manual_release",
-    });
-  };
-
-  const handleCreateBlockComment = (document: WorkspaceDocument, bodyMarkdown: string) => {
-    if (!activeMembership || !activeWorkspaceGraph || bodyMarkdown.trim().length === 0) {
-      return;
-    }
-
-    createBlockCommentThread({
-      workspaceId: document.workspaceId,
-      documentId: document.id,
-      authorMembershipId: activeMembership.id,
-      bodyMarkdown,
-      anchor: buildDefaultBlockCommentAnchor(activeWorkspaceGraph, document),
-      linkedDocumentIds: document.linkedDocumentIds,
-      triggeredReviewDocumentIds: document.linkedDocumentIds,
-    });
-  };
-
-  const handlePreferredAIProviderChange = (
-    preferredAIProvider: AppPreferences["preferredAIProvider"],
-  ) => {
-    const nextPreferences = {
-      ...preferences,
-      preferredAIProvider,
-    };
-
-    setPreferences(nextPreferences);
-    writePreferencesMutation.mutate(nextPreferences);
-  };
-
-  const handleAppearanceModeChange = (appearanceMode: AppPreferences["appearanceMode"]) => {
-    const nextPreferences = {
-      ...preferences,
-      appearanceMode,
-    };
-
-    setPreferences(nextPreferences);
-    writePreferencesMutation.mutate(nextPreferences);
-  };
+  }, [
+    activeDocument,
+    activeDocumentLock,
+    activeMembership,
+    localState.lastInteractionTouchMsRef,
+    localState.touchDocumentEditingLock,
+    services,
+  ]);
 
   const handleLaunchAITaskEntryPoint = async (entry: AITaskEntryPoint) => {
     if (entry.documentId && activeWorkspaceGraph) {
-      setSelectedDocumentIds((current) => ({
-        ...current,
-        [activeWorkspaceGraph.workspace.id]: entry.documentId ?? "",
-      }));
       navigation.onSelectedDocumentChange(entry.documentId);
     }
 
-    handlePreferredAIProviderChange(entry.provider);
+    bootstrap.handlePreferredAIProviderChange(entry.provider);
     navigation.onAreaChange("ai");
 
     if (!activeWorkspaceGraph) {
@@ -456,7 +186,7 @@ export function useHarnessDocsApp(
     await aiTaskMutation.mutateAsync({
       entry,
       workspaceGraph: activeWorkspaceGraph,
-      drafts: documentDrafts,
+      drafts: localState.documentDrafts,
     });
   };
 
@@ -468,7 +198,7 @@ export function useHarnessDocsApp(
     try {
       await publishMutation.mutateAsync({
         workspaceGraph: activeWorkspaceGraph,
-        drafts: documentDrafts,
+        drafts: localState.documentDrafts,
         membershipId: activeMembership?.id ?? null,
       });
       navigation.onAreaChange("publish");
@@ -536,8 +266,8 @@ export function useHarnessDocsApp(
           };
 
   return {
-    isReady,
-    desktopShell: bootstrapQuery.data?.desktopShell ?? null,
+    isReady: bootstrap.isReady,
+    desktopShell: bootstrap.desktopShell,
     authentication,
     user,
     workspaces,
@@ -545,8 +275,8 @@ export function useHarnessDocsApp(
     activeWorkspace,
     activeWorkspaceGraph,
     activeArea: routeState.activeArea,
-    appearanceMode: preferences.appearanceMode,
-    preferredAIProvider: preferences.preferredAIProvider,
+    appearanceMode: bootstrap.appearanceMode,
+    preferredAIProvider: bootstrap.preferredAIProvider,
     aiEntryPoints,
     aiTaskState,
     publishState,
@@ -554,19 +284,24 @@ export function useHarnessDocsApp(
     activeMembershipId: activeMembership?.id ?? null,
     activeDocumentSource,
     activeDocumentLock,
-    handlePreferredAIProviderChange,
-    handleAppearanceModeChange,
-    handleSignIn,
-    handleSignOut,
-    handleWorkspaceEnter,
-    handleWorkspaceLeave,
-    handleDocumentSelect,
+    handlePreferredAIProviderChange: bootstrap.handlePreferredAIProviderChange,
+    handleAppearanceModeChange: bootstrap.handleAppearanceModeChange,
+    handleSignIn: bootstrap.handleSignIn,
+    handleSignOut: async () => {
+      await bootstrap.handleSignOut();
+      navigation.onWorkspaceLeave();
+    },
+    handleWorkspaceEnter: navigation.onWorkspaceEnter,
+    handleWorkspaceLeave: navigation.onWorkspaceLeave,
+    handleDocumentSelect: localState.handleDocumentSelect,
     handleLaunchAITaskEntryPoint,
     handleExecutePublish,
-    handleDocumentSourceChange,
-    handleStartEditing,
-    handleReleaseEditing,
-    handleCreateBlockComment,
+    handleDocumentSourceChange: localState.handleDocumentSourceChange,
+    handleStartEditing: localState.handleStartEditing,
+    handleReleaseEditing: localState.handleReleaseEditing,
+    handleCreateBlockComment: localState.handleCreateBlockComment,
     handleAreaChange: navigation.onAreaChange,
   };
 }
+
+export type HarnessDocsAppModel = ReturnType<typeof useHarnessDocsApp>;

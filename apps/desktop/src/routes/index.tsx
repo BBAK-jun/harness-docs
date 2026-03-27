@@ -1,18 +1,9 @@
-import { createFileRoute } from "@tanstack/react-router";
-import App from "../App";
+import { Navigate, createFileRoute } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/")({
   component: IndexRoute,
 });
 
 function IndexRoute() {
-  return (
-    <App
-      routeState={{
-        activeArea: "documents",
-        activeWorkspaceId: null,
-        selectedDocumentId: null,
-      }}
-    />
-  );
+  return <Navigate to="/workspaces" />;
 }

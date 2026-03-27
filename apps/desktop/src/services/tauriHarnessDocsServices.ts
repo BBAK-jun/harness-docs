@@ -22,6 +22,7 @@ import {
   createMockPublishingService,
   createMockWorkspaceMembershipService,
 } from "./mockDomainServices";
+import { createRpcPublishingService } from "./rpcPublishing";
 import { createDesktopShellService } from "./tauriDesktopShell";
 import {
   defaultAppPreferences,
@@ -156,13 +157,15 @@ function createTauriWorkspaceSessionService(): WorkspaceSessionService {
 function createTauriPublishingService(
   desktopInfrastructure: DesktopInfrastructure,
 ): PublishingService {
-  const mockPublishing = createMockPublishingService();
+  const basePublishing = createRpcPublishingService({
+    fallbackService: createMockPublishingService(),
+  });
 
   return {
-    ...mockPublishing,
+    ...basePublishing,
     async executePublish(input: PublishExecutionInput): Promise<PublishExecutionResult> {
       if (desktopInfrastructure.runtime !== "tauri") {
-        return mockPublishing.executePublish(input);
+        return basePublishing.executePublish(input);
       }
 
       return desktopInfrastructure.commands.invoke<PublishExecutionResult>(

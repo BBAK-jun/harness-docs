@@ -9,38 +9,190 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as WorkspacesRouteImport } from './routes/workspaces'
+import { Route as SignInRouteImport } from './routes/sign-in'
+import { Route as WorkspaceIdRouteImport } from './routes/$workspaceId'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as WorkspaceIdPublishRouteImport } from './routes/$workspaceId.publish'
+import { Route as WorkspaceIdDocumentsRouteImport } from './routes/$workspaceId.documents'
+import { Route as WorkspaceIdAiRouteImport } from './routes/$workspaceId.ai'
+import { Route as WorkspaceIdDocumentsDocumentIdRouteImport } from './routes/$workspaceId.documents.$documentId'
+import { Route as WorkspaceIdDocumentsDocumentIdEditRouteImport } from './routes/$workspaceId.documents.$documentId.edit'
+import { Route as WorkspaceIdDocumentsDocumentIdCommentsRouteImport } from './routes/$workspaceId.documents.$documentId.comments'
+import { Route as WorkspaceIdDocumentsDocumentIdApprovalsRouteImport } from './routes/$workspaceId.documents.$documentId.approvals'
 
+const WorkspacesRoute = WorkspacesRouteImport.update({
+  id: '/workspaces',
+  path: '/workspaces',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SignInRoute = SignInRouteImport.update({
+  id: '/sign-in',
+  path: '/sign-in',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const WorkspaceIdRoute = WorkspaceIdRouteImport.update({
+  id: '/$workspaceId',
+  path: '/$workspaceId',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const WorkspaceIdPublishRoute = WorkspaceIdPublishRouteImport.update({
+  id: '/publish',
+  path: '/publish',
+  getParentRoute: () => WorkspaceIdRoute,
+} as any)
+const WorkspaceIdDocumentsRoute = WorkspaceIdDocumentsRouteImport.update({
+  id: '/documents',
+  path: '/documents',
+  getParentRoute: () => WorkspaceIdRoute,
+} as any)
+const WorkspaceIdAiRoute = WorkspaceIdAiRouteImport.update({
+  id: '/ai',
+  path: '/ai',
+  getParentRoute: () => WorkspaceIdRoute,
+} as any)
+const WorkspaceIdDocumentsDocumentIdRoute =
+  WorkspaceIdDocumentsDocumentIdRouteImport.update({
+    id: '/$documentId',
+    path: '/$documentId',
+    getParentRoute: () => WorkspaceIdDocumentsRoute,
+  } as any)
+const WorkspaceIdDocumentsDocumentIdEditRoute =
+  WorkspaceIdDocumentsDocumentIdEditRouteImport.update({
+    id: '/edit',
+    path: '/edit',
+    getParentRoute: () => WorkspaceIdDocumentsDocumentIdRoute,
+  } as any)
+const WorkspaceIdDocumentsDocumentIdCommentsRoute =
+  WorkspaceIdDocumentsDocumentIdCommentsRouteImport.update({
+    id: '/comments',
+    path: '/comments',
+    getParentRoute: () => WorkspaceIdDocumentsDocumentIdRoute,
+  } as any)
+const WorkspaceIdDocumentsDocumentIdApprovalsRoute =
+  WorkspaceIdDocumentsDocumentIdApprovalsRouteImport.update({
+    id: '/approvals',
+    path: '/approvals',
+    getParentRoute: () => WorkspaceIdDocumentsDocumentIdRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/$workspaceId': typeof WorkspaceIdRouteWithChildren
+  '/sign-in': typeof SignInRoute
+  '/workspaces': typeof WorkspacesRoute
+  '/$workspaceId/ai': typeof WorkspaceIdAiRoute
+  '/$workspaceId/documents': typeof WorkspaceIdDocumentsRouteWithChildren
+  '/$workspaceId/publish': typeof WorkspaceIdPublishRoute
+  '/$workspaceId/documents/$documentId': typeof WorkspaceIdDocumentsDocumentIdRouteWithChildren
+  '/$workspaceId/documents/$documentId/approvals': typeof WorkspaceIdDocumentsDocumentIdApprovalsRoute
+  '/$workspaceId/documents/$documentId/comments': typeof WorkspaceIdDocumentsDocumentIdCommentsRoute
+  '/$workspaceId/documents/$documentId/edit': typeof WorkspaceIdDocumentsDocumentIdEditRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/$workspaceId': typeof WorkspaceIdRouteWithChildren
+  '/sign-in': typeof SignInRoute
+  '/workspaces': typeof WorkspacesRoute
+  '/$workspaceId/ai': typeof WorkspaceIdAiRoute
+  '/$workspaceId/documents': typeof WorkspaceIdDocumentsRouteWithChildren
+  '/$workspaceId/publish': typeof WorkspaceIdPublishRoute
+  '/$workspaceId/documents/$documentId': typeof WorkspaceIdDocumentsDocumentIdRouteWithChildren
+  '/$workspaceId/documents/$documentId/approvals': typeof WorkspaceIdDocumentsDocumentIdApprovalsRoute
+  '/$workspaceId/documents/$documentId/comments': typeof WorkspaceIdDocumentsDocumentIdCommentsRoute
+  '/$workspaceId/documents/$documentId/edit': typeof WorkspaceIdDocumentsDocumentIdEditRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/$workspaceId': typeof WorkspaceIdRouteWithChildren
+  '/sign-in': typeof SignInRoute
+  '/workspaces': typeof WorkspacesRoute
+  '/$workspaceId/ai': typeof WorkspaceIdAiRoute
+  '/$workspaceId/documents': typeof WorkspaceIdDocumentsRouteWithChildren
+  '/$workspaceId/publish': typeof WorkspaceIdPublishRoute
+  '/$workspaceId/documents/$documentId': typeof WorkspaceIdDocumentsDocumentIdRouteWithChildren
+  '/$workspaceId/documents/$documentId/approvals': typeof WorkspaceIdDocumentsDocumentIdApprovalsRoute
+  '/$workspaceId/documents/$documentId/comments': typeof WorkspaceIdDocumentsDocumentIdCommentsRoute
+  '/$workspaceId/documents/$documentId/edit': typeof WorkspaceIdDocumentsDocumentIdEditRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/$workspaceId'
+    | '/sign-in'
+    | '/workspaces'
+    | '/$workspaceId/ai'
+    | '/$workspaceId/documents'
+    | '/$workspaceId/publish'
+    | '/$workspaceId/documents/$documentId'
+    | '/$workspaceId/documents/$documentId/approvals'
+    | '/$workspaceId/documents/$documentId/comments'
+    | '/$workspaceId/documents/$documentId/edit'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/$workspaceId'
+    | '/sign-in'
+    | '/workspaces'
+    | '/$workspaceId/ai'
+    | '/$workspaceId/documents'
+    | '/$workspaceId/publish'
+    | '/$workspaceId/documents/$documentId'
+    | '/$workspaceId/documents/$documentId/approvals'
+    | '/$workspaceId/documents/$documentId/comments'
+    | '/$workspaceId/documents/$documentId/edit'
+  id:
+    | '__root__'
+    | '/'
+    | '/$workspaceId'
+    | '/sign-in'
+    | '/workspaces'
+    | '/$workspaceId/ai'
+    | '/$workspaceId/documents'
+    | '/$workspaceId/publish'
+    | '/$workspaceId/documents/$documentId'
+    | '/$workspaceId/documents/$documentId/approvals'
+    | '/$workspaceId/documents/$documentId/comments'
+    | '/$workspaceId/documents/$documentId/edit'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  WorkspaceIdRoute: typeof WorkspaceIdRouteWithChildren
+  SignInRoute: typeof SignInRoute
+  WorkspacesRoute: typeof WorkspacesRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/workspaces': {
+      id: '/workspaces'
+      path: '/workspaces'
+      fullPath: '/workspaces'
+      preLoaderRoute: typeof WorkspacesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/sign-in': {
+      id: '/sign-in'
+      path: '/sign-in'
+      fullPath: '/sign-in'
+      preLoaderRoute: typeof SignInRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/$workspaceId': {
+      id: '/$workspaceId'
+      path: '/$workspaceId'
+      fullPath: '/$workspaceId'
+      preLoaderRoute: typeof WorkspaceIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -48,11 +200,112 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/$workspaceId/publish': {
+      id: '/$workspaceId/publish'
+      path: '/publish'
+      fullPath: '/$workspaceId/publish'
+      preLoaderRoute: typeof WorkspaceIdPublishRouteImport
+      parentRoute: typeof WorkspaceIdRoute
+    }
+    '/$workspaceId/documents': {
+      id: '/$workspaceId/documents'
+      path: '/documents'
+      fullPath: '/$workspaceId/documents'
+      preLoaderRoute: typeof WorkspaceIdDocumentsRouteImport
+      parentRoute: typeof WorkspaceIdRoute
+    }
+    '/$workspaceId/ai': {
+      id: '/$workspaceId/ai'
+      path: '/ai'
+      fullPath: '/$workspaceId/ai'
+      preLoaderRoute: typeof WorkspaceIdAiRouteImport
+      parentRoute: typeof WorkspaceIdRoute
+    }
+    '/$workspaceId/documents/$documentId': {
+      id: '/$workspaceId/documents/$documentId'
+      path: '/$documentId'
+      fullPath: '/$workspaceId/documents/$documentId'
+      preLoaderRoute: typeof WorkspaceIdDocumentsDocumentIdRouteImport
+      parentRoute: typeof WorkspaceIdDocumentsRoute
+    }
+    '/$workspaceId/documents/$documentId/edit': {
+      id: '/$workspaceId/documents/$documentId/edit'
+      path: '/edit'
+      fullPath: '/$workspaceId/documents/$documentId/edit'
+      preLoaderRoute: typeof WorkspaceIdDocumentsDocumentIdEditRouteImport
+      parentRoute: typeof WorkspaceIdDocumentsDocumentIdRoute
+    }
+    '/$workspaceId/documents/$documentId/comments': {
+      id: '/$workspaceId/documents/$documentId/comments'
+      path: '/comments'
+      fullPath: '/$workspaceId/documents/$documentId/comments'
+      preLoaderRoute: typeof WorkspaceIdDocumentsDocumentIdCommentsRouteImport
+      parentRoute: typeof WorkspaceIdDocumentsDocumentIdRoute
+    }
+    '/$workspaceId/documents/$documentId/approvals': {
+      id: '/$workspaceId/documents/$documentId/approvals'
+      path: '/approvals'
+      fullPath: '/$workspaceId/documents/$documentId/approvals'
+      preLoaderRoute: typeof WorkspaceIdDocumentsDocumentIdApprovalsRouteImport
+      parentRoute: typeof WorkspaceIdDocumentsDocumentIdRoute
+    }
   }
 }
 
+interface WorkspaceIdDocumentsDocumentIdRouteChildren {
+  WorkspaceIdDocumentsDocumentIdApprovalsRoute: typeof WorkspaceIdDocumentsDocumentIdApprovalsRoute
+  WorkspaceIdDocumentsDocumentIdCommentsRoute: typeof WorkspaceIdDocumentsDocumentIdCommentsRoute
+  WorkspaceIdDocumentsDocumentIdEditRoute: typeof WorkspaceIdDocumentsDocumentIdEditRoute
+}
+
+const WorkspaceIdDocumentsDocumentIdRouteChildren: WorkspaceIdDocumentsDocumentIdRouteChildren =
+  {
+    WorkspaceIdDocumentsDocumentIdApprovalsRoute:
+      WorkspaceIdDocumentsDocumentIdApprovalsRoute,
+    WorkspaceIdDocumentsDocumentIdCommentsRoute:
+      WorkspaceIdDocumentsDocumentIdCommentsRoute,
+    WorkspaceIdDocumentsDocumentIdEditRoute:
+      WorkspaceIdDocumentsDocumentIdEditRoute,
+  }
+
+const WorkspaceIdDocumentsDocumentIdRouteWithChildren =
+  WorkspaceIdDocumentsDocumentIdRoute._addFileChildren(
+    WorkspaceIdDocumentsDocumentIdRouteChildren,
+  )
+
+interface WorkspaceIdDocumentsRouteChildren {
+  WorkspaceIdDocumentsDocumentIdRoute: typeof WorkspaceIdDocumentsDocumentIdRouteWithChildren
+}
+
+const WorkspaceIdDocumentsRouteChildren: WorkspaceIdDocumentsRouteChildren = {
+  WorkspaceIdDocumentsDocumentIdRoute:
+    WorkspaceIdDocumentsDocumentIdRouteWithChildren,
+}
+
+const WorkspaceIdDocumentsRouteWithChildren =
+  WorkspaceIdDocumentsRoute._addFileChildren(WorkspaceIdDocumentsRouteChildren)
+
+interface WorkspaceIdRouteChildren {
+  WorkspaceIdAiRoute: typeof WorkspaceIdAiRoute
+  WorkspaceIdDocumentsRoute: typeof WorkspaceIdDocumentsRouteWithChildren
+  WorkspaceIdPublishRoute: typeof WorkspaceIdPublishRoute
+}
+
+const WorkspaceIdRouteChildren: WorkspaceIdRouteChildren = {
+  WorkspaceIdAiRoute: WorkspaceIdAiRoute,
+  WorkspaceIdDocumentsRoute: WorkspaceIdDocumentsRouteWithChildren,
+  WorkspaceIdPublishRoute: WorkspaceIdPublishRoute,
+}
+
+const WorkspaceIdRouteWithChildren = WorkspaceIdRoute._addFileChildren(
+  WorkspaceIdRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  WorkspaceIdRoute: WorkspaceIdRouteWithChildren,
+  SignInRoute: SignInRoute,
+  WorkspacesRoute: WorkspacesRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

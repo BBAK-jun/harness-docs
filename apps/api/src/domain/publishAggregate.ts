@@ -1,7 +1,4 @@
-import type {
-  ApprovalAuthority,
-  UnresolvedApprovalSnapshot
-} from "./documentAggregate.ts";
+import type { ApprovalAuthority, UnresolvedApprovalSnapshot } from "./documentAggregate.ts";
 import { buildId, dedupeByKey, dedupeStrings, slugify } from "./shared.ts";
 
 export type DocumentType = "PRD" | "UX Flow" | "Technical Spec" | "Policy/Decision";
@@ -143,36 +140,36 @@ const publishStageDefinitions = [
     title: "Confirm scope",
     description: "Choose the documents and templates that belong to this publish batch.",
     primaryAction: "Review scope",
-    guidance: ["Keep the publish batch explicit and traceable."]
+    guidance: ["Keep the publish batch explicit and traceable."],
   },
   {
     id: "freshness",
     title: "Review freshness",
     description: "Inspect stale linked documents and invalidations before publication.",
     primaryAction: "Inspect freshness",
-    guidance: ["Record stale rationale when linked documents invalidate the batch."]
+    guidance: ["Record stale rationale when linked documents invalidate the batch."],
   },
   {
     id: "approvals",
     title: "Capture approval snapshot",
     description: "Freeze unresolved app-native approval state before GitHub automation starts.",
     primaryAction: "Review approvals",
-    guidance: ["Preserve unresolved approvals inside the app-owned publish record."]
+    guidance: ["Preserve unresolved approvals inside the app-owned publish record."],
   },
   {
     id: "memo",
     title: "Prepare publish memo",
     description: "Carry stale rationale and unresolved approvals into the publication memo.",
     primaryAction: "Draft memo",
-    guidance: ["The memo should explain why stale publication is still allowed."]
+    guidance: ["The memo should explain why stale publication is still allowed."],
   },
   {
     id: "github",
     title: "Open GitHub PR",
     description: "Create the branch, commit, and pull request in the mapped docs repository.",
     primaryAction: "Execute publish",
-    guidance: ["The app snapshot is the source of truth before GitHub handoff."]
-  }
+    guidance: ["The app snapshot is the source of truth before GitHub handoff."],
+  },
 ] as const;
 
 function formatList(items: string[]) {
@@ -199,15 +196,14 @@ function buildStaleRationaleFindings(
   staleDocumentIds: string[],
   staleRationale: string,
   staleRationaleEntries: PublishStaleRationaleEntry[],
-  documentLabelById: Map<string, string>
+  documentLabelById: Map<string, string>,
 ) {
   return staleDocumentIds.map((documentId) => {
     const rationaleEntry =
       staleRationaleEntries.find(
-        (entry) => entry.status === "current" && entry.relatedDocumentId === documentId
+        (entry) => entry.status === "current" && entry.relatedDocumentId === documentId,
       ) ?? null;
-    const hasRecordedRationale =
-      rationaleEntry != null || staleRationale.trim().length > 0;
+    const hasRecordedRationale = rationaleEntry != null || staleRationale.trim().length > 0;
 
     return {
       id: `preflight-stale-${documentId}`,
@@ -225,14 +221,14 @@ function buildStaleRationaleFindings(
       documentId,
       approvalId: rationaleEntry?.relatedApprovalId ?? null,
       invalidationId: rationaleEntry?.relatedInvalidationId ?? null,
-      staleRationaleEntryId: rationaleEntry?.id ?? null
+      staleRationaleEntryId: rationaleEntry?.id ?? null,
     } satisfies PublishPreflightFinding;
   });
 }
 
 function buildUnresolvedApprovalFindings(
   unresolvedApprovals: UnresolvedApprovalSnapshot[],
-  documentLabelById: Map<string, string>
+  documentLabelById: Map<string, string>,
 ) {
   return unresolvedApprovals.map(
     (approval) =>
@@ -246,15 +242,15 @@ function buildUnresolvedApprovalFindings(
         documentId: approval.documentId,
         approvalId: approval.approvalId ?? null,
         invalidationId: approval.invalidationIds[0] ?? null,
-        staleRationaleEntryId: null
-      }) satisfies PublishPreflightFinding
+        staleRationaleEntryId: null,
+      }) satisfies PublishPreflightFinding,
   );
 }
 
 export function buildPublishStages(
   currentStageId: PublishStageId,
   recordStatus: PublishRecordStatus,
-  preflightStatus: PublishPreflightStatus
+  preflightStatus: PublishPreflightStatus,
 ) {
   const currentIndex = publishStageDefinitions.findIndex((stage) => stage.id === currentStageId);
 
@@ -275,7 +271,7 @@ export function buildPublishStages(
 
     return {
       ...stage,
-      status
+      status,
     };
   });
 }
@@ -291,17 +287,17 @@ export function buildPublishPreflightResult(params: {
     params.staleDocumentIds,
     params.staleRationale,
     params.staleRationaleEntries,
-    params.documentLabelById
+    params.documentLabelById,
   );
   const approvalFindings = buildUnresolvedApprovalFindings(
     params.unresolvedApprovals,
-    params.documentLabelById
+    params.documentLabelById,
   );
   const findings = [...staleFindings, ...approvalFindings];
   const blockingFindings = findings.filter((finding) => finding.severity === "blocking");
   const warningFindings = findings.filter((finding) => finding.severity === "warning");
   const unresolvedApprovalIds = dedupeStrings(
-    params.unresolvedApprovals.map((approval) => approval.approvalId)
+    params.unresolvedApprovals.map((approval) => approval.approvalId),
   );
 
   const summary =
@@ -321,7 +317,7 @@ export function buildPublishPreflightResult(params: {
     summary,
     staleDocumentIds: [...params.staleDocumentIds],
     unresolvedApprovalIds,
-    findings
+    findings,
   } satisfies PublishPreflightResult;
 }
 
@@ -340,13 +336,11 @@ export function createPublishDraft(params: {
   const branchSlug = slugify(params.source.label) || "publish-batch";
   const branchName = `publish/${params.workspaceSlug}/${branchSlug}-${params.timestamp.slice(0, 10).replace(/-/g, "")}`;
   const unresolvedApprovals = dedupeUnresolvedApprovals(
-    params.documents.flatMap((document) => document.unresolvedApprovals)
+    params.documents.flatMap((document) => document.unresolvedApprovals),
   );
-  const unresolvedApprovalIds = dedupeStrings(
-    unresolvedApprovals.map((entry) => entry.approvalId)
-  );
+  const unresolvedApprovalIds = dedupeStrings(unresolvedApprovals.map((entry) => entry.approvalId));
   const invalidationIds = dedupeStrings(
-    params.documents.flatMap((document) => document.invalidationIds)
+    params.documents.flatMap((document) => document.invalidationIds),
   );
   const staleDocumentIds = params.documents
     .filter((document) => document.freshnessStatus === "stale")
@@ -370,24 +364,22 @@ export function createPublishDraft(params: {
             relatedApprovalId: approvalId,
             supersededAt: null,
             supersededByDocumentId: null,
-            supersededReason: null
+            supersededReason: null,
           };
         })
       : [];
-  const documentLabelById = new Map(params.documents.map((document) => [document.id, document.title]));
+  const documentLabelById = new Map(
+    params.documents.map((document) => [document.id, document.title]),
+  );
   const preflight = buildPublishPreflightResult({
     staleDocumentIds,
     staleRationale: params.staleRationale,
     staleRationaleEntries,
     unresolvedApprovals,
-    documentLabelById
+    documentLabelById,
   });
   const currentStageId: PublishStageId =
-    unresolvedApprovals.length > 0
-      ? "approvals"
-      : staleDocumentIds.length > 0
-        ? "memo"
-        : "github";
+    unresolvedApprovals.length > 0 ? "approvals" : staleDocumentIds.length > 0 ? "memo" : "github";
   const status: PublishRecordStatus =
     preflight.status === "blocked" ? "draft" : "ready_for_publish";
 
@@ -407,7 +399,7 @@ export function createPublishDraft(params: {
         stalenessStatus: document.freshnessStatus,
         unresolvedApprovalIds: [...document.unresolvedApprovalIds],
         unresolvedApprovals: [...document.unresolvedApprovals],
-        invalidationIds: [...document.invalidationIds]
+        invalidationIds: [...document.invalidationIds],
       })),
       ...params.templates.map((template) => ({
         id: buildId("pub_artifact"),
@@ -420,8 +412,8 @@ export function createPublishDraft(params: {
         stalenessStatus: null,
         unresolvedApprovalIds: [],
         unresolvedApprovals: [],
-        invalidationIds: []
-      }))
+        invalidationIds: [],
+      })),
     ],
     staleDocumentIds,
     unresolvedApprovalIds,
@@ -436,12 +428,12 @@ export function createPublishDraft(params: {
           label: `${membership.role} inbox`,
           membershipId: membership.id,
           destination: null,
-          status: "pending" as const
+          status: "pending" as const,
         })),
       ...params.memberships
         .filter(
           (membership) =>
-            membership.status === "active" && membership.notificationWebhookUrl != null
+            membership.status === "active" && membership.notificationWebhookUrl != null,
         )
         .map((membership) => ({
           id: buildId("pub_notify"),
@@ -449,12 +441,12 @@ export function createPublishDraft(params: {
           label: `${membership.role} webhook`,
           membershipId: membership.id,
           destination: membership.notificationWebhookUrl,
-          status: "queued" as const
-        }))
+          status: "queued" as const,
+        })),
     ],
     branchName,
     commitMessage: `docs: ${params.source.changeSummary}`,
     pullRequestTitle: `docs: ${params.source.label}`,
-    preflight
+    preflight,
   } satisfies PublishDraftAggregate;
 }

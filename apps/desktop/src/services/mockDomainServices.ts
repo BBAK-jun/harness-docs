@@ -10,6 +10,7 @@ import type {
   PublishingService,
   WorkspacePublishingSnapshot,
 } from "../domain/publishing";
+import { toPublishPreflightView } from "../lib/publishGovernanceView";
 import type {
   WorkspaceMemberProfile,
   WorkspaceMembershipCapabilities,
@@ -235,6 +236,21 @@ export function createMockPublishingService(): PublishingService {
     },
     async getWorkspacePublishingSnapshot(workspaceId) {
       return buildWorkspacePublishingSnapshot(getWorkspaceGraph(workspaceId));
+    },
+    async getDocumentPublishPreflight(workspaceId, documentId) {
+      const graph = getWorkspaceGraph(workspaceId);
+      const document = graph.documents.find((entry) => entry.id === documentId) ?? null;
+
+      if (!document) {
+        return null;
+      }
+
+      const publishRecord =
+        graph.publishRecords.find((record) => record.staleDocumentIds.includes(documentId)) ??
+        graph.publishRecords[0] ??
+        null;
+
+      return toPublishPreflightView(document, publishRecord, new Date().toISOString());
     },
     async getPublishRecord(workspaceId, publishRecordId) {
       return (
