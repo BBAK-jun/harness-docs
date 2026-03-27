@@ -1,3 +1,4 @@
+import type { StalePublishRationaleDto } from "@harness-docs/contracts";
 import type { AITaskExecutionInput } from "../domain/aiTasks";
 import type { PublishExecutionInput, PublishRepositoryFile } from "../domain/publishing";
 import type {
@@ -121,6 +122,7 @@ export function buildPublishExecutionInput(
   workspaceGraph: WorkspaceGraph,
   documentDrafts: Record<string, string>,
   activeMembershipId: string | null,
+  staleRationale?: StalePublishRationaleDto | null,
 ): PublishExecutionInput | null {
   const publishRecord = workspaceGraph.publishRecords[0] ?? null;
 
@@ -138,6 +140,7 @@ export function buildPublishExecutionInput(
     })),
     files: buildPublishFiles(workspaceGraph, documentDrafts),
     initiatedByMembershipId: activeMembershipId,
+    staleRationale: staleRationale ?? null,
   };
 }
 

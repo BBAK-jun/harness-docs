@@ -11,14 +11,14 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import { WorkspaceLnb } from "@/components/WorkspaceLnb";
-import type { HarnessDocsAppModel } from "../hooks/useHarnessDocsApp";
+import type { WorkspaceShellModel } from "../hooks/useWorkspaceShell";
 import { areaMeta, pageDescription, pageTitle } from "./pageUtils";
 
 export function WorkspacePage({
   app,
   children,
 }: {
-  app: HarnessDocsAppModel;
+  app: WorkspaceShellModel;
   children: React.ReactNode;
 }) {
   const [mobileNavOpen, setMobileNavOpen] = useState(false);

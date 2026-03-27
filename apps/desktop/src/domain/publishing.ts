@@ -1,4 +1,4 @@
-import type { PublishPreflightView } from "@harness-docs/contracts";
+import type { PublishPreflightView, StalePublishRationaleDto } from "@harness-docs/contracts";
 import type {
   MembershipId,
   PublishRecord,
@@ -43,6 +43,7 @@ export interface PublishExecutionInput {
   documents: WorkspaceDocument[];
   files: PublishRepositoryFile[];
   initiatedByMembershipId: MembershipId | null;
+  staleRationale?: StalePublishRationaleDto | null;
 }
 
 export interface PublishExecutionResult {

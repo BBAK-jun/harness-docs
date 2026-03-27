@@ -1,8 +1,8 @@
 import { useNavigate } from "@tanstack/react-router";
 import type {
-  HarnessDocsAppNavigation,
-  HarnessDocsAppRouteState,
-} from "../hooks/useHarnessDocsApp";
+  WorkspaceShellNavigation,
+  WorkspaceShellRouteState,
+} from "../hooks/useWorkspaceShell";
 import type { NavigationArea } from "../types";
 
 function workspaceAreaPath(area: NavigationArea, documentId: string | null) {
@@ -47,10 +47,10 @@ function documentPath(area: NavigationArea) {
 
 export function buildHarnessDocsNavigation(
   navigate: ReturnType<typeof useNavigate>,
-  routeState: HarnessDocsAppRouteState,
-): HarnessDocsAppNavigation {
+  routeState: WorkspaceShellRouteState,
+): WorkspaceShellNavigation {
   return {
-    onAreaChange: (area) => {
+    onAreaChange: (area: NavigationArea) => {
       if (!routeState.activeWorkspaceId) {
         void navigate({ to: "/workspaces" });
         return;
@@ -76,7 +76,7 @@ export function buildHarnessDocsNavigation(
         },
       });
     },
-    onSelectedDocumentChange: (documentId) => {
+    onSelectedDocumentChange: (documentId: string) => {
       if (!routeState.activeWorkspaceId) {
         return;
       }
@@ -89,7 +89,7 @@ export function buildHarnessDocsNavigation(
         },
       });
     },
-    onWorkspaceEnter: (workspaceId) => {
+    onWorkspaceEnter: (workspaceId: string) => {
       void navigate({
         to: "/$workspaceId/documents",
         params: {

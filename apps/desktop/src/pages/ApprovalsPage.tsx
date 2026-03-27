@@ -1,24 +1,56 @@
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import type { AppPageProps } from "./pageUtils";
+import type { WorkspaceShellModel } from "../hooks/useWorkspaceShell";
 import { EmptyStateCard, formatDateTime, statusBadgeVariant } from "./pageUtils";
 
-export function ApprovalsPage({ app }: AppPageProps) {
-  const workspaceGraph = app.activeWorkspaceGraph;
+export function ApprovalsPage({
+  app,
+  approvals,
+  onGoToDocuments,
+  onGoToComments,
+}: {
+  app: WorkspaceShellModel;
+  approvals: Array<NonNullable<WorkspaceShellModel["activeWorkspaceGraph"]>["approvals"][number]>;
+  onGoToDocuments: () => void;
+  onGoToComments: () => void;
+}) {
   const document = app.activeDocument;
 
-  if (!workspaceGraph || !document) {
+  if (!document) {
     return (
       <EmptyStateCard
         description="Select a document to inspect app-native approval state."
         title="No approval context"
+        actions={
+          <div className="flex flex-wrap gap-2">
+            <Button onClick={onGoToDocuments} size="sm" variant="secondary">
+              문서 선택하기
+            </Button>
+          </div>
+        }
       />
     );
   }
 
-  const approvals = workspaceGraph.approvals.filter(
-    (approval) => approval.documentId === document.id,
-  );
+  if (approvals.length === 0) {
+    return (
+      <EmptyStateCard
+        description="현재 문서에는 남아 있는 승인 항목이 없습니다. 댓글 맥락을 확인하거나 다른 문서를 선택할 수 있습니다."
+        title="남은 승인 없음"
+        actions={
+          <div className="flex flex-wrap gap-2">
+            <Button onClick={onGoToComments} size="sm" variant="secondary">
+              리뷰 댓글 보기
+            </Button>
+            <Button onClick={onGoToDocuments} size="sm" variant="outline">
+              다른 문서 보기
+            </Button>
+          </div>
+        }
+      />
+    );
+  }
 
   return (
     <Card>

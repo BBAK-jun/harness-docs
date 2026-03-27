@@ -8,10 +8,12 @@ import { harnessApiBaseUrl } from "../lib/rpc/client";
 
 interface CreateRpcPublishingServiceOptions {
   fallbackService: PublishingService;
+  allowPreflightFallback?: boolean;
 }
 
 export function createRpcPublishingService({
   fallbackService,
+  allowPreflightFallback = false,
 }: CreateRpcPublishingServiceOptions): PublishingService {
   return {
     ...fallbackService,
@@ -31,6 +33,10 @@ export function createRpcPublishingService({
         const payload = unwrapApiResponse<PublishPreflightEnvelopeDto>(await response.json());
         return payload.preflight;
       } catch {
+        if (!allowPreflightFallback) {
+          throw new Error("Publish preflight must be loaded from the API before publish can continue.");
+        }
+
         return fallbackService.getDocumentPublishPreflight(workspaceId, documentId);
       }
     },

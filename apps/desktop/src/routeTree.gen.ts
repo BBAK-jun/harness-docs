@@ -10,7 +10,10 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as WorkspacesRouteImport } from './routes/workspaces'
+import { Route as WorkspaceCreateRouteImport } from './routes/workspace-create'
+import { Route as SignOutRouteImport } from './routes/sign-out'
 import { Route as SignInRouteImport } from './routes/sign-in'
+import { Route as InvitationAcceptanceRouteImport } from './routes/invitation-acceptance'
 import { Route as WorkspaceIdRouteImport } from './routes/$workspaceId'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as WorkspaceIdPublishRouteImport } from './routes/$workspaceId.publish'
@@ -26,9 +29,24 @@ const WorkspacesRoute = WorkspacesRouteImport.update({
   path: '/workspaces',
   getParentRoute: () => rootRouteImport,
 } as any)
+const WorkspaceCreateRoute = WorkspaceCreateRouteImport.update({
+  id: '/workspace-create',
+  path: '/workspace-create',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SignOutRoute = SignOutRouteImport.update({
+  id: '/sign-out',
+  path: '/sign-out',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SignInRoute = SignInRouteImport.update({
   id: '/sign-in',
   path: '/sign-in',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const InvitationAcceptanceRoute = InvitationAcceptanceRouteImport.update({
+  id: '/invitation-acceptance',
+  path: '/invitation-acceptance',
   getParentRoute: () => rootRouteImport,
 } as any)
 const WorkspaceIdRoute = WorkspaceIdRouteImport.update({
@@ -84,7 +102,10 @@ const WorkspaceIdDocumentsDocumentIdApprovalsRoute =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/$workspaceId': typeof WorkspaceIdRouteWithChildren
+  '/invitation-acceptance': typeof InvitationAcceptanceRoute
   '/sign-in': typeof SignInRoute
+  '/sign-out': typeof SignOutRoute
+  '/workspace-create': typeof WorkspaceCreateRoute
   '/workspaces': typeof WorkspacesRoute
   '/$workspaceId/ai': typeof WorkspaceIdAiRoute
   '/$workspaceId/documents': typeof WorkspaceIdDocumentsRouteWithChildren
@@ -97,7 +118,10 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/$workspaceId': typeof WorkspaceIdRouteWithChildren
+  '/invitation-acceptance': typeof InvitationAcceptanceRoute
   '/sign-in': typeof SignInRoute
+  '/sign-out': typeof SignOutRoute
+  '/workspace-create': typeof WorkspaceCreateRoute
   '/workspaces': typeof WorkspacesRoute
   '/$workspaceId/ai': typeof WorkspaceIdAiRoute
   '/$workspaceId/documents': typeof WorkspaceIdDocumentsRouteWithChildren
@@ -111,7 +135,10 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/$workspaceId': typeof WorkspaceIdRouteWithChildren
+  '/invitation-acceptance': typeof InvitationAcceptanceRoute
   '/sign-in': typeof SignInRoute
+  '/sign-out': typeof SignOutRoute
+  '/workspace-create': typeof WorkspaceCreateRoute
   '/workspaces': typeof WorkspacesRoute
   '/$workspaceId/ai': typeof WorkspaceIdAiRoute
   '/$workspaceId/documents': typeof WorkspaceIdDocumentsRouteWithChildren
@@ -126,7 +153,10 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/$workspaceId'
+    | '/invitation-acceptance'
     | '/sign-in'
+    | '/sign-out'
+    | '/workspace-create'
     | '/workspaces'
     | '/$workspaceId/ai'
     | '/$workspaceId/documents'
@@ -139,7 +169,10 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/$workspaceId'
+    | '/invitation-acceptance'
     | '/sign-in'
+    | '/sign-out'
+    | '/workspace-create'
     | '/workspaces'
     | '/$workspaceId/ai'
     | '/$workspaceId/documents'
@@ -152,7 +185,10 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/$workspaceId'
+    | '/invitation-acceptance'
     | '/sign-in'
+    | '/sign-out'
+    | '/workspace-create'
     | '/workspaces'
     | '/$workspaceId/ai'
     | '/$workspaceId/documents'
@@ -166,7 +202,10 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   WorkspaceIdRoute: typeof WorkspaceIdRouteWithChildren
+  InvitationAcceptanceRoute: typeof InvitationAcceptanceRoute
   SignInRoute: typeof SignInRoute
+  SignOutRoute: typeof SignOutRoute
+  WorkspaceCreateRoute: typeof WorkspaceCreateRoute
   WorkspacesRoute: typeof WorkspacesRoute
 }
 
@@ -179,11 +218,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof WorkspacesRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/workspace-create': {
+      id: '/workspace-create'
+      path: '/workspace-create'
+      fullPath: '/workspace-create'
+      preLoaderRoute: typeof WorkspaceCreateRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/sign-out': {
+      id: '/sign-out'
+      path: '/sign-out'
+      fullPath: '/sign-out'
+      preLoaderRoute: typeof SignOutRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/sign-in': {
       id: '/sign-in'
       path: '/sign-in'
       fullPath: '/sign-in'
       preLoaderRoute: typeof SignInRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/invitation-acceptance': {
+      id: '/invitation-acceptance'
+      path: '/invitation-acceptance'
+      fullPath: '/invitation-acceptance'
+      preLoaderRoute: typeof InvitationAcceptanceRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/$workspaceId': {
@@ -304,7 +364,10 @@ const WorkspaceIdRouteWithChildren = WorkspaceIdRoute._addFileChildren(
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   WorkspaceIdRoute: WorkspaceIdRouteWithChildren,
+  InvitationAcceptanceRoute: InvitationAcceptanceRoute,
   SignInRoute: SignInRoute,
+  SignOutRoute: SignOutRoute,
+  WorkspaceCreateRoute: WorkspaceCreateRoute,
   WorkspacesRoute: WorkspacesRoute,
 }
 export const routeTree = rootRouteImport

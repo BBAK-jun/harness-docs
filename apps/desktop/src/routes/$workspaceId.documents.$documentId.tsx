@@ -1,11 +1,14 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useHarnessDocsApp } from "../hooks/useHarnessDocsApp";
+import { useAIPage } from "../hooks/useAIPage";
 import { buildHarnessDocsNavigation } from "../lib/appNavigation";
+import { useWorkspaceShell } from "../hooks/useWorkspaceShell";
 import { DocumentsPage } from "../pages/DocumentsPage";
 import { WorkspacePage } from "../pages/WorkspacePage";
+import { WorkspaceRouteErrorBoundary } from "./$workspaceId.ai";
 
 export const Route = createFileRoute("/$workspaceId/documents/$documentId")({
   component: WorkspaceDocumentDetailRoute,
+  errorComponent: WorkspaceRouteErrorBoundary,
 });
 
 function WorkspaceDocumentDetailRoute() {
@@ -15,14 +18,20 @@ function WorkspaceDocumentDetailRoute() {
     activeWorkspaceId: workspaceId,
     selectedDocumentId: documentId,
   };
-  const app = useHarnessDocsApp(
+  const shell = useWorkspaceShell(
     routeState,
     buildHarnessDocsNavigation(Route.useNavigate(), routeState),
   );
+  const ai = useAIPage(shell);
 
   return (
-    <WorkspacePage app={app}>
-      <DocumentsPage app={app} />
+    <WorkspacePage app={shell}>
+      <DocumentsPage
+        aiEntryPoints={ai.aiEntryPoints}
+        app={shell}
+        onGoToAI={() => shell.handleAreaChange("ai")}
+        onOpenWorkspaces={shell.handleWorkspaceLeave}
+      />
     </WorkspacePage>
   );
 }

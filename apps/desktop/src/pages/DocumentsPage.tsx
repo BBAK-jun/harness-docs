@@ -1,13 +1,43 @@
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
-import type { WorkspaceDocument } from "../types";
-import type { AppPageProps } from "./pageUtils";
-import { formatDateTime, SignalTile, statusBadgeVariant } from "./pageUtils";
+import type { AITaskEntryPoint, WorkspaceDocument } from "../types";
+import type { WorkspaceShellModel } from "../hooks/useWorkspaceShell";
+import { EmptyStateCard, formatDateTime, SignalTile, statusBadgeVariant } from "./pageUtils";
 
-export function DocumentsPage({ app }: AppPageProps) {
+export function DocumentsPage({
+  app,
+  aiEntryPoints,
+  onOpenWorkspaces,
+  onGoToAI,
+}: {
+  app: WorkspaceShellModel;
+  aiEntryPoints: AITaskEntryPoint[];
+  onOpenWorkspaces: () => void;
+  onGoToAI: () => void;
+}) {
   const publishRecord = app.activeWorkspaceGraph?.publishRecords[0] ?? null;
   const documents = app.activeWorkspaceGraph?.documents ?? [];
+
+  if (documents.length === 0) {
+    return (
+      <EmptyStateCard
+        description="이 워크스페이스에는 아직 문서가 없습니다. 다른 워크스페이스를 열거나 AI 작업 화면에서 현재 상태를 점검할 수 있습니다."
+        title="문서가 없음"
+        actions={
+          <div className="flex flex-wrap gap-2">
+            <Button onClick={onOpenWorkspaces} size="sm" variant="secondary">
+              워크스페이스 다시 선택
+            </Button>
+            <Button onClick={onGoToAI} size="sm" variant="outline">
+              AI 화면 보기
+            </Button>
+          </div>
+        }
+      />
+    );
+  }
 
   return (
     <div className="flex flex-col gap-4">
@@ -27,7 +57,7 @@ export function DocumentsPage({ app }: AppPageProps) {
           <SignalTile
             description="Action-first tasks available from current workspace state."
             label="AI entry points"
-            value={app.aiEntryPoints.length}
+            value={aiEntryPoints.length}
           />
           <SignalTile
             description={app.activeDocument?.title ?? "Select a document to inspect details."}
@@ -58,7 +88,7 @@ function DocumentRow({
   app,
   document,
 }: {
-  app: AppPageProps["app"];
+  app: WorkspaceShellModel;
   document: WorkspaceDocument;
 }) {
   return (

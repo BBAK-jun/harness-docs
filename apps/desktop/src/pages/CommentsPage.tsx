@@ -1,25 +1,64 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import type { AppPageProps } from "./pageUtils";
+import type { WorkspaceShellModel } from "../hooks/useWorkspaceShell";
 import { EmptyStateCard, statusBadgeVariant } from "./pageUtils";
 
-export function CommentsPage({ app }: AppPageProps) {
-  const workspaceGraph = app.activeWorkspaceGraph;
+export function CommentsPage({
+  app,
+  threads,
+  onGoToDocuments,
+  onGoToApprovals,
+}: {
+  app: WorkspaceShellModel;
+  threads: Array<NonNullable<WorkspaceShellModel["activeWorkspaceGraph"]>["commentThreads"][number]>;
+  onGoToDocuments: () => void;
+  onGoToApprovals: () => void;
+}) {
   const document = app.activeDocument;
 
-  if (!workspaceGraph || !document) {
+  if (!document) {
     return (
       <EmptyStateCard
         description="Choose a document to inspect threads and mentions."
         title="No review context"
+        actions={
+          <div className="flex flex-wrap gap-2">
+            <Button onClick={onGoToDocuments} size="sm" variant="secondary">
+              문서 선택하기
+            </Button>
+          </div>
+        }
       />
     );
   }
 
-  const threads = workspaceGraph.commentThreads.filter(
-    (thread) => thread.documentId === document.id,
-  );
+  if (threads.length === 0) {
+    return (
+      <EmptyStateCard
+        description="현재 문서에는 열린 댓글 스레드가 없습니다. 새 스레드를 추가하거나 승인 상태를 확인해 다음 작업을 정할 수 있습니다."
+        title="리뷰 스레드 없음"
+        actions={
+          <div className="flex flex-wrap gap-2">
+            <Button
+              onClick={() =>
+                app.handleCreateBlockComment(
+                  document,
+                  "@reviewers Please confirm whether stale rationale is enough for this publish batch.",
+                )
+              }
+              size="sm"
+            >
+              샘플 스레드 추가
+            </Button>
+            <Button onClick={onGoToApprovals} size="sm" variant="outline">
+              승인 상태 보기
+            </Button>
+          </div>
+        }
+      />
+    );
+  }
 
   return (
     <Card>

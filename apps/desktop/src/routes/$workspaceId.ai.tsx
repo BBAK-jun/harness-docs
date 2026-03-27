@@ -1,11 +1,15 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { useHarnessDocsApp } from "../hooks/useHarnessDocsApp";
+import { createFileRoute, useRouter } from "@tanstack/react-router";
+import { Button } from "@/components/ui/button";
 import { buildHarnessDocsNavigation } from "../lib/appNavigation";
+import { useAIPage } from "../hooks/useAIPage";
+import { useWorkspaceShell } from "../hooks/useWorkspaceShell";
 import { AIPage } from "../pages/AIPage";
+import { RouteErrorStateCard } from "../pages/pageUtils";
 import { WorkspacePage } from "../pages/WorkspacePage";
 
 export const Route = createFileRoute("/$workspaceId/ai")({
   component: WorkspaceAIRoute,
+  errorComponent: WorkspaceRouteErrorBoundary,
 });
 
 function WorkspaceAIRoute() {
@@ -15,14 +19,53 @@ function WorkspaceAIRoute() {
     activeWorkspaceId: workspaceId,
     selectedDocumentId: null,
   };
-  const app = useHarnessDocsApp(
+  const shell = useWorkspaceShell(
     routeState,
     buildHarnessDocsNavigation(Route.useNavigate(), routeState),
   );
+  const ai = useAIPage(shell);
 
   return (
-    <WorkspacePage app={app}>
-      <AIPage app={app} />
+    <WorkspacePage app={shell}>
+      <AIPage
+        aiEntryPoints={ai.aiEntryPoints}
+        onGoToDocuments={() => shell.handleAreaChange("documents")}
+        onGoToEditor={() => shell.handleAreaChange("editor")}
+        onLaunch={ai.handleLaunchAITaskEntryPoint}
+      />
     </WorkspacePage>
+  );
+}
+
+export function WorkspaceRouteErrorBoundary({
+  error,
+  reset,
+}: {
+  error: Error;
+  reset: () => void;
+}) {
+  const router = useRouter();
+
+  return (
+    <RouteErrorStateCard
+      description="이 작업 영역 페이지를 렌더링하지 못했습니다. 다시 시도하거나 워크스페이스 목록으로 돌아가세요."
+      errorMessage={error.message}
+      onRetry={() => {
+        reset();
+        void router.invalidate();
+      }}
+      secondaryAction={
+        <Button
+          onClick={() => {
+            reset();
+            void router.navigate({ to: "/workspaces" });
+          }}
+          variant="outline"
+        >
+          워크스페이스 목록
+        </Button>
+      }
+      title="페이지 로딩 실패"
+    />
   );
 }

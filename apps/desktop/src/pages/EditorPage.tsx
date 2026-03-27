@@ -15,6 +15,13 @@ export function EditorPage({ app }: AppPageProps) {
       <EmptyStateCard
         description="Select a document from the library first."
         title="No document selected"
+        actions={
+          <div className="flex flex-wrap gap-2">
+            <Button onClick={() => app.handleAreaChange("documents")} size="sm" variant="secondary">
+              문서 목록으로 이동
+            </Button>
+          </div>
+        }
       />
     );
   }

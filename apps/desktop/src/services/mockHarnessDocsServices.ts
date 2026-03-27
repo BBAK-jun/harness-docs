@@ -120,6 +120,7 @@ export function createMockHarnessDocsServices(
   const workspaceMemberships = createMockWorkspaceMembershipService();
   const approvals = createMockApprovalService();
   const publishing = createRpcPublishingService({
+    allowPreflightFallback: true,
     fallbackService: createMockPublishingService(),
   });
   const aiTasks = createMockAITaskService();

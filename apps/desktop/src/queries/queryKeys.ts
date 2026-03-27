@@ -5,6 +5,10 @@ export const desktopQueryKeys = {
   all: desktopQueryRoot,
   bootstrap: () => [...desktopQueryRoot, "bootstrap"] as const,
   preferences: () => [...desktopQueryRoot, "preferences"] as const,
+  publishing: {
+    preflight: (workspaceId: string, documentId: string) =>
+      [...desktopQueryRoot, "publishing", "preflight", workspaceId, documentId] as const,
+  },
 } as const;
 
 export const rpcQueryKeys = {

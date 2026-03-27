@@ -27,6 +27,7 @@ export default withMermaid(
         items: [
           { text: "시작하기", link: "/guide/getting-started" },
           { text: "인증과 로그인", link: "/guide/authentication" },
+          { text: "서버 인증/인가", link: "/guide/server-side-auth-and-authorization" },
           { text: "아키텍처", link: "/guide/architecture" },
           { text: "도메인 모델", link: "/guide/domain-model" },
           { text: "앱 플로우 이벤트스토밍", link: "/guide/event-storming-app-flow" },

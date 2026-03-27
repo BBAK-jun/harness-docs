@@ -8,8 +8,9 @@ import {
   MessageSquareMore,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import type { HarnessDocsAppModel } from "../hooks/useHarnessDocsApp";
+import type { WorkspaceShellModel } from "../hooks/useWorkspaceShell";
 import type { NavigationArea, PublishPreflightFinding, WorkspaceDocument } from "../types";
 
 export const areaMeta: Record<
@@ -170,17 +171,54 @@ export function MetricTile({
 export function EmptyStateCard({
   title,
   description,
+  actions,
 }: {
   title: string;
   description: string;
+  actions?: React.ReactNode;
 }) {
   return (
     <Card>
       <CardHeader>
         <CardTitle>{title}</CardTitle>
         <CardDescription>{description}</CardDescription>
+        {actions ? <div className="pt-2">{actions}</div> : null}
       </CardHeader>
     </Card>
+  );
+}
+
+export function RouteErrorStateCard({
+  title,
+  description,
+  errorMessage,
+  onRetry,
+  secondaryAction,
+}: {
+  title: string;
+  description: string;
+  errorMessage: string;
+  onRetry: () => void;
+  secondaryAction?: React.ReactNode;
+}) {
+  return (
+    <main className="app-frame min-h-screen p-4 sm:p-6">
+      <div className="mx-auto max-w-3xl">
+        <Card>
+          <CardHeader>
+            <CardTitle>{title}</CardTitle>
+            <CardDescription>{description}</CardDescription>
+            <div className="rounded-[var(--radius)] border border-[var(--destructive)]/20 bg-[color:color-mix(in_srgb,var(--destructive)_8%,transparent)] p-4 text-sm leading-6 text-[var(--muted-foreground)]">
+              {errorMessage}
+            </div>
+            <div className="flex flex-wrap gap-2 pt-2">
+              <Button onClick={onRetry}>다시 시도</Button>
+              {secondaryAction}
+            </div>
+          </CardHeader>
+        </Card>
+      </div>
+    </main>
   );
 }
 
@@ -206,5 +244,5 @@ export function PreflightFindingCard({
 }
 
 export type AppPageProps = {
-  app: HarnessDocsAppModel;
+  app: WorkspaceShellModel;
 };

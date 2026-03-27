@@ -8,10 +8,54 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import type { AppPageProps } from "./pageUtils";
+import type { WorkspaceSummary } from "../types";
+import type { useAppBootstrap } from "../hooks/useAppBootstrap";
 import { MetricTile } from "./pageUtils";
 
-export function WorkspaceSelectionPage({ app }: AppPageProps) {
+export function WorkspaceSelectionPage({
+  app,
+  onOpenSignOut,
+  onOpenWorkspaceCreate,
+  onOpenInvitationAcceptance,
+}: {
+  app: ReturnType<typeof useAppBootstrap> & {
+    workspaces: WorkspaceSummary[];
+    handleWorkspaceEnter: (workspaceId: string) => void;
+  };
+  onOpenSignOut: () => void;
+  onOpenWorkspaceCreate: () => void;
+  onOpenInvitationAcceptance: () => void;
+}) {
+  if (app.workspaces.length === 0) {
+    return (
+      <main className="app-frame min-h-screen p-6">
+        <div className="mx-auto flex min-h-[calc(100vh-3rem)] max-w-4xl items-center">
+          <Card className="w-full">
+            <CardHeader>
+              <CardTitle>사용 가능한 워크스페이스가 없음</CardTitle>
+              <CardDescription>
+                현재 로그인한 계정에 연결된 워크스페이스가 없습니다. 정책상 이 상태는
+                로그아웃이 아니라 워크스페이스 생성 또는 초대 수락 흐름으로 안내되어야
+                합니다.
+              </CardDescription>
+            </CardHeader>
+            <CardFooter>
+              <div className="flex flex-wrap gap-2">
+                <Button onClick={onOpenWorkspaceCreate}>워크스페이스 만들기</Button>
+                <Button onClick={onOpenInvitationAcceptance} variant="outline">
+                  초대 수락
+                </Button>
+                <Button onClick={onOpenSignOut} variant="outline">
+                  로그아웃
+                </Button>
+              </div>
+            </CardFooter>
+          </Card>
+        </div>
+      </main>
+    );
+  }
+
   return (
     <main className="app-frame min-h-screen p-6">
       <div className="mx-auto flex min-h-[calc(100vh-3rem)] max-w-6xl flex-col gap-6">

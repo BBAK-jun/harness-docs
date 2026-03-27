@@ -1,7 +1,8 @@
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
+import { useNavigate } from "@tanstack/react-router";
 import { cn } from "@/lib/utils";
-import type { HarnessDocsAppModel } from "../hooks/useHarnessDocsApp";
+import type { WorkspaceShellModel } from "../hooks/useWorkspaceShell";
 import type { NavigationArea } from "../types";
 import { areaMeta } from "../pages/pageUtils";
 
@@ -9,10 +10,11 @@ export function WorkspaceLnb({
   app,
   onNavigate,
 }: {
-  app: HarnessDocsAppModel;
+  app: WorkspaceShellModel;
   onNavigate?: () => void;
 }) {
   const workspace = app.activeWorkspace!;
+  const navigate = useNavigate();
 
   return (
     <div className="flex flex-col gap-4 rounded-[calc(var(--radius)+0.75rem)] border border-[var(--app-border-strong)] bg-[rgba(255,255,255,0.82)] p-4 shadow-[0_30px_100px_-60px_rgba(15,23,42,0.35)] backdrop-blur-xl">
@@ -69,7 +71,13 @@ export function WorkspaceLnb({
         <Button onClick={() => app.handleWorkspaceLeave()} size="sm" variant="outline">
           Workspaces
         </Button>
-        <Button onClick={() => void app.handleSignOut()} size="sm" variant="ghost">
+        <Button
+          onClick={() => {
+            void navigate({ to: "/sign-out" });
+          }}
+          size="sm"
+          variant="ghost"
+        >
           Sign out
         </Button>
       </div>

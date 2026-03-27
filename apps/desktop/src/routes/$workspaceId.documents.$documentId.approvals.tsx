@@ -1,11 +1,14 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useHarnessDocsApp } from "../hooks/useHarnessDocsApp";
 import { buildHarnessDocsNavigation } from "../lib/appNavigation";
+import { useApprovalsPage } from "../hooks/useApprovalsPage";
+import { useWorkspaceShell } from "../hooks/useWorkspaceShell";
 import { ApprovalsPage } from "../pages/ApprovalsPage";
 import { WorkspacePage } from "../pages/WorkspacePage";
+import { WorkspaceRouteErrorBoundary } from "./$workspaceId.ai";
 
 export const Route = createFileRoute("/$workspaceId/documents/$documentId/approvals")({
   component: WorkspaceDocumentApprovalsRoute,
+  errorComponent: WorkspaceRouteErrorBoundary,
 });
 
 function WorkspaceDocumentApprovalsRoute() {
@@ -15,14 +18,20 @@ function WorkspaceDocumentApprovalsRoute() {
     activeWorkspaceId: workspaceId,
     selectedDocumentId: documentId,
   };
-  const app = useHarnessDocsApp(
+  const shell = useWorkspaceShell(
     routeState,
     buildHarnessDocsNavigation(Route.useNavigate(), routeState),
   );
+  const approvals = useApprovalsPage(shell);
 
   return (
-    <WorkspacePage app={app}>
-      <ApprovalsPage app={app} />
+    <WorkspacePage app={shell}>
+      <ApprovalsPage
+        app={shell}
+        approvals={approvals.approvals}
+        onGoToComments={() => shell.handleAreaChange("comments")}
+        onGoToDocuments={() => shell.handleAreaChange("documents")}
+      />
     </WorkspacePage>
   );
 }
