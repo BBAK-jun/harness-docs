@@ -3,36 +3,32 @@ layout: home
 
 hero:
   name: Harness Docs
-  text: 앱이 문서 거버넌스를 소유하는 데스크톱 제품 문서 시스템
-  tagline: PRD, UX Flow, Technical Spec, Policy/Decision 문서를 하나의 앱 안에서 작성, 검토, 승인, 발행합니다.
+  text: 제품 문서와 사용자 가이드의 제품 허브
+  tagline: 고객 문제를 설명하고, 제품 가치에 공감시키고, 실제 사용 방법을 안내하는 문서를 모아 둡니다.
   actions:
     - theme: brand
-      text: 시작하기
-      link: /guide/getting-started
+      text: 제품 소개
+      link: /product-overview
     - theme: alt
-      text: 아키텍처 보기
-      link: /guide/architecture
+      text: 어떻게 작동하는가
+      link: /how-it-works
 
 features:
-  - title: 앱이 소스 오브 트루스
-    details: GitHub는 발행 대상이고, 문서 상태와 승인 권한, stale/current 판정은 앱이 소유합니다.
-  - title: 구조화된 제품 문서
-    details: PRD, UX Flow, Technical Spec, Policy/Decision 문서를 템플릿 기반으로 생성하고 관리합니다.
-  - title: AI 보조 작성
-    details: Codex 또는 Claude를 사용해 인터뷰 기반 초안 작성, 링크 제안, approver 제안, publish memo 작성을 지원합니다.
-  - title: GitHub 발행 자동화
-    details: branch, commit, pull request 생성을 자동화하되, publish 전 판단과 근거는 앱 내부에 기록합니다.
+  - title: 문제 공감 문서
+    details: 고객이 원래 어떤 불편을 겪는지, 왜 바꿔야 하는지 먼저 설명합니다.
+  - title: 사용 가이드 중심
+    details: 시작하기, 설정, 운영, FAQ를 실제 사용 순서에 맞춰 안내합니다.
+  - title: 제품 가치 전달
+    details: 우리 제품이 어떤 문제를 어떻게 풀어가는지 한 흐름으로 전달합니다.
+  - title: 배포 가능한 docs 운영
+    details: GitHub는 문서 배포 채널이고, 문서 상태와 검토 이력은 앱이 관리합니다.
 ---
 
-## 왜 Harness Docs인가
+## 제품 문서
 
-Harness Docs는 단순한 Markdown 편집기나 GitHub 동기화 도구가 아닙니다. 이 제품은 PM, 디자인, 엔지니어링이 역할별 문서를 나눠 관리하면서도, 하나의 워크스페이스와 하나의 거버넌스 체계 안에서 문서를 운영하기 위한 시스템입니다.
-
-핵심 원칙:
-
-- 문서의 최신성은 GitHub가 아니라 앱이 판정합니다.
-- stale 상태는 보이게 하되 hard block으로만 처리하지 않습니다.
-- AI는 초안과 제안을 제공하지만 최종 결정을 대체하지 않습니다.
-- 문서 간 링크와 invalidation을 통해 추적 가능성을 유지합니다.
-
-자세한 내용은 [시작하기](/guide/getting-started)부터 보면 됩니다.
+- [product-overview.md](/Users/sondi/Documents/github/projects/docs/product-overview.md)
+- [for-who.md](/Users/sondi/Documents/github/projects/docs/for-who.md)
+- [problems-we-solve.md](/Users/sondi/Documents/github/projects/docs/problems-we-solve.md)
+- [how-it-works.md](/Users/sondi/Documents/github/projects/docs/how-it-works.md)
+- [faq.md](/Users/sondi/Documents/github/projects/docs/faq.md)
+- [reference/document-types.md](/Users/sondi/Documents/github/projects/docs/reference/document-types.md)

@@ -226,7 +226,7 @@ command별 권한 정책이 route guard로 구현되어 있지 않다.
 
 같이 보면 좋은 문서:
 
-- [인증과 로그인](/guide/authentication)
-- [아키텍처](/guide/architecture)
-- [도메인 모델](/guide/domain-model)
+- [인증과 로그인](/Users/sondi/Documents/github/projects/apps/desktop/docs/authentication.md)
+- [아키텍처](/Users/sondi/Documents/github/projects/packages/contracts/docs/architecture.md)
+- [도메인 모델](/Users/sondi/Documents/github/projects/packages/contracts/docs/domain-model.md)
 - [Publish Governance RPC](/reference/publish-governance-rpc)

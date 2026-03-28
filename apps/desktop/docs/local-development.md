@@ -55,6 +55,6 @@ pnpm dev:all
 
 ## 더 보기
 
-- [아키텍처](/guide/architecture)
-- [도메인 모델](/guide/domain-model)
+- [아키텍처](/Users/sondi/Documents/github/projects/packages/contracts/docs/architecture.md)
+- [도메인 모델](/Users/sondi/Documents/github/projects/packages/contracts/docs/domain-model.md)
 - [패키지 구성](/reference/packages)

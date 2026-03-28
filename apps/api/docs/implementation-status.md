@@ -186,6 +186,6 @@ integration test는 아래 시나리오를 검증합니다.
 - [패키지 구성](/reference/packages)
 - [Publish Governance RPC](/reference/publish-governance-rpc)
 - [Lovable UI SSOT](/reference/lovable-ui-ssot)
-- [아키텍처](/guide/architecture)
-- [도메인 모델](/guide/domain-model)
+- [아키텍처](/Users/sondi/Documents/github/projects/packages/contracts/docs/architecture.md)
+- [도메인 모델](/Users/sondi/Documents/github/projects/packages/contracts/docs/domain-model.md)
 - [원문 사양](/reference/spec-sources)
