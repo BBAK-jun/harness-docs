@@ -1,13 +1,14 @@
-import { Outlet } from "react-router-dom";
-import { AppSidebar } from "./AppSidebar";
-
-export function AppLayout() {
+export function AppLayout({
+  sidebar,
+  children,
+}: {
+  sidebar: React.ReactNode;
+  children: React.ReactNode;
+}) {
   return (
-    <div className="flex min-h-screen w-full">
-      <AppSidebar />
-      <main className="flex-1 min-w-0 overflow-auto">
-        <Outlet />
-      </main>
+    <div className="flex min-h-screen w-full bg-transparent">
+      {sidebar}
+      <main className="min-w-0 flex-1 overflow-auto">{children}</main>
     </div>
   );
 }

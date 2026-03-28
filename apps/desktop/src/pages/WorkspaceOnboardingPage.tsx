@@ -39,7 +39,7 @@ export function WorkspaceOnboardingPage({
 
         <Card className="overflow-hidden">
           <CardHeader className="border-b border-[var(--border)]">
-            <CardTitle>Next Steps</CardTitle>
+            <CardTitle>다음 단계</CardTitle>
             <CardDescription className="text-base">
               현재 구현에서는 실제 입력 폼 대신 다음 단계와 시스템 전제를 안내합니다.
             </CardDescription>

@@ -50,7 +50,7 @@ export const areaMeta: Record<
   },
   publish: {
     label: "발행",
-    summary: "전검증, stale 사유 기록, GitHub PR 자동화",
+    summary: "전검증, 오래됨 사유 기록, GitHub PR 자동화",
     icon: GitPullRequestArrow,
   },
   ai: {
@@ -138,7 +138,7 @@ const labelMap: Record<string, string> = {
   sync_completed: "동기화 완료",
   sync_requested: "동기화 요청",
   system: "시스템",
-  stale_requires_rationale: "stale 사유 필요",
+  stale_requires_rationale: "오래됨 사유 필요",
   template: "템플릿",
   validation_required: "검증 필요",
   warning: "경고",
@@ -160,8 +160,8 @@ const reasonCodeMap: Record<string, string> = {
   missing_repository_binding: "저장소 연결 누락",
   publish_evaluation_pending: "발행 평가 대기",
   review_request_required: "검토 요청 필요",
-  stale_rationale: "stale 사유",
-  stale_rationale_required: "stale 사유 기록 필요",
+  stale_rationale: "오래됨 사유",
+  stale_rationale_required: "오래됨 사유 기록 필요",
   unresolved_approval: "미해결 승인",
   rationale_provided: "사유 제공됨",
 };
@@ -316,7 +316,7 @@ export function EmptyStateCard({
     <Card className="overflow-hidden">
       <CardHeader className="border-b border-[var(--border)]">
         <Badge className="w-fit" variant="outline">
-          State
+          상태
         </Badge>
         <CardTitle className="mt-2 text-2xl">{title}</CardTitle>
         <CardDescription className="max-w-2xl text-base">{description}</CardDescription>
@@ -356,7 +356,7 @@ export function RouteErrorStateCard({
         <Card className="overflow-hidden">
           <CardHeader className="border-b border-[var(--border)]">
             <Badge className="w-fit" variant="destructive">
-              Error
+              오류
             </Badge>
             <CardTitle className="mt-2 text-3xl">{title}</CardTitle>
             <CardDescription className="max-w-2xl text-base">{description}</CardDescription>

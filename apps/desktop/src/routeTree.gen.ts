@@ -16,6 +16,7 @@ import { Route as SignInRouteImport } from './routes/sign-in'
 import { Route as InvitationAcceptanceRouteImport } from './routes/invitation-acceptance'
 import { Route as WorkspaceIdRouteImport } from './routes/$workspaceId'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as WorkspaceIdIndexRouteImport } from './routes/$workspaceId.index'
 import { Route as WorkspaceIdPublishRouteImport } from './routes/$workspaceId.publish'
 import { Route as WorkspaceIdDocumentsRouteImport } from './routes/$workspaceId.documents'
 import { Route as WorkspaceIdDashboardRouteImport } from './routes/$workspaceId.dashboard'
@@ -59,6 +60,11 @@ const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
+} as any)
+const WorkspaceIdIndexRoute = WorkspaceIdIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => WorkspaceIdRoute,
 } as any)
 const WorkspaceIdPublishRoute = WorkspaceIdPublishRouteImport.update({
   id: '/publish',
@@ -117,6 +123,7 @@ export interface FileRoutesByFullPath {
   '/$workspaceId/dashboard': typeof WorkspaceIdDashboardRoute
   '/$workspaceId/documents': typeof WorkspaceIdDocumentsRouteWithChildren
   '/$workspaceId/publish': typeof WorkspaceIdPublishRoute
+  '/$workspaceId/': typeof WorkspaceIdIndexRoute
   '/$workspaceId/documents/$documentId': typeof WorkspaceIdDocumentsDocumentIdRouteWithChildren
   '/$workspaceId/documents/$documentId/approvals': typeof WorkspaceIdDocumentsDocumentIdApprovalsRoute
   '/$workspaceId/documents/$documentId/comments': typeof WorkspaceIdDocumentsDocumentIdCommentsRoute
@@ -124,7 +131,6 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/$workspaceId': typeof WorkspaceIdRouteWithChildren
   '/invitation-acceptance': typeof InvitationAcceptanceRoute
   '/sign-in': typeof SignInRoute
   '/sign-out': typeof SignOutRoute
@@ -134,6 +140,7 @@ export interface FileRoutesByTo {
   '/$workspaceId/dashboard': typeof WorkspaceIdDashboardRoute
   '/$workspaceId/documents': typeof WorkspaceIdDocumentsRouteWithChildren
   '/$workspaceId/publish': typeof WorkspaceIdPublishRoute
+  '/$workspaceId': typeof WorkspaceIdIndexRoute
   '/$workspaceId/documents/$documentId': typeof WorkspaceIdDocumentsDocumentIdRouteWithChildren
   '/$workspaceId/documents/$documentId/approvals': typeof WorkspaceIdDocumentsDocumentIdApprovalsRoute
   '/$workspaceId/documents/$documentId/comments': typeof WorkspaceIdDocumentsDocumentIdCommentsRoute
@@ -152,6 +159,7 @@ export interface FileRoutesById {
   '/$workspaceId/dashboard': typeof WorkspaceIdDashboardRoute
   '/$workspaceId/documents': typeof WorkspaceIdDocumentsRouteWithChildren
   '/$workspaceId/publish': typeof WorkspaceIdPublishRoute
+  '/$workspaceId/': typeof WorkspaceIdIndexRoute
   '/$workspaceId/documents/$documentId': typeof WorkspaceIdDocumentsDocumentIdRouteWithChildren
   '/$workspaceId/documents/$documentId/approvals': typeof WorkspaceIdDocumentsDocumentIdApprovalsRoute
   '/$workspaceId/documents/$documentId/comments': typeof WorkspaceIdDocumentsDocumentIdCommentsRoute
@@ -171,6 +179,7 @@ export interface FileRouteTypes {
     | '/$workspaceId/dashboard'
     | '/$workspaceId/documents'
     | '/$workspaceId/publish'
+    | '/$workspaceId/'
     | '/$workspaceId/documents/$documentId'
     | '/$workspaceId/documents/$documentId/approvals'
     | '/$workspaceId/documents/$documentId/comments'
@@ -178,7 +187,6 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
-    | '/$workspaceId'
     | '/invitation-acceptance'
     | '/sign-in'
     | '/sign-out'
@@ -188,6 +196,7 @@ export interface FileRouteTypes {
     | '/$workspaceId/dashboard'
     | '/$workspaceId/documents'
     | '/$workspaceId/publish'
+    | '/$workspaceId'
     | '/$workspaceId/documents/$documentId'
     | '/$workspaceId/documents/$documentId/approvals'
     | '/$workspaceId/documents/$documentId/comments'
@@ -205,6 +214,7 @@ export interface FileRouteTypes {
     | '/$workspaceId/dashboard'
     | '/$workspaceId/documents'
     | '/$workspaceId/publish'
+    | '/$workspaceId/'
     | '/$workspaceId/documents/$documentId'
     | '/$workspaceId/documents/$documentId/approvals'
     | '/$workspaceId/documents/$documentId/comments'
@@ -271,6 +281,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/$workspaceId/': {
+      id: '/$workspaceId/'
+      path: '/'
+      fullPath: '/$workspaceId/'
+      preLoaderRoute: typeof WorkspaceIdIndexRouteImport
+      parentRoute: typeof WorkspaceIdRoute
     }
     '/$workspaceId/publish': {
       id: '/$workspaceId/publish'
@@ -369,6 +386,7 @@ interface WorkspaceIdRouteChildren {
   WorkspaceIdDashboardRoute: typeof WorkspaceIdDashboardRoute
   WorkspaceIdDocumentsRoute: typeof WorkspaceIdDocumentsRouteWithChildren
   WorkspaceIdPublishRoute: typeof WorkspaceIdPublishRoute
+  WorkspaceIdIndexRoute: typeof WorkspaceIdIndexRoute
 }
 
 const WorkspaceIdRouteChildren: WorkspaceIdRouteChildren = {
@@ -376,6 +394,7 @@ const WorkspaceIdRouteChildren: WorkspaceIdRouteChildren = {
   WorkspaceIdDashboardRoute: WorkspaceIdDashboardRoute,
   WorkspaceIdDocumentsRoute: WorkspaceIdDocumentsRouteWithChildren,
   WorkspaceIdPublishRoute: WorkspaceIdPublishRoute,
+  WorkspaceIdIndexRoute: WorkspaceIdIndexRoute,
 }
 
 const WorkspaceIdRouteWithChildren = WorkspaceIdRoute._addFileChildren(

@@ -136,11 +136,11 @@ const workspaceAreaSummaries: Record<string, Record<string, WorkspaceAreaSummary
 
 export const mockUser: SessionUser = {
   id: "usr_mina_cho",
-  name: "Mina Cho",
-  handle: "@mina",
-  avatarInitials: "MC",
-  githubLogin: "mina-cho",
-  primaryEmail: "mina@harnessdocs.dev",
+  name: "Sarah Chen",
+  handle: "@sarah",
+  avatarInitials: "SC",
+  githubLogin: "sarah-chen",
+  primaryEmail: "sarah@harnessdocs.dev",
 };
 
 function createReviewState(
@@ -214,6 +214,21 @@ const horizonMemberships: WorkspaceMembership[] = [
       invitedAt: "2026-02-04T09:20:00Z",
       joinedAt: "2026-02-04T10:10:00Z",
       lastActiveAt: "2026-03-27T06:15:00Z",
+    },
+  },
+  {
+    id: "mbr_horizon_james",
+    workspaceId: "ws_horizon",
+    userId: "usr_james_okafor",
+    role: "Lead",
+    invitedByUserId: mockUser.id,
+    lifecycle: {
+      status: "active",
+      createdAt: "2026-02-05T09:20:00Z",
+      updatedAt: "2026-03-27T06:20:00Z",
+      invitedAt: "2026-02-05T09:20:00Z",
+      joinedAt: "2026-02-05T10:10:00Z",
+      lastActiveAt: "2026-03-27T06:20:00Z",
     },
   },
 ];
@@ -585,7 +600,7 @@ const horizonApprovals: DocumentApproval[] = [
     authority: "required_reviewer",
     source: "workspace_membership",
     membershipId: "mbr_horizon_sam",
-    reviewerLabel: "Sam Kim",
+    reviewerLabel: "Aisha Patel",
     requestedByMembershipId: "mbr_horizon_mina",
     decision: "changes_requested",
     decisionByMembershipId: "mbr_horizon_sam",
@@ -604,8 +619,8 @@ const horizonApprovals: DocumentApproval[] = [
     documentId: "doc_horizon_prd_checkout",
     authority: "lead",
     source: "workspace_membership",
-    membershipId: "mbr_horizon_mina",
-    reviewerLabel: "Mina Cho",
+    membershipId: "mbr_horizon_james",
+    reviewerLabel: "James Okafor",
     requestedByMembershipId: "mbr_horizon_mina",
     decision: null,
     decisionByMembershipId: null,
@@ -625,7 +640,7 @@ const horizonApprovals: DocumentApproval[] = [
     authority: "required_reviewer",
     source: "workspace_membership",
     membershipId: "mbr_horizon_mina",
-    reviewerLabel: "Mina Cho",
+    reviewerLabel: "Sarah Chen",
     requestedByMembershipId: "mbr_horizon_lee",
     decision: null,
     decisionByMembershipId: null,
@@ -643,11 +658,11 @@ const horizonApprovals: DocumentApproval[] = [
     documentId: "doc_horizon_tech_publish",
     authority: "lead",
     source: "workspace_membership",
-    membershipId: "mbr_horizon_mina",
-    reviewerLabel: "Mina Cho",
+    membershipId: "mbr_horizon_james",
+    reviewerLabel: "James Okafor",
     requestedByMembershipId: "mbr_horizon_lee",
     decision: "approved",
-    decisionByMembershipId: "mbr_horizon_mina",
+    decisionByMembershipId: "mbr_horizon_james",
     decisionNote: "Approved for publish pipeline foundation rollout.",
     lifecycle: {
       state: "approved",
@@ -663,11 +678,11 @@ const horizonApprovals: DocumentApproval[] = [
     documentId: "doc_horizon_policy_rollout",
     authority: "lead",
     source: "workspace_membership",
-    membershipId: "mbr_horizon_mina",
-    reviewerLabel: "Mina Cho",
+    membershipId: "mbr_horizon_james",
+    reviewerLabel: "James Okafor",
     requestedByMembershipId: "mbr_horizon_sam",
     decision: "approved",
-    decisionByMembershipId: "mbr_horizon_mina",
+    decisionByMembershipId: "mbr_horizon_james",
     decisionNote: "Policy approved as the governing restore path.",
     lifecycle: {
       state: "approved",
@@ -675,6 +690,25 @@ const horizonApprovals: DocumentApproval[] = [
       updatedAt: "2026-03-20T09:00:00Z",
       requestedAt: "2026-03-18T08:20:00Z",
       respondedAt: "2026-03-20T09:00:00Z",
+    },
+  },
+  {
+    id: "apr_horizon_notification_lead",
+    workspaceId: "ws_horizon",
+    documentId: "doc_horizon_notification_center",
+    authority: "lead",
+    source: "workspace_membership",
+    membershipId: "mbr_horizon_james",
+    reviewerLabel: "James Okafor",
+    requestedByMembershipId: "mbr_horizon_lee",
+    decision: null,
+    decisionByMembershipId: null,
+    decisionNote: "Awaiting lead review for the notification center flow.",
+    lifecycle: {
+      state: "pending",
+      createdAt: "2026-03-26T10:00:00Z",
+      updatedAt: "2026-03-26T10:00:00Z",
+      requestedAt: "2026-03-26T10:00:00Z",
     },
   },
 ];
@@ -1064,6 +1098,168 @@ Lead-level approvers may restore invalidated app-native approvals during publish
       }),
       lastPublishedAt: "2026-03-21T12:05:00Z",
       lastPublishedCommitSha: "3bc9aa2",
+      activeEditLock: null,
+    },
+  },
+  {
+    id: "doc_horizon_search_filter",
+    workspaceId: "ws_horizon",
+    title: "검색 및 필터 PRD",
+    slug: "search-filter-prd",
+    type: "PRD",
+    ownerMembershipId: "mbr_horizon_mina",
+    createdByMembershipId: "mbr_horizon_mina",
+    templateId: "tpl_prd_system",
+    aiDraftSuggestionIds: [],
+    commentThreadIds: [],
+    markdownSource: `# 검색 및 필터 PRD
+
+## 문제
+문서 라이브러리가 커질수록 사용자는 문서를 더 빠르게 찾고 걸러낼 수 있어야 합니다.
+
+## 요구사항
+- 문서 제목과 요약에 대한 전체 텍스트 검색
+- 유형, 상태, 작성자, 날짜 범위 기준 필터
+- 최근 업데이트, 생성일, 제목 기준 정렬`,
+    mentions: [],
+    linkedDocumentIds: [],
+    prePublication: createPrePublicationState({
+      readiness: "ready",
+      summary: "이 초안은 현재 발행 배치에 포함되어 있지 않으며 라이브러리 기획 항목으로 남아 있습니다.",
+      evaluatedAt: "2026-03-27T07:40:00Z",
+      evaluatedByMembershipId: "mbr_horizon_mina",
+      publishRecordId: null,
+      stalePublishAllowed: false,
+      staleRationaleRequired: false,
+      unresolvedApprovalIds: [],
+      unresolvedApprovals: [],
+      invalidationIds: [],
+      blockingIssues: [],
+      github: {
+        status: "eligible",
+        summary: "향후 발행을 위한 저장소 연결이 유지되고 있습니다.",
+        repository: {
+          owner: "harness-docs",
+          name: "horizon-docs",
+          defaultBranch: "main",
+          installationId: 1042,
+        },
+        missingCapabilities: [],
+      },
+    }),
+    lifecycle: {
+      status: "draft",
+      createdAt: "2026-03-23T10:00:00Z",
+      updatedAt: "2026-03-27T11:00:00Z",
+      review: createReviewState({
+        status: "idle",
+        approvalState: "not_requested",
+        approverIds: [],
+        freshness: {
+          status: "current",
+          evaluatedAt: "2026-03-27T11:00:00Z",
+          evaluatedByMembershipId: "mbr_horizon_mina",
+          rationaleRequired: false,
+          summary: "이 초안은 아직 상위 의존 문서가 없습니다.",
+          reasons: [],
+          invalidations: [],
+        },
+      }),
+      activeEditLock: null,
+    },
+  },
+  {
+    id: "doc_horizon_notification_center",
+    workspaceId: "ws_horizon",
+    title: "알림 센터 UX 흐름",
+    slug: "notification-center-ux-flow",
+    type: "UX Flow",
+    ownerMembershipId: "mbr_horizon_lee",
+    createdByMembershipId: "mbr_horizon_lee",
+    templateId: "tpl_ux_flow_system",
+    aiDraftSuggestionIds: [],
+    commentThreadIds: [],
+    markdownSource: `# 알림 센터 UX 흐름
+
+## 진입 지점
+- 상단 내비게이션의 벨 아이콘
+- 읽지 않은 알림 개수 배지
+
+## 상태
+- 비어 있음
+- 불러오는 중
+- 오류
+- 읽지 않음 / 읽음`,
+    mentions: [],
+    linkedDocumentIds: ["doc_horizon_search_filter"],
+    prePublication: createPrePublicationState({
+      readiness: "attention_required",
+      summary: "이 UX 흐름은 발행 배치 후보가 되기 전에 먼저 리뷰를 받아야 합니다.",
+      evaluatedAt: "2026-03-27T10:20:00Z",
+      evaluatedByMembershipId: "mbr_horizon_lee",
+      publishRecordId: null,
+      stalePublishAllowed: false,
+      staleRationaleRequired: false,
+      unresolvedApprovalIds: ["apr_horizon_notification_lead"],
+      unresolvedApprovals: [
+        createUnresolvedApprovalSnapshot({
+          id: "unresolved_horizon_notification_lead_pending",
+          status: "pending",
+          documentId: "doc_horizon_notification_center",
+          label: "리드 승인 대기 중",
+          authority: "lead",
+          summary: "최신 UX 초안은 아직 리드의 결정을 기다리고 있습니다.",
+          requiredAction: "이 흐름을 발행 배치에 추가하기 전에 리드 승인을 받아야 합니다.",
+          approvalId: "apr_horizon_notification_lead",
+          membershipId: "mbr_horizon_james",
+          invalidationIds: [],
+        }),
+      ],
+      invalidationIds: [],
+      blockingIssues: [
+        {
+          id: "prepub_horizon_notification_pending",
+          kind: "approval_pending",
+          severity: "warning",
+          label: "Lead review is still pending",
+          summary: "The UX flow has an open review request.",
+          requiredAction: "Collect a lead decision before publication.",
+          relatedApprovalIds: ["apr_horizon_notification_lead"],
+          relatedInvalidationIds: [],
+        },
+      ],
+      github: {
+        status: "eligible_with_warnings",
+        summary: "The document can be included later, but the open review remains visible in-app.",
+        repository: {
+          owner: "harness-docs",
+          name: "horizon-docs",
+          defaultBranch: "main",
+          installationId: 1042,
+        },
+        missingCapabilities: [],
+      },
+    }),
+    lifecycle: {
+      status: "in_review",
+      createdAt: "2026-03-21T09:00:00Z",
+      updatedAt: "2026-03-27T09:00:00Z",
+      review: createReviewState({
+        status: "review_requested",
+        approvalState: "pending",
+        requestedAt: "2026-03-26T10:00:00Z",
+        requestedByMembershipId: "mbr_horizon_lee",
+        approverIds: ["apr_horizon_notification_lead"],
+        freshness: {
+          status: "current",
+          evaluatedAt: "2026-03-27T09:00:00Z",
+          evaluatedByMembershipId: "mbr_horizon_lee",
+          rationaleRequired: false,
+          summary: "The linked planning context is current for review.",
+          reasons: [],
+          invalidations: [],
+        },
+      }),
       activeEditLock: null,
     },
   },

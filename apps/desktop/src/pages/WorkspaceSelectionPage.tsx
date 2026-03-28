@@ -34,7 +34,7 @@ export function WorkspaceSelectionPage({
           <Card className="w-full overflow-hidden">
             <CardHeader className="border-b border-[var(--border)]">
               <Badge className="w-fit" variant="warning">
-                Workspace Access
+                워크스페이스 접근
               </Badge>
               <CardTitle className="text-3xl">사용 가능한 워크스페이스가 없음</CardTitle>
               <CardDescription className="max-w-2xl text-base">

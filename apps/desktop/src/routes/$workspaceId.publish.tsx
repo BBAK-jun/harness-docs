@@ -32,6 +32,7 @@ function WorkspacePublishRoute() {
   return (
     <WorkspacePage app={shell}>
       <PublishPage
+        app={shell}
         attemptPreview={publish.attemptPreview}
         executeDisabledReason={publish.executeDisabledReason}
         isRationaleRequired={publish.isRationaleRequired}

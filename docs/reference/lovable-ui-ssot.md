@@ -98,6 +98,39 @@ Publish empty state 원칙:
 - 먼저 문서를 고르고 리뷰/승인 흐름을 만들라고 안내
 - 문서 목록, 승인 화면으로 돌아갈 수 있어야 한다
 
+## Reviews / Approvals의 역할
+
+Lovable 기준으로 Reviews와 Approvals는 선택 문서가 없으면 빈 화면이 되는 탭이 아니다.
+
+원칙:
+
+- Reviews는 워크스페이스 전체 review queue를 먼저 보여준다.
+- 선택된 문서가 있으면 우측 패널이나 하단 패널에서 focused discussion을 더 깊게 보여준다.
+- Approvals는 워크스페이스 approval queue를 먼저 보여준다.
+- 선택된 문서가 있으면 focused document approval snapshot을 함께 보여준다.
+
+즉 이 두 화면은 `문서 종속 detail 탭`이 아니라 `운영 큐 + 문서 포커스` 구조를 가져야 한다.
+
+## Empty List 재정의
+
+Lovable 화면에서 빈 리스트는 단순 `0 items` 메시지가 아니다.
+
+원칙:
+
+- empty list도 dashboard의 연장선으로 동작해야 한다.
+- 리스트가 비어 있더라도 다음 CTA를 설명해야 한다.
+- “왜 비어 있는지”와 “다음에 어디로 가야 하는지”가 같이 보여야 한다.
+- 문서 생성, 리뷰 요청, 승인 확인, publish 준비 중 하나로 이어져야 한다.
+
+적용 대상:
+
+- Dashboard
+- Documents
+- Reviews
+- Approvals
+- Publish
+- Document workspace 내 links/comments panels
+
 ## AI 화면의 역할
 
 AI는 자유 채팅보다 `작업 카탈로그`에 가깝다.
@@ -175,10 +208,10 @@ Lovable 화면 구조를 유지하기 위해 아래 projection/view-model을 둔
 
 Lovable 기준으로 아직 더 다듬을 부분:
 
-1. document overview를 탭형 detail shell로 더 강하게 정리
-2. documents list와 publish 화면도 projection 사용을 더 직접적으로 통일
-3. dashboard의 stat/recent/review queue를 실제 API selector 기반으로 치환
-4. empty state 카피와 CTA를 문서 생성 흐름과 더 강하게 연결
+1. documents list를 projection 기반 필터/정렬 모델로 더 직접적으로 치환
+2. dashboard/reviews/approvals/publish 집계를 실제 API selector 기반으로 치환
+3. document overview와 editor shell 사이의 역할 경계를 더 명확히 정리
+4. desktop bundle chunk warning을 줄이기 위한 라우트 단위 분할 검토
 
 ## 참고
 

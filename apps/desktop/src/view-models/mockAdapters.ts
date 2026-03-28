@@ -10,22 +10,28 @@ export interface MemberSummaryView {
 
 const fallbackUserDirectory: Record<UserId, Omit<MemberSummaryView, "id">> = {
   usr_mina_cho: {
-    name: "Mina Cho",
-    avatarInitials: "MC",
+    name: "Sarah Chen",
+    avatarInitials: "SC",
     role: "Lead",
-    githubLogin: "mina-cho",
+    githubLogin: "sarah-chen",
   },
   usr_lee_park: {
-    name: "Lee Park",
-    avatarInitials: "LP",
+    name: "Marcus Rivera",
+    avatarInitials: "MR",
     role: "Editor",
-    githubLogin: "lee-park",
+    githubLogin: "marcus-rivera",
   },
   usr_sam_kim: {
-    name: "Sam Kim",
-    avatarInitials: "SK",
+    name: "Aisha Patel",
+    avatarInitials: "AP",
     role: "Reviewer",
-    githubLogin: "sam-kim",
+    githubLogin: "aisha-patel",
+  },
+  usr_james_okafor: {
+    name: "James Okafor",
+    avatarInitials: "JO",
+    role: "Lead",
+    githubLogin: "james-okafor",
   },
 };
 

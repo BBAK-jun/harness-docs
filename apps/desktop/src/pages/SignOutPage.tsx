@@ -40,7 +40,7 @@ export function SignOutPage({
                 {isAuthenticated ? <LogOut className="size-5" /> : <ShieldCheck className="size-5" />}
               </div>
               <div>
-                <CardTitle>{isAuthenticated ? "Sign Out" : "Session Status"}</CardTitle>
+                <CardTitle>{isAuthenticated ? "로그아웃" : "세션 상태"}</CardTitle>
                 <CardDescription>
                   {isAuthenticated ? "현재 연결된 계정과 세션 상태입니다." : "이 디바이스에는 활성 세션이 없습니다."}
                 </CardDescription>
@@ -51,7 +51,7 @@ export function SignOutPage({
             <div className="rounded-[var(--radius)] border border-[var(--border)] bg-[var(--surface)] p-4 text-sm leading-6 text-[var(--muted-foreground)]">
               {isAuthenticated
                 ? `${authentication.user.name} (${authentication.user.githubLogin}) 계정이 현재 이 디바이스 세션에 연결되어 있습니다.`
-                : "세션 상태가 signed_out 입니다."}
+                : "세션 상태가 로그아웃됨입니다."}
             </div>
             <div className="flex flex-wrap gap-2">
               {isAuthenticated ? (

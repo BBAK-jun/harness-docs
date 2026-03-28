@@ -46,25 +46,25 @@ export function DocumentOverviewPage({
               {overview.header.freshnessSummary}
             </p>
             <p className="mt-2 text-sm text-[var(--muted-foreground)]">
-              owner {overview.header.owner?.name ?? "Unknown"} · updated {formatDateTime(overview.header.updatedAt)}
+              담당자 {overview.header.owner?.name ?? "알 수 없음"} · 업데이트 {formatDateTime(overview.header.updatedAt)}
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
             <Button onClick={() => app.handleAreaChange("editor")} size="sm">
               <FilePenLine />
-              Edit
+              편집
             </Button>
             <Button onClick={() => app.handleAreaChange("comments")} size="sm" variant="outline">
               <MessageSquareMore />
-              Comments
+              댓글
             </Button>
             <Button onClick={() => app.handleAreaChange("approvals")} size="sm" variant="outline">
               <ShieldCheck />
-              Approvals
+              승인
             </Button>
             <Button onClick={() => app.handleAreaChange("publish")} size="sm" variant="outline">
               <GitBranch />
-              Publish
+              발행
             </Button>
             <Button onClick={() => app.handleAreaChange("ai")} size="sm" variant="outline">
               <Sparkles />
@@ -75,16 +75,16 @@ export function DocumentOverviewPage({
       </section>
 
       <section className="grid gap-3 lg:grid-cols-4">
-        <InfoTile label="Linked Docs" value={overview.header.linkedDocumentCount} />
-        <InfoTile label="Review Threads" value={overview.header.reviewThreadCount} />
-        <InfoTile label="Unresolved Approvals" value={overview.header.unresolvedApprovalCount} />
-        <InfoTile label="Markdown Preview" value={overview.markdownPreview.length} />
+        <InfoTile label="연결 문서" value={overview.header.linkedDocumentCount} />
+        <InfoTile label="리뷰 스레드" value={overview.header.reviewThreadCount} />
+        <InfoTile label="미해결 승인" value={overview.header.unresolvedApprovalCount} />
+        <InfoTile label="마크다운 미리보기" value={overview.markdownPreview.length} />
       </section>
 
       <div className="grid gap-5 xl:grid-cols-[1fr_1fr]">
         <section className="rounded-[calc(var(--radius)+0.35rem)] border border-[var(--border)] bg-[var(--card)]">
           <div className="border-b border-[var(--border)] px-5 py-4">
-            <h3 className="text-lg font-semibold text-[var(--foreground)]">Linked Documents</h3>
+            <h3 className="text-lg font-semibold text-[var(--foreground)]">연결 문서</h3>
           </div>
           <div className="divide-y divide-[var(--border)]">
             {overview.linkedDocuments.length === 0 ? (
@@ -108,7 +108,7 @@ export function DocumentOverviewPage({
 
         <section className="rounded-[calc(var(--radius)+0.35rem)] border border-[var(--border)] bg-[var(--card)]">
           <div className="border-b border-[var(--border)] px-5 py-4">
-            <h3 className="text-lg font-semibold text-[var(--foreground)]">Review and Approval Snapshot</h3>
+            <h3 className="text-lg font-semibold text-[var(--foreground)]">리뷰 및 승인 스냅샷</h3>
           </div>
           <div className="divide-y divide-[var(--border)]">
             {overview.reviewThreads.map((thread) => (

@@ -1,11 +1,9 @@
-import { Navigate, createFileRoute } from "@tanstack/react-router";
+import { Outlet, createFileRoute } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/$workspaceId")({
-  component: WorkspaceRedirectRoute,
+  component: WorkspaceLayoutRoute,
 });
 
-function WorkspaceRedirectRoute() {
-  const { workspaceId } = Route.useParams();
-
-  return <Navigate params={{ workspaceId }} to="/$workspaceId/dashboard" />;
+function WorkspaceLayoutRoute() {
+  return <Outlet />;
 }

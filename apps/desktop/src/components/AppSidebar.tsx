@@ -1,102 +1,108 @@
-import { useLocation, Link } from "react-router-dom";
 import {
-  LayoutDashboard,
+  CheckCircle2,
   FileText,
   GitBranch,
-  Sparkles,
-  CheckCircle2,
+  LayoutDashboard,
   Settings,
+  Sparkles,
 } from "lucide-react";
+import { useNavigate } from "@tanstack/react-router";
 import { cn } from "@/lib/utils";
+import type { WorkspaceShellModel } from "../hooks/useWorkspaceShell";
 
 const navItems = [
-  { title: "Dashboard", path: "/", icon: LayoutDashboard },
-  { title: "Documents", path: "/documents", icon: FileText },
-  { title: "Reviews", path: "/reviews", icon: CheckCircle2 },
-  { title: "Publish", path: "/publish", icon: GitBranch },
-  { title: "AI Assistant", path: "/ai", icon: Sparkles },
-];
+  { title: "대시보드", area: "dashboard", icon: LayoutDashboard },
+  { title: "문서", area: "documents", icon: FileText },
+  { title: "리뷰", area: "comments", icon: CheckCircle2 },
+  { title: "발행", area: "publish", icon: GitBranch },
+  { title: "AI 어시스턴트", area: "ai", icon: Sparkles },
+] as const;
 
-const bottomItems = [
-  { title: "Settings", path: "/settings", icon: Settings },
-];
+export function AppSidebar({ app }: { app: WorkspaceShellModel }) {
+  const navigate = useNavigate();
+  const documents = app.activeWorkspaceGraph?.documents ?? [];
+  const members = app.activeWorkspaceGraph?.memberships ?? [];
 
-export function AppSidebar() {
-  const location = useLocation();
-
-  const isActive = (path: string) =>
-    path === "/" ? location.pathname === "/" : location.pathname.startsWith(path);
+  const isActive = (area: (typeof navItems)[number]["area"]) => app.activeArea === area;
 
   return (
-    <aside className="w-56 bg-sidebar text-sidebar-foreground flex flex-col shrink-0 h-screen sticky top-0">
-      {/* Logo */}
-      <div className="h-14 flex items-center px-5 border-b border-sidebar-border">
+    <aside className="sticky top-0 hidden h-screen w-56 shrink-0 flex-col bg-[var(--sidebar-background)] text-[var(--sidebar-foreground)] xl:flex">
+      <div className="flex h-14 items-center border-b border-[var(--sidebar-border)] px-5">
         <div className="flex items-center gap-2.5">
-          <div className="w-7 h-7 bg-sidebar-primary rounded flex items-center justify-center">
-            <FileText className="w-4 h-4 text-sidebar-primary-foreground" />
+          <div className="flex h-7 w-7 items-center justify-center rounded bg-[var(--sidebar-primary)]">
+            <FileText className="h-4 w-4 text-[var(--sidebar-primary-foreground)]" />
           </div>
           <div>
-            <span className="text-sm font-semibold text-sidebar-accent-foreground">Harness</span>
-            <span className="text-sm font-semibold text-sidebar-primary"> Docs</span>
+            <span className="text-sm font-semibold text-[var(--sidebar-accent-foreground)]">Harness</span>
+            <span className="text-sm font-semibold text-[var(--sidebar-primary)]"> Docs</span>
           </div>
         </div>
       </div>
 
-      {/* Workspace */}
-      <div className="px-3 py-3 border-b border-sidebar-border">
-        <div className="px-2 py-1.5 rounded bg-sidebar-accent">
-          <p className="text-xs font-medium text-sidebar-accent-foreground">Product Team Alpha</p>
-          <p className="text-[10px] text-sidebar-muted">6 documents · 4 members</p>
+      <div className="border-b border-[var(--sidebar-border)] px-3 py-3">
+        <div className="rounded bg-[var(--sidebar-accent)] px-2 py-2">
+          <p className="text-xs font-medium text-[var(--sidebar-accent-foreground)]">
+            {app.activeWorkspace?.name ?? "워크스페이스"}
+          </p>
+          <p className="text-[10px] text-[var(--sidebar-muted)]">
+            문서 {documents.length}개 · 멤버 {members.length}명
+          </p>
         </div>
       </div>
 
-      {/* Nav */}
-      <nav className="flex-1 px-3 py-3 space-y-0.5">
-        {navItems.map(item => (
-          <Link
-            key={item.path}
-            to={item.path}
+      <nav className="flex-1 space-y-0.5 px-3 py-3">
+        {navItems.map((item) => (
+          <button
+            key={item.area}
             className={cn(
-              "flex items-center gap-2.5 px-2.5 py-2 rounded text-sm transition-colors",
-              isActive(item.path)
-                ? "bg-sidebar-accent text-sidebar-accent-foreground font-medium"
-                : "text-sidebar-foreground hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground"
+              "flex w-full items-center gap-2.5 rounded px-2.5 py-2 text-sm transition-colors",
+              isActive(item.area)
+                ? "bg-[var(--sidebar-accent)] font-medium text-[var(--sidebar-accent-foreground)]"
+                : "text-[var(--sidebar-foreground)] hover:bg-[color:color-mix(in_srgb,var(--sidebar-accent)_50%,transparent)] hover:text-[var(--sidebar-accent-foreground)]",
             )}
+            onClick={() => app.handleAreaChange(item.area)}
+            type="button"
           >
-            <item.icon className="w-4 h-4 shrink-0" />
+            <item.icon className="h-4 w-4 shrink-0" />
             <span>{item.title}</span>
-          </Link>
+          </button>
         ))}
       </nav>
 
-      {/* Bottom */}
-      <div className="px-3 py-3 border-t border-sidebar-border space-y-0.5">
-        {bottomItems.map(item => (
-          <Link
-            key={item.path}
-            to={item.path}
-            className={cn(
-              "flex items-center gap-2.5 px-2.5 py-2 rounded text-sm transition-colors",
-              isActive(item.path)
-                ? "bg-sidebar-accent text-sidebar-accent-foreground font-medium"
-                : "text-sidebar-foreground hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground"
-            )}
-          >
-            <item.icon className="w-4 h-4 shrink-0" />
-            <span>{item.title}</span>
-          </Link>
-        ))}
+      <div className="space-y-0.5 border-t border-[var(--sidebar-border)] px-3 py-3">
+        <button
+          className="flex w-full items-center gap-2.5 rounded px-2.5 py-2 text-sm text-[var(--sidebar-foreground)] transition-colors hover:bg-[color:color-mix(in_srgb,var(--sidebar-accent)_50%,transparent)] hover:text-[var(--sidebar-accent-foreground)]"
+          onClick={() => app.handleWorkspaceLeave()}
+          type="button"
+        >
+          <Settings className="h-4 w-4 shrink-0" />
+          <span>워크스페이스</span>
+        </button>
 
-        {/* User */}
-        <div className="flex items-center gap-2.5 px-2.5 py-2 mt-2">
-          <div className="w-7 h-7 rounded-full bg-sidebar-primary flex items-center justify-center text-xs font-medium text-sidebar-primary-foreground">
-            SC
+        <div className="mt-2 flex items-center gap-2.5 px-2.5 py-2">
+          <div className="flex h-7 w-7 items-center justify-center rounded-full bg-[var(--sidebar-primary)] text-xs font-medium text-[var(--sidebar-primary-foreground)]">
+            {app.user?.avatarInitials ?? "HD"}
           </div>
           <div className="min-w-0">
-            <p className="text-xs font-medium text-sidebar-accent-foreground truncate">Sarah Chen</p>
-            <p className="text-[10px] text-sidebar-muted">PM</p>
+            <p className="truncate text-xs font-medium text-[var(--sidebar-accent-foreground)]">
+              {app.user?.name ?? "알 수 없는 사용자"}
+            </p>
+            <p className="truncate text-[10px] text-[var(--sidebar-muted)]">
+              {app.user?.githubLogin ?? ""}
+            </p>
           </div>
         </div>
+
+        <button
+          className="flex w-full items-center gap-2.5 rounded px-2.5 py-2 text-sm text-[var(--sidebar-foreground)] transition-colors hover:bg-[color:color-mix(in_srgb,var(--sidebar-accent)_50%,transparent)] hover:text-[var(--sidebar-accent-foreground)]"
+          onClick={() => {
+            void navigate({ to: "/sign-out" });
+          }}
+          type="button"
+        >
+          <Settings className="h-4 w-4 shrink-0" />
+          <span>로그아웃</span>
+        </button>
       </div>
     </aside>
   );

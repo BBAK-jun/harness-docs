@@ -77,7 +77,7 @@ export function DocumentsPage({
       <section className="rounded-[calc(var(--radius)+0.35rem)] border border-[var(--border)] bg-[var(--card)]">
         <div className="flex flex-col gap-4 border-b border-[var(--border)] px-5 py-5 lg:flex-row lg:items-center lg:justify-between">
           <div>
-            <h2 className="text-xl font-semibold text-[var(--foreground)]">Documents</h2>
+            <h2 className="text-xl font-semibold text-[var(--foreground)]">문서</h2>
             <p className="mt-1 text-sm text-[var(--muted-foreground)]">
               문서 라이브러리에서 작업 대상을 고르고, 이어지는 리뷰와 발행 흐름으로 이동합니다.
             </p>

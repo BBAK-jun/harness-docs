@@ -38,7 +38,7 @@ export function AIPage({
   return (
     <Card className="overflow-hidden">
       <CardHeader className="border-b border-[var(--border)]">
-        <CardTitle>AI Assistant</CardTitle>
+        <CardTitle>AI 어시스턴트</CardTitle>
         <CardDescription>
           초안 생성, 링크 제안, 발행 메모 준비 같은 명확한 작업 단위만 노출합니다.
         </CardDescription>

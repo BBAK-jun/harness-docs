@@ -9,6 +9,8 @@ import type {
   DesktopShellMetadata,
 } from "../services/contracts";
 import { fallbackAppPreferences } from "../services/mockHarnessDocsServices";
+import type { FileRouteTypes } from "../routeTree.gen";
+import { useRouter } from "@tanstack/react-router";
 
 export interface HarnessDocsBootstrapData {
   desktopShell: DesktopShellMetadata | null;
@@ -33,6 +35,7 @@ export async function loadBootstrapState(
 }
 
 export function useAppBootstrap() {
+  const router = useRouter();
   const services = useHarnessDocsServices();
   const queryClient = useQueryClient();
   const bootstrapQuery = useQuery({
@@ -79,10 +82,16 @@ export function useAppBootstrap() {
     },
   });
 
-  const handleSignIn = async (provider: AuthenticationSessionSnapshot["provider"]["id"]) => {
+  const handleSignIn = async (provider: AuthenticationSessionSnapshot["provider"]["id"], redirectTo?: FileRouteTypes['to']) => {
     await authenticationMutation.mutateAsync({
       type: "sign-in",
       provider,
+    }, {
+      onSuccess: () => {
+        if (redirectTo) {
+          void router.navigate({ to: redirectTo });
+        }
+      },
     });
   };
 
