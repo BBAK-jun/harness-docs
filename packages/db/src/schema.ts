@@ -1,4 +1,14 @@
 import {
+  aiProviderValues,
+  approvalAuthorityValues,
+  approvalCandidateSourceValues,
+  approvalDecisionValues,
+  authProviderValues,
+  documentTypeValues,
+  membershipStatusValues,
+  workspaceRoleValues,
+} from "@harness-docs/contracts";
+import {
   bigint,
   boolean,
   index,
@@ -17,24 +27,14 @@ const timestamps = {
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 };
 
-export const workspaceRoleEnum = pgEnum("workspace_role", ["Lead", "Editor", "Reviewer"]);
+export const workspaceRoleEnum = pgEnum("workspace_role", workspaceRoleValues);
 export const workspaceStatusEnum = pgEnum("workspace_status", [
   "active",
   "provisioning",
   "archived",
 ]);
-export const membershipStatusEnum = pgEnum("membership_status", [
-  "active",
-  "invited",
-  "suspended",
-  "removed",
-]);
-export const documentTypeEnum = pgEnum("document_type", [
-  "PRD",
-  "UX Flow",
-  "Technical Spec",
-  "Policy/Decision",
-]);
+export const membershipStatusEnum = pgEnum("membership_status", membershipStatusValues);
+export const documentTypeEnum = pgEnum("document_type", documentTypeValues);
 export const documentStatusEnum = pgEnum("document_status", [
   "draft",
   "in_review",
@@ -59,20 +59,12 @@ export const documentApprovalStateEnum = pgEnum("document_approval_state", [
 export const publishStalenessStatusEnum = pgEnum("publish_staleness_status", ["current", "stale"]);
 export const templateSourceEnum = pgEnum("template_source", ["system", "workspace"]);
 export const templateStatusEnum = pgEnum("template_status", ["active", "archived"]);
-export const approvalAuthorityEnum = pgEnum("approval_authority", [
-  "lead",
-  "required_reviewer",
-  "optional_reviewer",
-]);
-export const approvalCandidateSourceEnum = pgEnum("approval_candidate_source", [
-  "workspace_membership",
-  "github_import",
-]);
-export const approvalDecisionEnum = pgEnum("approval_decision", [
-  "approved",
-  "changes_requested",
-  "restored",
-]);
+export const approvalAuthorityEnum = pgEnum("approval_authority", approvalAuthorityValues);
+export const approvalCandidateSourceEnum = pgEnum(
+  "approval_candidate_source",
+  approvalCandidateSourceValues,
+);
+export const approvalDecisionEnum = pgEnum("approval_decision", approvalDecisionValues);
 export const publishArtifactKindEnum = pgEnum("publish_artifact_kind", ["document", "template"]);
 export const publishRecordStatusEnum = pgEnum("publish_record_status", [
   "draft",
@@ -94,8 +86,8 @@ export const publishPreflightStatusEnum = pgEnum("publish_preflight_status", [
   "ready_with_warnings",
   "blocked",
 ]);
-export const aiProviderEnum = pgEnum("ai_provider", ["Codex", "Claude"]);
-export const authProviderEnum = pgEnum("auth_provider", ["github_oauth"]);
+export const aiProviderEnum = pgEnum("ai_provider", aiProviderValues);
+export const authProviderEnum = pgEnum("auth_provider", authProviderValues);
 export const aiDraftKindEnum = pgEnum("ai_draft_kind", [
   "document_content",
   "document_links",

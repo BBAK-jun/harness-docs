@@ -1,8 +1,7 @@
+import type { DocumentType, WorkspaceRole } from "@harness-docs/contracts";
 import type { ApprovalAuthority, UnresolvedApprovalSnapshot } from "./documentAggregate.ts";
 import { buildId, dedupeByKey, dedupeStrings, slugify } from "./shared.ts";
 
-export type DocumentType = "PRD" | "UX Flow" | "Technical Spec" | "Policy/Decision";
-export type WorkspaceRole = "Lead" | "Editor" | "Reviewer";
 export type PublishStageId = "scope" | "freshness" | "approvals" | "memo" | "github";
 export type PublishStageStatus = "pending" | "ready" | "attention" | "complete";
 export type PublishRecordStatus = "draft" | "ready_for_publish" | "publishing" | "published";

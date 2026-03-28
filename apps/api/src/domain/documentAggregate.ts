@@ -1,3 +1,5 @@
+import type { ApprovalAuthority } from "@harness-docs/contracts";
+export type { ApprovalAuthority } from "@harness-docs/contracts";
 import { dedupeByKey, dedupeStrings } from "./shared.ts";
 
 export type DocumentStatus = "draft" | "in_review" | "approved" | "published" | "archived";
@@ -9,7 +11,6 @@ export type DocumentApprovalState =
   | "changes_requested"
   | "invalidated"
   | "restored";
-export type ApprovalAuthority = "lead" | "required_reviewer" | "optional_reviewer";
 export type PublishStalenessStatus = "current" | "stale";
 export type DocumentFreshnessReason =
   | "linked_document_updated"

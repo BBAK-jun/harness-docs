@@ -3,18 +3,24 @@ import { createRoute, OpenAPIHono, z } from "@hono/zod-openapi";
 import type { Context, Next, TypedResponse } from "hono";
 import { hc } from "hono/client";
 import { cors } from "hono/cors";
+import {
+  aiProviderSchema,
+  approvalAuthoritySchema,
+  approvalCandidateSourceSchema,
+  approvalDecisionSchema as approvalDecisionValueSchema,
+  authProviderSchema,
+  documentTypeSchema,
+  publishRecordSourceKindSchema,
+  workspaceRoleSchema,
+  type AuthProvider,
+  type NavigationAreaKey,
+  type WorkspaceRole,
+} from "./enums";
 import type { PublishPreflightEnvelopeDto, PublishPreflightView } from "./publish-governance";
 import { publishPreflightEnvelopeSchema } from "./publish-governance";
 
+export * from "./enums";
 export * from "./publish-governance";
-
-export type NavigationAreaKey =
-  | "documents"
-  | "editor"
-  | "comments"
-  | "approvals"
-  | "publish"
-  | "ai";
 
 export interface SessionUserDto {
   id: string;
@@ -26,7 +32,7 @@ export interface SessionUserDto {
 }
 
 export interface AuthenticationProviderDto {
-  id: "github_oauth";
+  id: AuthProvider;
   label: "GitHub OAuth";
   kind: "oauth";
 }
@@ -96,7 +102,7 @@ export interface WorkspaceSummaryDto {
   id: string;
   name: string;
   repo: string;
-  role: "Lead" | "Editor" | "Reviewer";
+  role: WorkspaceRole;
   description: string;
   openReviews: number;
   pendingDrafts: number;
@@ -222,7 +228,7 @@ export interface PublishExecutionEnvelopeDto {
 }
 
 export interface AuthSessionExchangeRequestDto {
-  provider: "github_oauth";
+  provider: AuthProvider;
   identity: {
     login: string;
     name: string;
@@ -296,7 +302,7 @@ export const workspaceSummarySchema = z.object({
   id: z.string(),
   name: z.string(),
   repo: z.string(),
-  role: z.enum(["Lead", "Editor", "Reviewer"]),
+  role: workspaceRoleSchema,
   description: z.string(),
   openReviews: z.number(),
   pendingDrafts: z.number(),
@@ -535,13 +541,13 @@ export const gitHubOAuthAttemptSchema = z.discriminatedUnion("status", [
 
 export const intakePreviewRequestSchema = z.object({
   prompt: z.string().min(1),
-  provider: z.enum(["Codex", "Claude"]),
+  provider: aiProviderSchema,
 });
 
 export type IntakePreviewRequestDto = z.infer<typeof intakePreviewRequestSchema>;
 
 export const authSessionExchangeRequestSchema = z.object({
-  provider: z.literal("github_oauth"),
+  provider: authProviderSchema,
   identity: z.object({
     login: z.string().min(1),
     name: z.string().min(1),
@@ -579,7 +585,7 @@ export type WorkspaceInvitationAcceptRequestDto = z.infer<
 
 export const documentCreateRequestSchema = z.object({
   title: z.string().min(1),
-  type: z.enum(["PRD", "UX Flow", "Technical Spec", "Policy/Decision"]),
+  type: documentTypeSchema,
   templateId: z.string().min(1),
   ownerMembershipId: z.string().min(1),
   createdByMembershipId: z.string().min(1),
@@ -598,8 +604,8 @@ export const documentUpdateRequestSchema = z.object({
 export type DocumentUpdateRequestDto = z.infer<typeof documentUpdateRequestSchema>;
 
 export const approvalRequestSchema = z.object({
-  authority: z.enum(["lead", "required_reviewer", "optional_reviewer"]),
-  source: z.enum(["workspace_membership", "github_import"]),
+  authority: approvalAuthoritySchema,
+  source: approvalCandidateSourceSchema,
   reviewerLabel: z.string().min(1),
   membershipId: z.string().nullable().optional(),
   githubCandidateLogin: z.string().nullable().optional(),
@@ -610,7 +616,7 @@ export const approvalRequestSchema = z.object({
 export type ApprovalRequestDto = z.infer<typeof approvalRequestSchema>;
 
 export const approvalDecisionSchema = z.object({
-  decision: z.enum(["approved", "changes_requested", "restored"]),
+  decision: approvalDecisionValueSchema,
   decisionByMembershipId: z.string().min(1),
   decisionNote: z.string().optional(),
 });
@@ -620,7 +626,7 @@ export type ApprovalDecisionDto = z.infer<typeof approvalDecisionSchema>;
 export const publishRecordCreateRequestSchema = z
   .object({
     source: z.object({
-      kind: z.enum(["workspace", "document", "template"]),
+      kind: publishRecordSourceKindSchema,
       documentId: z.string().nullable().optional(),
       templateId: z.string().nullable().optional(),
       label: z.string().min(1),

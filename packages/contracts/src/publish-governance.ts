@@ -1,4 +1,24 @@
 import { z } from "@hono/zod-openapi";
+import {
+  documentFreshnessStatusSchema,
+  documentMetadataStatusSchema,
+  documentStoredStatusSchema,
+  documentTypeSchema,
+  documentValidationStatusSchema,
+  issueSeveritySchema,
+  publishBlockingIssueCodeSchema,
+  publishEligibilityStatusSchema,
+  type DocumentFreshnessStatus,
+  type DocumentMetadataStatus,
+  type DocumentStoredStatus,
+  type DocumentType,
+  type DocumentValidationStatus,
+  type IssueSeverity,
+  type PublishBlockingIssueCode,
+  type PublishEligibilityStatus,
+  type StaleReasonCode,
+  staleReasonCodeSchema,
+} from "./enums";
 
 /**
  * Document identity and timestamps are repeated across read models so the
@@ -8,7 +28,7 @@ export interface DocumentReference {
   id: string;
   workspaceId: string;
   title: string;
-  type: "PRD" | "UX Flow" | "Technical Spec" | "Policy/Decision";
+  type: DocumentType;
   updatedAt: string;
   lastSyncedAt: string | null;
 }
@@ -17,7 +37,7 @@ export const documentReferenceSchema = z.object({
   id: z.string(),
   workspaceId: z.string(),
   title: z.string(),
-  type: z.enum(["PRD", "UX Flow", "Technical Spec", "Policy/Decision"]),
+  type: documentTypeSchema,
   updatedAt: z.string(),
   lastSyncedAt: z.string().nullable(),
 });
@@ -26,36 +46,10 @@ export const documentReferenceSchema = z.object({
  * Persisted document lifecycle owned by the server.
  * These are facts stored by the system, not policy interpretations.
  */
-export const documentStoredStatusSchema = z.enum(["draft", "publishing", "published_pr_created"]);
-
-export type DocumentStoredStatus = z.infer<typeof documentStoredStatusSchema>;
-
 /**
  * Computed freshness policy derived by API at read time.
  * This is the main policy surface the desktop should show to users.
  */
-export const documentFreshnessStatusSchema = z.enum([
-  "fresh",
-  "stale",
-  "sync_required",
-  "validation_required",
-  "metadata_refresh_required",
-]);
-
-export type DocumentFreshnessStatus = z.infer<typeof documentFreshnessStatusSchema>;
-
-/**
- * Fine-grained reasons explaining why a document is stale or why a rationale is needed.
- * These reason codes are intended to be stable across UI, API, and persisted records.
- */
-export const staleReasonCodeSchema = z.enum([
-  "updated_at_older_than_7_days",
-  "source_has_newer_changes_than_last_synced_at",
-  "last_synced_at_missing",
-]);
-
-export type StaleReasonCode = z.infer<typeof staleReasonCodeSchema>;
-
 export interface DocumentStaleReason {
   code: StaleReasonCode;
   summary: string;
@@ -79,23 +73,23 @@ export const documentStaleReasonSchema = z.object({
 export interface DocumentValidationIssue {
   code: string;
   message: string;
-  severity: "info" | "warning" | "blocking";
+  severity: IssueSeverity;
 }
 
 export const documentValidationIssueSchema = z.object({
   code: z.string(),
   message: z.string(),
-  severity: z.enum(["info", "warning", "blocking"]),
+  severity: issueSeveritySchema,
 });
 
 export interface DocumentValidationSnapshot {
-  status: "not_run" | "passed" | "failed";
+  status: DocumentValidationStatus;
   checkedAt: string | null;
   issues: DocumentValidationIssue[];
 }
 
 export const documentValidationSnapshotSchema = z.object({
-  status: z.enum(["not_run", "passed", "failed"]),
+  status: documentValidationStatusSchema,
   checkedAt: z.string().nullable(),
   issues: z.array(documentValidationIssueSchema),
 });
@@ -103,23 +97,23 @@ export const documentValidationSnapshotSchema = z.object({
 export interface DocumentMetadataIssue {
   code: string;
   message: string;
-  severity: "info" | "warning" | "blocking";
+  severity: IssueSeverity;
 }
 
 export const documentMetadataIssueSchema = z.object({
   code: z.string(),
   message: z.string(),
-  severity: z.enum(["info", "warning", "blocking"]),
+  severity: issueSeveritySchema,
 });
 
 export interface DocumentMetadataSnapshot {
-  status: "not_checked" | "current" | "outdated";
+  status: DocumentMetadataStatus;
   checkedAt: string | null;
   issues: DocumentMetadataIssue[];
 }
 
 export const documentMetadataSnapshotSchema = z.object({
-  status: z.enum(["not_checked", "current", "outdated"]),
+  status: documentMetadataStatusSchema,
   checkedAt: z.string().nullable(),
   issues: z.array(documentMetadataIssueSchema),
 });
@@ -158,29 +152,14 @@ export const publishPullRequestRefSchema = z.object({
  * `requires_rationale` means stale publish is allowed, but only with user explanation.
  * `allowed` means publish can proceed immediately.
  */
-export const publishEligibilityStatusSchema = z.enum(["allowed", "requires_rationale", "blocked"]);
-
-export type PublishEligibilityStatus = z.infer<typeof publishEligibilityStatusSchema>;
-
 export interface PublishBlockingIssue {
-  code:
-    | "validation_failed"
-    | "metadata_refresh_required"
-    | "approval_missing"
-    | "approval_changes_requested"
-    | "document_not_found";
+  code: PublishBlockingIssueCode;
   summary: string;
   requiredAction: string;
 }
 
 export const publishBlockingIssueSchema = z.object({
-  code: z.enum([
-    "validation_failed",
-    "metadata_refresh_required",
-    "approval_missing",
-    "approval_changes_requested",
-    "document_not_found",
-  ]),
+  code: publishBlockingIssueCodeSchema,
   summary: z.string(),
   requiredAction: z.string(),
 });
@@ -190,25 +169,20 @@ export const publishBlockingIssueSchema = z.object({
  * pass into governance projection code. This prevents cross-app type leakage.
  */
 export interface PublishGovernanceBlockingIssueSnapshot {
-  code:
-    | "validation_failed"
-    | "metadata_refresh_required"
-    | "approval_missing"
-    | "approval_changes_requested"
-    | "document_not_found";
+  code: PublishBlockingIssueCode;
   summary: string;
   requiredAction: string;
-  severity: "warning" | "blocking";
+  severity: Extract<IssueSeverity, "warning" | "blocking">;
 }
 
 export interface PublishGovernanceValidationSnapshot {
-  status: "not_run" | "passed" | "failed";
+  status: DocumentValidationStatus;
   checkedAt: string | null;
   issues: DocumentValidationIssue[];
 }
 
 export interface PublishGovernanceMetadataSnapshot {
-  status: "not_checked" | "current" | "outdated";
+  status: DocumentMetadataStatus;
   checkedAt: string | null;
   issues: DocumentMetadataIssue[];
 }

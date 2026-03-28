@@ -1,3 +1,4 @@
+import type { AuthProvider } from "@harness-docs/contracts";
 import type { DesktopWindowService } from "../desktop/contracts";
 import type { ApprovalService } from "../domain/approvals";
 import type { AITaskService } from "../domain/aiTasks";
@@ -13,7 +14,7 @@ import type {
 
 export type DesktopRuntime = "tauri" | "browser";
 export type VersionControlProvider = "github";
-export type AuthenticationProvider = "github_oauth";
+export type AuthenticationProvider = AuthProvider;
 export type AuthenticationSessionStatus = "authenticated" | "signed_out";
 export type AppearanceMode = "dark" | "light";
 
