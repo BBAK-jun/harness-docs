@@ -1,28 +1,5 @@
 import { Component, type ErrorInfo, type ReactNode } from "react";
-import { toast } from "sonner";
-
-function toErrorMessage(error: unknown) {
-  if (error instanceof Error) {
-    return error.message;
-  }
-
-  if (typeof error === "string") {
-    return error;
-  }
-
-  try {
-    return JSON.stringify(error);
-  } catch {
-    return "알 수 없는 예외가 발생했습니다.";
-  }
-}
-
-function showGlobalErrorToast(message: string) {
-  toast.error("예기치 않은 오류가 발생했습니다.", {
-    description: message,
-    duration: 6000,
-  });
-}
+import { showErrorToast, toErrorMessage } from "../lib/errorToast";
 
 type Props = {
   children: ReactNode;
@@ -58,16 +35,25 @@ export class GlobalUnhandledExceptionBoundary extends Component<Props, State> {
   }
 
   componentDidCatch(error: Error, _errorInfo: ErrorInfo) {
-    showGlobalErrorToast(toErrorMessage(error));
+    showErrorToast({
+      title: "예기치 않은 오류가 발생했습니다.",
+      description: toErrorMessage(error),
+    });
     this.scheduleReset();
   }
 
   private handleWindowError = (event: ErrorEvent) => {
-    showGlobalErrorToast(event.error ? toErrorMessage(event.error) : event.message);
+    showErrorToast({
+      title: "예기치 않은 오류가 발생했습니다.",
+      description: event.error ? toErrorMessage(event.error) : event.message,
+    });
   };
 
   private handleUnhandledRejection = (event: PromiseRejectionEvent) => {
-    showGlobalErrorToast(toErrorMessage(event.reason));
+    showErrorToast({
+      title: "예기치 않은 오류가 발생했습니다.",
+      description: toErrorMessage(event.reason),
+    });
   };
 
   private scheduleReset() {

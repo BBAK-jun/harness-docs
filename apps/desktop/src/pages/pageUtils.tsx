@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import {
   BookOpenText,
   Bot,
@@ -10,6 +11,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { showErrorToast } from "../lib/errorToast";
 import type { WorkspaceShellModel } from "../hooks/useWorkspaceShell";
 import type { NavigationArea, PublishPreflightFinding, WorkspaceDocument } from "../types";
 
@@ -323,6 +325,13 @@ export function RouteErrorStateCard({
   onRetry: () => void;
   secondaryAction?: React.ReactNode;
 }) {
+  useEffect(() => {
+    showErrorToast({
+      title,
+      description: errorMessage,
+    });
+  }, [errorMessage, title]);
+
   return (
     <main className="app-frame min-h-screen p-4 sm:p-6">
       <div className="mx-auto max-w-3xl">
