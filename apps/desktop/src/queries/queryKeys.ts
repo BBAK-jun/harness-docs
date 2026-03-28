@@ -23,6 +23,9 @@ export const desktopMutationKeys = {
   authentication: {
     session: () => [...desktopQueryRoot, "authentication", "session"] as const,
   },
+  workspace: {
+    create: () => [...desktopQueryRoot, "workspace", "create"] as const,
+  },
   ai: {
     runEntryPoint: () => [...desktopQueryRoot, "ai", "run-entry-point"] as const,
   },

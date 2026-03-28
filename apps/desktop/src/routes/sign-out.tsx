@@ -1,8 +1,8 @@
-import { createFileRoute, useRouter } from "@tanstack/react-router";
+import { Navigate, createFileRoute, useRouter } from "@tanstack/react-router";
+import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { useAppBootstrap } from "../hooks/useAppBootstrap";
 import { RouteErrorStateCard } from "../pages/pageUtils";
-import { SignOutPage } from "../pages/SignOutPage";
 
 export const Route = createFileRoute("/sign-out")({
   component: SignOutRoute,
@@ -13,17 +13,19 @@ function SignOutRoute() {
   const app = useAppBootstrap();
   const router = useRouter();
 
-  return (
-    <SignOutPage
-      app={app}
-      onOpenSignIn={() => {
+  useEffect(() => {
+    if (app.authentication?.status === "authenticated") {
+      void app.handleSignOut().finally(() => {
         void router.navigate({ to: "/sign-in" });
-      }}
-      onOpenWorkspaces={() => {
-        void router.navigate({ to: "/workspaces" });
-      }}
-    />
-  );
+      });
+    }
+  }, [app, router]);
+
+  if (app.authentication?.status !== "authenticated") {
+    return <Navigate to="/sign-in" />;
+  }
+
+  return null;
 }
 
 function SignOutRouteErrorBoundary({

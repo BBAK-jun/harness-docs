@@ -2,6 +2,7 @@ import { ArrowRight, CheckCircle2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { type GridColumnCount, getSplitGridClassName } from "./layoutGrid";
 
 export function WorkspaceOnboardingPage({
   title,
@@ -12,6 +13,8 @@ export function WorkspaceOnboardingPage({
   onSignOut,
   primaryLabel,
   secondaryLabel,
+  layoutColumns = 2,
+  withinShell = false,
 }: {
   title: string;
   description: string;
@@ -21,10 +24,16 @@ export function WorkspaceOnboardingPage({
   onSignOut: () => void;
   primaryLabel: string;
   secondaryLabel: string;
+  layoutColumns?: GridColumnCount;
+  withinShell?: boolean;
 }) {
+  const rootClassName = withinShell
+    ? getSplitGridClassName(layoutColumns)
+    : `mx-auto min-h-[calc(100vh-3rem)] max-w-6xl items-center ${getSplitGridClassName(layoutColumns)}`;
+
   return (
-    <main className="app-frame min-h-screen p-6">
-      <div className="mx-auto grid min-h-[calc(100vh-3rem)] max-w-6xl items-center gap-6 xl:grid-cols-[1.05fr_0.95fr]">
+    <main className={withinShell ? "flex flex-col gap-6" : "app-frame min-h-screen p-6"}>
+      <div className={rootClassName}>
         <section className="rounded-[calc(var(--radius)+0.75rem)] border border-[var(--border)] bg-[rgba(255,255,255,0.62)] p-6 shadow-[0_30px_120px_-80px_rgba(15,23,42,0.5)] backdrop-blur-xl sm:p-8">
           <Badge className="w-fit" variant="info">
             워크스페이스 접근

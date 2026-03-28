@@ -62,6 +62,9 @@ export function DashboardPage({
   return (
     <div className="flex flex-col gap-5">
       <section className="px-2 pt-1">
+        <p className="text-xs font-medium uppercase tracking-[0.16em] text-[var(--muted-foreground)]">
+          워크스페이스 &gt; 대시보드
+        </p>
         <h1 className="text-[2.1rem] font-semibold tracking-tight text-[var(--foreground)]">
           워크스페이스 개요
         </h1>

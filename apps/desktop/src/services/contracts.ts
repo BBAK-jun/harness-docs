@@ -1,4 +1,8 @@
-import type { AuthProvider } from "@harness-docs/contracts";
+import type {
+  AuthProvider,
+  WorkspaceCreateRequestDto,
+  WorkspaceOnboardingEnvelopeDto,
+} from "@harness-docs/contracts";
 import type { DesktopWindowService } from "../desktop/contracts";
 import type { ApprovalService } from "../domain/approvals";
 import type { AITaskService } from "../domain/aiTasks";
@@ -100,6 +104,12 @@ export interface AppSessionService {
   getSnapshot: () => Promise<AppSessionSnapshot>;
 }
 
+export interface WorkspaceOnboardingService {
+  createWorkspace: (
+    input: WorkspaceCreateRequestDto,
+  ) => Promise<WorkspaceOnboardingEnvelopeDto>;
+}
+
 export interface HarnessDocsServices {
   desktopShell: DesktopShellService;
   desktopWindow: DesktopWindowService;
@@ -107,6 +117,7 @@ export interface HarnessDocsServices {
   authentication: AuthenticationService;
   workspaceSession: WorkspaceSessionService;
   appSession: AppSessionService;
+  workspaceOnboarding: WorkspaceOnboardingService;
   workspaceMemberships: WorkspaceMembershipService;
   approvals: ApprovalService;
   publishing: PublishingService;

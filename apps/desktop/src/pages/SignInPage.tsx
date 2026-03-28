@@ -73,7 +73,7 @@ export function SignInPage({
           <button
             className="w-full flex items-center justify-center gap-3 px-4 py-3 bg-sidebar-accent-foreground text-sidebar rounded-md text-sm font-medium hover:opacity-90 transition-opacity"
             onClick={() => {
-              void app.handleSignIn("github_oauth", '/$workspaceId/dashboard');
+              void app.handleSignIn("github_oauth", "/workspaces");
             }}
             type="button"
           >

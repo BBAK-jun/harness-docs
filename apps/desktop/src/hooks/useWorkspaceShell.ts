@@ -118,10 +118,7 @@ export function useWorkspaceShell(
     handlePreferredAIProviderChange: bootstrap.handlePreferredAIProviderChange,
     handleAppearanceModeChange: bootstrap.handleAppearanceModeChange,
     handleSignIn: bootstrap.handleSignIn,
-    handleSignOut: async () => {
-      await bootstrap.handleSignOut();
-      navigation.onWorkspaceLeave();
-    },
+    handleSignOut: bootstrap.handleSignOut,
     handleWorkspaceEnter: navigation.onWorkspaceEnter,
     handleWorkspaceLeave: navigation.onWorkspaceLeave,
     handleDocumentSelect: localState.handleDocumentSelect,

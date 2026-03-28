@@ -275,6 +275,34 @@ export function pageDescription(area: NavigationArea) {
   }
 }
 
+export function pageHierarchy(area: NavigationArea, document: WorkspaceDocument | null) {
+  if (area === "dashboard") {
+    return ["대시보드"];
+  }
+
+  if (area === "documents") {
+    return document ? ["문서", document.title] : ["문서"];
+  }
+
+  if (area === "editor") {
+    return document ? ["문서", document.title, "편집기"] : ["문서", "편집기"];
+  }
+
+  if (area === "comments") {
+    return document ? ["문서", document.title, "리뷰"] : ["문서", "리뷰"];
+  }
+
+  if (area === "approvals") {
+    return document ? ["문서", document.title, "승인"] : ["문서", "승인"];
+  }
+
+  if (area === "publish") {
+    return ["발행"];
+  }
+
+  return ["AI 작업"];
+}
+
 export function SignalTile({
   label,
   value,

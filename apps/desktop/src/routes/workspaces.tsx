@@ -1,5 +1,6 @@
 import { Navigate, createFileRoute, useRouter } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
+import { AuthenticatedOnboardingShell } from "../pages/AuthenticatedOnboardingShell";
 import { useAppBootstrap } from "../hooks/useAppBootstrap";
 import { buildHarnessDocsNavigation } from "../lib/appNavigation";
 import { RouteErrorStateCard } from "../pages/pageUtils";
@@ -25,6 +26,10 @@ function WorkspacesRoute() {
     handleWorkspaceEnter: navigation.onWorkspaceEnter,
   };
 
+  if (bootstrap.authentication?.status !== "authenticated") {
+    return <Navigate to="/sign-in" />;
+  }
+
   const preferredWorkspaceId =
     bootstrap.session?.lastActiveWorkspaceId ??
     app.workspaces[0]?.id ??
@@ -34,19 +39,56 @@ function WorkspacesRoute() {
     return <Navigate params={{ workspaceId: preferredWorkspaceId }} to="/$workspaceId/dashboard" />;
   }
 
+  if (app.workspaces.length === 0) {
+    return <Navigate to="/workspace-create" />;
+  }
+
   return (
-    <WorkspaceSelectionPage
-      app={app}
-      onOpenInvitationAcceptance={() => {
+    <AuthenticatedOnboardingShell
+      activeArea="workspaces"
+      lastActiveWorkspaceId={bootstrap.session?.lastActiveWorkspaceId ?? null}
+      onOpenArea={(area) => {
+        if (area === "workspaces") {
+          void router.navigate({ to: "/workspaces" });
+          return;
+        }
+
+        if (area === "workspace-create") {
+          void router.navigate({ to: "/workspace-create" });
+          return;
+        }
+
         void router.navigate({ to: "/invitation-acceptance" });
       }}
-      onOpenSignOut={() => {
-        void router.navigate({ to: "/sign-out" });
+      onOpenLastWorkspace={() => {
+        const workspaceId = bootstrap.session?.lastActiveWorkspaceId;
+
+        if (!workspaceId) {
+          return;
+        }
+
+        void router.navigate({ to: "/$workspaceId/dashboard", params: { workspaceId } });
       }}
-      onOpenWorkspaceCreate={() => {
-        void router.navigate({ to: "/workspace-create" });
-      }}
-    />
+      onSignOut={() => bootstrap.handleSignOut()}
+      user={bootstrap.authentication?.user ?? null}
+      workspaces={app.workspaces}
+    >
+      <WorkspaceSelectionPage
+        app={app}
+        onOpenInvitationAcceptance={() => {
+          void router.navigate({ to: "/invitation-acceptance" });
+        }}
+        onOpenSignOut={() => {
+          void bootstrap.handleSignOut().finally(() => {
+            void router.navigate({ to: "/sign-in" });
+          });
+        }}
+        onOpenWorkspaceCreate={() => {
+          void router.navigate({ to: "/workspace-create" });
+        }}
+        withinShell
+      />
+    </AuthenticatedOnboardingShell>
   );
 }
 

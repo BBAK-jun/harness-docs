@@ -3,7 +3,6 @@ import { useAIPage } from "../hooks/useAIPage";
 import { buildHarnessDocsNavigation } from "../lib/appNavigation";
 import { useWorkspaceShell } from "../hooks/useWorkspaceShell";
 import { DashboardPage } from "../pages/DashboardPage";
-import { WorkspacePage } from "../pages/WorkspacePage";
 import { buildWorkspaceDashboardView } from "../view-models/workspaceDashboard";
 import { WorkspaceRouteErrorBoundary } from "./$workspaceId.ai";
 
@@ -26,7 +25,7 @@ function WorkspaceDashboardRoute() {
   const ai = useAIPage(shell);
 
   if (!shell.activeWorkspaceGraph || !shell.activeWorkspace) {
-    return <WorkspacePage app={shell}>{null}</WorkspacePage>;
+    return null;
   }
 
   const dashboard = buildWorkspaceDashboardView(
@@ -35,9 +34,5 @@ function WorkspaceDashboardRoute() {
     ai.aiEntryPoints,
   );
 
-  return (
-    <WorkspacePage app={shell}>
-      <DashboardPage app={shell} dashboard={dashboard} />
-    </WorkspacePage>
-  );
+  return <DashboardPage app={shell} dashboard={dashboard} />;
 }

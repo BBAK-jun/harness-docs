@@ -2,6 +2,7 @@ import "dotenv/config";
 import { serve } from "@hono/node-server";
 import { createApiApp } from "@harness-docs/contracts";
 import { createGitHubOAuthDataSource } from "./data/githubOAuthSource.ts";
+import { createGitHubWorkspaceRepositoryValidator } from "./data/githubWorkspaceRepositoryValidator.ts";
 import { createPostgresAuthSessionSource } from "./data/postgresAuthSessionSource.ts";
 import { createPostgresWorkspaceSessionSource } from "./data/postgresWorkspaceSessionSource.ts";
 import { createPublishGovernanceAdapter } from "./domain/publishGovernanceAdapter.ts";
@@ -15,6 +16,7 @@ const app = createApiApp({
   authDataSource,
   gitHubOAuthDataSource: createGitHubOAuthDataSource(authDataSource),
   publishGovernanceAdapter: createPublishGovernanceAdapter(),
+  workspaceRepositoryValidator: createGitHubWorkspaceRepositoryValidator(),
 });
 
 const server = serve(

@@ -8,9 +8,10 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { ArrowRight, GitBranch, Users } from "lucide-react";
+import { ArrowRight, CheckCircle2, GitBranch, Users } from "lucide-react";
 import type { WorkspaceSummary } from "../types";
 import type { useAppBootstrap } from "../hooks/useAppBootstrap";
+import { type GridColumnCount, getCardGridClassName, getSplitGridClassName } from "./layoutGrid";
 import { MetricTile, translateWorkspaceRole } from "./pageUtils";
 
 export function WorkspaceSelectionPage({
@@ -18,6 +19,9 @@ export function WorkspaceSelectionPage({
   onOpenSignOut,
   onOpenWorkspaceCreate,
   onOpenInvitationAcceptance,
+  emptyStateColumns = 2,
+  workspaceCardColumns = 2,
+  withinShell = false,
 }: {
   app: ReturnType<typeof useAppBootstrap> & {
     workspaces: WorkspaceSummary[];
@@ -26,31 +30,75 @@ export function WorkspaceSelectionPage({
   onOpenSignOut: () => void;
   onOpenWorkspaceCreate: () => void;
   onOpenInvitationAcceptance: () => void;
+  emptyStateColumns?: GridColumnCount;
+  workspaceCardColumns?: GridColumnCount;
+  withinShell?: boolean;
 }) {
+  const rootClassName = withinShell
+    ? "flex flex-col gap-6"
+    : "app-frame min-h-screen p-6";
+  const contentClassName = withinShell
+    ? getSplitGridClassName(emptyStateColumns)
+    : `mx-auto min-h-[calc(100vh-3rem)] max-w-6xl items-center ${getSplitGridClassName(emptyStateColumns)}`;
+  const listRootClassName = withinShell
+    ? "flex flex-col gap-6"
+    : "mx-auto flex min-h-[calc(100vh-3rem)] max-w-6xl flex-col gap-6";
+
   if (app.workspaces.length === 0) {
     return (
-      <main className="app-frame min-h-screen p-6">
-        <div className="mx-auto flex min-h-[calc(100vh-3rem)] max-w-4xl items-center">
-          <Card className="w-full overflow-hidden">
+      <main className={rootClassName}>
+        <div className={contentClassName}>
+          <section className="rounded-[calc(var(--radius)+0.75rem)] border border-[var(--border)] bg-[rgba(255,255,255,0.62)] p-6 shadow-[0_30px_120px_-80px_rgba(15,23,42,0.5)] backdrop-blur-xl sm:p-8">
+            <Badge className="w-fit" variant="warning">
+              워크스페이스 접근
+            </Badge>
+            <h1 className="mt-4 text-4xl font-semibold tracking-tight text-[var(--foreground)]">
+              사용 가능한 워크스페이스가 없습니다
+            </h1>
+            <p className="mt-4 max-w-2xl text-base leading-8 text-[var(--muted-foreground)]">
+              현재 로그인한 계정에 연결된 워크스페이스가 없습니다. 이 상태는 세션 문제라기보다
+              아직 참여 중인 워크스페이스가 없다는 뜻이므로, 새 워크스페이스를 만들거나 초대를
+              수락하는 다음 단계로 이어져야 합니다.
+            </p>
+          </section>
+
+          <Card className="overflow-hidden">
             <CardHeader className="border-b border-[var(--border)]">
-              <Badge className="w-fit" variant="warning">
-                워크스페이스 접근
-              </Badge>
-              <CardTitle className="text-3xl">사용 가능한 워크스페이스가 없음</CardTitle>
-              <CardDescription className="max-w-2xl text-base">
-                현재 로그인한 계정에 연결된 워크스페이스가 없습니다. 정책상 이 상태는 로그아웃이 아니라 워크스페이스 생성 또는 초대 수락 흐름으로 안내되어야 합니다.
+              <CardTitle>다음 단계</CardTitle>
+              <CardDescription className="text-base">
+                현재 계정으로 이어서 작업하려면 아래 흐름 중 하나를 선택하세요.
               </CardDescription>
             </CardHeader>
-            <CardFooter className="pt-6">
-              <div className="flex flex-wrap gap-2">
-                <Button onClick={onOpenWorkspaceCreate}>워크스페이스 만들기</Button>
-                <Button onClick={onOpenInvitationAcceptance} variant="outline">
-                  초대 수락
-                </Button>
-                <Button onClick={onOpenSignOut} variant="outline">
-                  로그아웃
-                </Button>
+            <CardContent className="flex flex-col gap-5 pt-6">
+              <div className="grid gap-3">
+                {[
+                  "새 워크스페이스를 만들면 현재 계정이 즉시 Lead 권한으로 들어갑니다.",
+                  "팀 초대 링크나 코드가 있다면 초대 수락 흐름으로 이동할 수 있습니다.",
+                  "계정을 바꾸고 싶다면 로그아웃 후 다른 GitHub 계정으로 다시 로그인할 수 있습니다.",
+                ].map((item) => (
+                  <div
+                    className="rounded-[var(--radius)] border border-[var(--border)] bg-[var(--surface)] p-4 text-sm leading-6 text-[var(--foreground)]"
+                    key={item}
+                  >
+                    <div className="flex gap-3">
+                      <CheckCircle2 className="mt-1 size-4 shrink-0 text-[var(--warning-foreground)]" />
+                      <span>{item}</span>
+                    </div>
+                  </div>
+                ))}
               </div>
+            </CardContent>
+            <CardFooter className="flex flex-col gap-2 sm:flex-row">
+              <Button className="sm:flex-1" onClick={onOpenWorkspaceCreate}>
+                워크스페이스 만들기
+                <ArrowRight />
+              </Button>
+              <Button className="sm:flex-1" onClick={onOpenInvitationAcceptance} variant="outline">
+                초대 수락
+              </Button>
+              <Button className="sm:flex-1" onClick={onOpenSignOut} variant="ghost">
+                로그아웃
+              </Button>
             </CardFooter>
           </Card>
         </div>
@@ -59,8 +107,8 @@ export function WorkspaceSelectionPage({
   }
 
   return (
-    <main className="app-frame min-h-screen p-6">
-      <div className="mx-auto flex min-h-[calc(100vh-3rem)] max-w-6xl flex-col gap-6">
+    <main className={rootClassName}>
+      <div className={listRootClassName}>
         <header className="rounded-[calc(var(--radius)+0.35rem)] border border-[var(--border)] bg-[rgba(255,255,255,0.58)] px-6 py-6 backdrop-blur-xl">
           <Badge variant="outline" className="w-fit">
             워크스페이스 선택
@@ -74,7 +122,7 @@ export function WorkspaceSelectionPage({
           </p>
         </header>
 
-        <section className="grid gap-4 lg:grid-cols-2">
+        <section className={getCardGridClassName(workspaceCardColumns)}>
           {app.workspaces.map((workspace) => (
             <Card key={workspace.id}>
               <CardHeader className="border-b border-[var(--border)]">

@@ -11,11 +11,45 @@ import {
   seedDemoWorkspace,
 } from "../bootstrap/demoWorkspace.ts";
 
+const workspaceRepositoryValidationCalls: Array<{
+  repositoryOwner: string;
+  repositoryName: string;
+  defaultBranch: string;
+  viewerGithubLogin: string;
+}> = [];
+const workspaceRepositoryValidationFailures = new Map<
+  string,
+  { code: string; message: string }
+>();
+
 const { db, pool } = createDatabaseContext();
 const app = createApiApp({
   dataSource: createPostgresWorkspaceSessionSource(db),
   authDataSource: createPostgresAuthSessionSource(db),
   publishGovernanceAdapter: createPublishGovernanceAdapter(),
+  workspaceRepositoryValidator: {
+    async validateWorkspaceRepository(input) {
+      workspaceRepositoryValidationCalls.push({
+        repositoryOwner: input.repositoryOwner,
+        repositoryName: input.repositoryName,
+        defaultBranch: input.defaultBranch,
+        viewerGithubLogin: input.viewer.githubLogin,
+      });
+
+      const key = `${input.repositoryOwner}/${input.repositoryName}#${input.defaultBranch}`;
+      const failure = workspaceRepositoryValidationFailures.get(key);
+
+      if (failure) {
+        return {
+          ok: false as const,
+          code: failure.code,
+          message: failure.message,
+        };
+      }
+
+      return { ok: true as const };
+    },
+  },
 });
 
 const oauthApp = createApiApp({
@@ -96,6 +130,8 @@ before(async () => {
 });
 
 beforeEach(async () => {
+  workspaceRepositoryValidationCalls.length = 0;
+  workspaceRepositoryValidationFailures.clear();
   await resetHarnessDocsDatabase(db);
   await seedDemoWorkspace(db);
 });
@@ -190,6 +226,209 @@ describe("workspace flow integration", () => {
       requestJson("/api/session/bootstrap", {
         sessionToken: exchanged.sessionToken,
       }),
+    );
+  });
+
+  test("rejects workspace creation without an authenticated app session", async () => {
+    const response = await app.request("/api/workspaces", {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+      },
+      body: JSON.stringify({
+        name: "Unauthorized Workspace",
+        slug: "unauthorized-workspace",
+        description: "Should not be created without a session.",
+      }),
+    });
+
+    assert.equal(response.status, 422);
+
+    const payload = (await response.json()) as {
+      ok: boolean;
+      error: { code?: string; message?: string } | null;
+    };
+
+    assert.equal(payload.ok, false);
+    assert.equal(payload.error?.code, "authentication_required");
+  });
+
+  test("creates a workspace with explicit repo binding and refreshes bootstrap", async () => {
+    const exchanged = (await requestJson("/api/auth/session/exchange", {
+      method: "POST",
+      body: {
+        provider: "github_oauth",
+        identity: {
+          login: "repo-owner",
+          name: "Repo Owner",
+          email: "repo-owner@example.com",
+        },
+      },
+    })) as { sessionToken: string; user: { id: string } };
+
+    const created = (await requestJson("/api/workspaces", {
+      method: "POST",
+      sessionToken: exchanged.sessionToken,
+      body: {
+        name: "Repo Bound Workspace",
+        slug: "repo-bound-workspace",
+        description: "Workspace with explicit repository configuration.",
+        docsRepoOwner: "acme-org",
+        docsRepoName: "repo-bound-docs",
+        docsRepoDefaultBranch: "trunk",
+      },
+    })) as {
+      workspace: {
+        id: string;
+        name: string;
+        repo: string;
+      };
+      bootstrap: {
+        user: { id: string; githubLogin: string };
+        workspaces: Array<{ id: string; repo: string }>;
+        workspaceGraphs: Array<{
+          workspace: {
+            id: string;
+            createdByUserId: string;
+            docsRepository: {
+              owner: string;
+              name: string;
+              defaultBranch: string;
+            };
+          };
+        }>;
+        lastActiveWorkspaceId: string | null;
+      };
+      lastActiveWorkspaceId: string | null;
+    };
+
+    assert.equal(created.workspace.name, "Repo Bound Workspace");
+    assert.equal(created.workspace.repo, "github.com/acme-org/repo-bound-docs");
+    assert.equal(created.bootstrap.user.id, exchanged.user.id);
+    assert.equal(created.lastActiveWorkspaceId, created.workspace.id);
+    assert.equal(created.bootstrap.lastActiveWorkspaceId, created.workspace.id);
+    assert.ok(created.bootstrap.workspaces.some((workspace) => workspace.id === created.workspace.id));
+
+    const createdGraph = created.bootstrap.workspaceGraphs.find(
+      (graph) => graph.workspace.id === created.workspace.id,
+    );
+
+    assert.ok(createdGraph);
+    assert.equal(createdGraph?.workspace.createdByUserId, exchanged.user.id);
+    assert.equal(createdGraph?.workspace.docsRepository.owner, "acme-org");
+    assert.equal(createdGraph?.workspace.docsRepository.name, "repo-bound-docs");
+    assert.equal(createdGraph?.workspace.docsRepository.defaultBranch, "trunk");
+    assert.deepEqual(workspaceRepositoryValidationCalls, [
+      {
+        repositoryOwner: "acme-org",
+        repositoryName: "repo-bound-docs",
+        defaultBranch: "trunk",
+        viewerGithubLogin: "repo-owner",
+      },
+    ]);
+  });
+
+  test("defaults workspace repo binding from the authenticated viewer", async () => {
+    const exchanged = (await requestJson("/api/auth/session/exchange", {
+      method: "POST",
+      body: {
+        provider: "github_oauth",
+        identity: {
+          login: "viewer-defaults",
+          name: "Viewer Defaults",
+          email: "viewer-defaults@example.com",
+        },
+      },
+    })) as { sessionToken: string; user: { id: string; githubLogin: string } };
+
+    const created = (await requestJson("/api/workspaces", {
+      method: "POST",
+      sessionToken: exchanged.sessionToken,
+      body: {
+        name: "Default Repo Workspace",
+        slug: "default-repo-workspace",
+        description: "Workspace relying on API-side repo defaults.",
+      },
+    })) as {
+      workspace: {
+        id: string;
+        repo: string;
+      };
+      bootstrap: {
+        workspaceGraphs: Array<{
+          workspace: {
+            id: string;
+            docsRepository: {
+              owner: string;
+              name: string;
+              defaultBranch: string;
+            };
+          };
+        }>;
+      };
+    };
+
+    const createdGraph = created.bootstrap.workspaceGraphs.find(
+      (graph) => graph.workspace.id === created.workspace.id,
+    );
+
+    assert.ok(createdGraph);
+    assert.equal(created.workspace.repo, "github.com/viewer-defaults/default-repo-workspace-docs");
+    assert.equal(createdGraph?.workspace.docsRepository.owner, "viewer-defaults");
+    assert.equal(createdGraph?.workspace.docsRepository.name, "default-repo-workspace-docs");
+    assert.equal(createdGraph?.workspace.docsRepository.defaultBranch, "main");
+    assert.deepEqual(workspaceRepositoryValidationCalls, []);
+  });
+
+  test("rejects explicit repo binding when GitHub repository validation fails", async () => {
+    workspaceRepositoryValidationFailures.set(
+      "acme-org/missing-docs#main",
+      {
+        code: "github_repository_not_found",
+        message: "GitHub repository 'acme-org/missing-docs' was not found.",
+      },
+    );
+
+    const exchanged = (await requestJson("/api/auth/session/exchange", {
+      method: "POST",
+      body: {
+        provider: "github_oauth",
+        identity: {
+          login: "validator-user",
+          name: "Validator User",
+          email: "validator@example.com",
+        },
+      },
+    })) as { sessionToken: string };
+
+    const response = await app.request("/api/workspaces", {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        authorization: `Bearer ${exchanged.sessionToken}`,
+      },
+      body: JSON.stringify({
+        name: "Invalid Repo Workspace",
+        slug: "invalid-repo-workspace",
+        description: "Should fail because the repository binding is invalid.",
+        docsRepoOwner: "acme-org",
+        docsRepoName: "missing-docs",
+        docsRepoDefaultBranch: "main",
+      }),
+    });
+
+    assert.equal(response.status, 422);
+
+    const payload = (await response.json()) as {
+      ok: boolean;
+      error: { code?: string; message?: string } | null;
+    };
+
+    assert.equal(payload.ok, false);
+    assert.equal(payload.error?.code, "github_repository_not_found");
+    assert.equal(
+      payload.error?.message,
+      "GitHub repository 'acme-org/missing-docs' was not found.",
     );
   });
 

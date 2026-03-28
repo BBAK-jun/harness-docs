@@ -1,7 +1,13 @@
-import { createFileRoute, useRouter } from "@tanstack/react-router";
+import { useState } from "react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import type { WorkspaceCreateRequestDto } from "@harness-docs/contracts";
+import { Navigate, createFileRoute, useRouter } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
+import { useAppBootstrap, loadBootstrapState } from "../hooks/useAppBootstrap";
+import { AuthenticatedOnboardingShell } from "../pages/AuthenticatedOnboardingShell";
 import { RouteErrorStateCard } from "../pages/pageUtils";
-import { WorkspaceOnboardingPage } from "../pages/WorkspaceOnboardingPage";
+import { WorkspaceCreatePage } from "../pages/WorkspaceCreatePage";
+import { desktopMutationKeys, desktopQueryKeys } from "../queries/queryKeys";
 
 export const Route = createFileRoute("/workspace-create")({
   component: WorkspaceCreateRoute,
@@ -9,29 +15,90 @@ export const Route = createFileRoute("/workspace-create")({
 });
 
 function WorkspaceCreateRoute() {
+  const app = useAppBootstrap();
+  const queryClient = useQueryClient();
   const router = useRouter();
+  const [submissionError, setSubmissionError] = useState<string | null>(null);
+  const createWorkspaceMutation = useMutation({
+    mutationKey: desktopMutationKeys.workspace.create(),
+    mutationFn: async (input: WorkspaceCreateRequestDto) => {
+      await app.services.workspaceOnboarding.createWorkspace(input);
+      const nextBootstrap = await loadBootstrapState(app.services);
+      queryClient.setQueryData(desktopQueryKeys.bootstrap(), nextBootstrap);
+      return nextBootstrap;
+    },
+    onMutate: () => {
+      setSubmissionError(null);
+    },
+    onError: (error) => {
+      setSubmissionError(error instanceof Error ? error.message : "Workspace creation failed.");
+    },
+  });
+
+  if (app.authentication?.status !== "authenticated") {
+    return <Navigate to="/sign-in" />;
+  }
 
   return (
-    <WorkspaceOnboardingPage
-      checklist={[
-        "새 워크스페이스는 하나의 GitHub 문서 저장소와 연결됩니다.",
-        "워크스페이스가 만들어지면 팀 멤버와 승인 후보를 연결할 수 있습니다.",
-        "현재 구현에서는 실제 생성 폼 대신 다음 단계 안내만 제공합니다.",
-      ]}
-      description="정책상 워크스페이스가 없으면 로그아웃이 아니라 워크스페이스 생성 흐름으로 이동해야 합니다."
-      onPrimaryAction={() => {
+    <AuthenticatedOnboardingShell
+      activeArea="workspace-create"
+      lastActiveWorkspaceId={app.session?.lastActiveWorkspaceId ?? null}
+      onOpenArea={(area) => {
+        if (area === "workspaces") {
+          void router.navigate({ to: "/workspaces" });
+          return;
+        }
+
+        if (area === "workspace-create") {
+          void router.navigate({ to: "/workspace-create" });
+          return;
+        }
+
         void router.navigate({ to: "/invitation-acceptance" });
       }}
-      onSecondaryAction={() => {
-        void router.navigate({ to: "/workspaces" });
+      onOpenLastWorkspace={() => {
+        const workspaceId = app.session?.lastActiveWorkspaceId;
+
+        if (!workspaceId) {
+          return;
+        }
+
+        void router.navigate({ to: "/$workspaceId/dashboard", params: { workspaceId } });
       }}
-      onSignOut={() => {
-        void router.navigate({ to: "/sign-out" });
-      }}
-      primaryLabel="초대 수락 흐름 보기"
-      secondaryLabel="워크스페이스 목록으로 돌아가기"
-      title="워크스페이스 만들기"
-    />
+      onSignOut={() => app.handleSignOut()}
+      user={app.authentication?.user ?? null}
+      workspaces={app.session?.workspaces ?? []}
+    >
+      <WorkspaceCreatePage
+        defaultRepoOwner={app.authentication?.user?.githubLogin ?? ""}
+        errorMessage={submissionError}
+        isSubmitting={createWorkspaceMutation.isPending}
+        onCancel={() => {
+          void router.navigate({ to: "/workspaces" });
+        }}
+        onCreate={async (input) => {
+          const nextBootstrap = await createWorkspaceMutation.mutateAsync(input);
+          const workspaceId = nextBootstrap.appSession?.workspace?.lastActiveWorkspaceId;
+
+          if (!workspaceId) {
+            throw new Error("Workspace was created but no active workspace was returned.");
+          }
+
+          await router.navigate({
+            to: "/$workspaceId/dashboard",
+            params: {
+              workspaceId,
+            },
+          });
+        }}
+        onSignOut={() => {
+          void app.handleSignOut().finally(() => {
+            void router.navigate({ to: "/sign-in" });
+          });
+        }}
+        withinShell
+      />
+    </AuthenticatedOnboardingShell>
   );
 }
 

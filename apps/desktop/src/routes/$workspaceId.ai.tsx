@@ -5,7 +5,6 @@ import { useAIPage } from "../hooks/useAIPage";
 import { useWorkspaceShell } from "../hooks/useWorkspaceShell";
 import { AIPage } from "../pages/AIPage";
 import { RouteErrorStateCard } from "../pages/pageUtils";
-import { WorkspacePage } from "../pages/WorkspacePage";
 
 export const Route = createFileRoute("/$workspaceId/ai")({
   component: WorkspaceAIRoute,
@@ -26,14 +25,12 @@ function WorkspaceAIRoute() {
   const ai = useAIPage(shell);
 
   return (
-    <WorkspacePage app={shell}>
-      <AIPage
-        aiEntryPoints={ai.aiEntryPoints}
-        onGoToDocuments={() => shell.handleAreaChange("documents")}
-        onGoToEditor={() => shell.handleAreaChange("editor")}
-        onLaunch={ai.handleLaunchAITaskEntryPoint}
-      />
-    </WorkspacePage>
+    <AIPage
+      aiEntryPoints={ai.aiEntryPoints}
+      onGoToDocuments={() => shell.handleAreaChange("documents")}
+      onGoToEditor={() => shell.handleAreaChange("editor")}
+      onLaunch={ai.handleLaunchAITaskEntryPoint}
+    />
   );
 }
 

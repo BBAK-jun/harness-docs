@@ -3,7 +3,6 @@ import { useAIPage } from "../hooks/useAIPage";
 import { buildHarnessDocsNavigation } from "../lib/appNavigation";
 import { useWorkspaceShell } from "../hooks/useWorkspaceShell";
 import { DocumentsPage } from "../pages/DocumentsPage";
-import { WorkspacePage } from "../pages/WorkspacePage";
 import { WorkspaceRouteErrorBoundary } from "./$workspaceId.ai";
 
 export const Route = createFileRoute("/$workspaceId/documents")({
@@ -25,14 +24,12 @@ function WorkspaceDocumentsRoute() {
   const ai = useAIPage(shell);
 
   return (
-    <WorkspacePage app={shell}>
-      <DocumentsPage
-        aiEntryPoints={ai.aiEntryPoints}
-        app={shell}
-        onGoToDashboard={() => shell.handleAreaChange("dashboard")}
-        onGoToAI={() => shell.handleAreaChange("ai")}
-        onOpenWorkspaces={shell.handleWorkspaceLeave}
-      />
-    </WorkspacePage>
+    <DocumentsPage
+      aiEntryPoints={ai.aiEntryPoints}
+      app={shell}
+      onGoToDashboard={() => shell.handleAreaChange("dashboard")}
+      onGoToAI={() => shell.handleAreaChange("ai")}
+      onOpenWorkspaces={shell.handleWorkspaceLeave}
+    />
   );
 }

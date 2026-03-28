@@ -1,4 +1,4 @@
-import { createFileRoute, useRouter } from "@tanstack/react-router";
+import { Navigate, createFileRoute, useRouter } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
 import { useAppBootstrap } from "../hooks/useAppBootstrap";
 import { RouteErrorStateCard } from "../pages/pageUtils";
@@ -12,6 +12,10 @@ export const Route = createFileRoute("/sign-in")({
 function SignInRoute() {
   const app = useAppBootstrap();
   const router = useRouter();
+
+  if (app.authentication?.status === "authenticated") {
+    return <Navigate to="/workspaces" />;
+  }
 
   return (
     <SignInPage

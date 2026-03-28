@@ -3,10 +3,10 @@ import {
   FileText,
   GitBranch,
   LayoutDashboard,
+  LogOut,
   Settings,
   Sparkles,
 } from "lucide-react";
-import { useNavigate } from "@tanstack/react-router";
 import { cn } from "@/lib/utils";
 import type { WorkspaceShellModel } from "../hooks/useWorkspaceShell";
 
@@ -18,8 +18,13 @@ const navItems = [
   { title: "AI 어시스턴트", area: "ai", icon: Sparkles },
 ] as const;
 
-export function AppSidebar({ app }: { app: WorkspaceShellModel }) {
-  const navigate = useNavigate();
+export function AppSidebar({
+  app,
+  onSignOutRequest,
+}: {
+  app: WorkspaceShellModel;
+  onSignOutRequest: () => void;
+}) {
   const documents = app.activeWorkspaceGraph?.documents ?? [];
   const members = app.activeWorkspaceGraph?.memberships ?? [];
 
@@ -95,12 +100,10 @@ export function AppSidebar({ app }: { app: WorkspaceShellModel }) {
 
         <button
           className="flex w-full items-center gap-2.5 rounded px-2.5 py-2 text-sm text-[var(--sidebar-foreground)] transition-colors hover:bg-[color:color-mix(in_srgb,var(--sidebar-accent)_50%,transparent)] hover:text-[var(--sidebar-accent-foreground)]"
-          onClick={() => {
-            void navigate({ to: "/sign-out" });
-          }}
+          onClick={onSignOutRequest}
           type="button"
         >
-          <Settings className="h-4 w-4 shrink-0" />
+          <LogOut className="h-4 w-4 shrink-0" />
           <span>로그아웃</span>
         </button>
       </div>

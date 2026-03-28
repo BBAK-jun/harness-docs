@@ -276,6 +276,7 @@ export interface WorkspaceSessionDataSource {
   ) => Promise<PublishExecutionEnvelopeDto | null>;
   createWorkspace: (
     input: WorkspaceCreateRequestDto,
+    viewerUserId?: string,
   ) => Promise<WorkspaceOnboardingEnvelopeDto | null>;
   acceptWorkspaceInvitation: (
     input: WorkspaceInvitationAcceptRequestDto,
@@ -289,6 +290,24 @@ export interface PublishGovernanceAdapter {
     workspaceGraph: unknown;
     documents: unknown[];
   }) => PublishPreflightView | null;
+}
+
+export type WorkspaceRepositoryValidationResult =
+  | { ok: true }
+  | {
+      ok: false;
+      code: string;
+      message: string;
+      details?: unknown;
+    };
+
+export interface WorkspaceRepositoryValidator {
+  validateWorkspaceRepository: (input: {
+    repositoryOwner: string;
+    repositoryName: string;
+    defaultBranch: string;
+    viewer: SessionUserDto;
+  }) => Promise<WorkspaceRepositoryValidationResult>;
 }
 
 export const workspaceAreaSummarySchema = z.object({
@@ -777,6 +796,7 @@ function createDefaultDataSource(): WorkspaceSessionDataSource {
 export interface CreateApiAppOptions {
   dataSource?: WorkspaceSessionDataSource;
   publishGovernanceAdapter?: PublishGovernanceAdapter;
+  workspaceRepositoryValidator?: WorkspaceRepositoryValidator;
   authDataSource?: ApiAuthDataSource;
   gitHubOAuthDataSource?: GitHubOAuthDataSource;
 }
@@ -1030,6 +1050,7 @@ function findEntityById(items: unknown[] | null, id: string) {
 export function createApiApp(options: CreateApiAppOptions = {}) {
   const dataSource = options.dataSource ?? createDefaultDataSource();
   const publishGovernanceAdapter = options.publishGovernanceAdapter;
+  const workspaceRepositoryValidator = options.workspaceRepositoryValidator;
   const authDataSource = options.authDataSource;
   const gitHubOAuthDataSource = options.gitHubOAuthDataSource;
   const app = new OpenAPIHono();
@@ -1437,13 +1458,56 @@ export function createApiApp(options: CreateApiAppOptions = {}) {
       },
     }),
     async (c: Context) => {
+      const sessionResult = await requireSession(c, authDataSource);
+
+      if (!sessionResult.ok) {
+        return sessionResult.response;
+      }
+
       const payloadResult = await parseJsonBody(c, workspaceCreateRequestSchema);
 
       if (!payloadResult.ok) {
         return payloadResult.response;
       }
 
-      const mutation = await dataSource.createWorkspace(payloadResult.data);
+      const viewer = sessionResult.session?.user;
+
+      if (!viewer) {
+        return errorResponse(
+          c,
+          422,
+          "authentication_required",
+          "A valid app session is required for this endpoint.",
+        );
+      }
+
+      if (
+        workspaceRepositoryValidator &&
+        payloadResult.data.docsRepoOwner &&
+        payloadResult.data.docsRepoName
+      ) {
+        const validation = await workspaceRepositoryValidator.validateWorkspaceRepository({
+          repositoryOwner: payloadResult.data.docsRepoOwner,
+          repositoryName: payloadResult.data.docsRepoName,
+          defaultBranch: payloadResult.data.docsRepoDefaultBranch,
+          viewer,
+        });
+
+        if (!validation.ok) {
+          return errorResponse(
+            c,
+            422,
+            validation.code,
+            validation.message,
+            validation.details,
+          );
+        }
+      }
+
+      const mutation = await dataSource.createWorkspace(
+        payloadResult.data,
+        sessionResult.session?.user.id,
+      );
 
       if (!mutation) {
         return errorResponse(c, 422, "workspace_create_failed", "Workspace could not be created.");

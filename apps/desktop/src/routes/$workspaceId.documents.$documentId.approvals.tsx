@@ -3,7 +3,6 @@ import { buildHarnessDocsNavigation } from "../lib/appNavigation";
 import { useApprovalsPage } from "../hooks/useApprovalsPage";
 import { useWorkspaceShell } from "../hooks/useWorkspaceShell";
 import { ApprovalsPage } from "../pages/ApprovalsPage";
-import { WorkspacePage } from "../pages/WorkspacePage";
 import { WorkspaceRouteErrorBoundary } from "./$workspaceId.ai";
 
 export const Route = createFileRoute("/$workspaceId/documents/$documentId/approvals")({
@@ -25,13 +24,11 @@ function WorkspaceDocumentApprovalsRoute() {
   const approvals = useApprovalsPage(shell);
 
   return (
-    <WorkspacePage app={shell}>
-      <ApprovalsPage
-        app={shell}
-        approvals={approvals.approvals}
-        onGoToComments={() => shell.handleAreaChange("comments")}
-        onGoToDocuments={() => shell.handleAreaChange("documents")}
-      />
-    </WorkspacePage>
+    <ApprovalsPage
+      app={shell}
+      approvals={approvals.approvals}
+      onGoToComments={() => shell.handleAreaChange("comments")}
+      onGoToDocuments={() => shell.handleAreaChange("documents")}
+    />
   );
 }

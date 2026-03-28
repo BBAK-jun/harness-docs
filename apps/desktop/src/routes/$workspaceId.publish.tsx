@@ -5,7 +5,6 @@ import { usePublishPage } from "../hooks/usePublishPage";
 import { useWorkspaceShell } from "../hooks/useWorkspaceShell";
 import { PublishPage } from "../pages/PublishPage";
 import { RouteErrorStateCard } from "../pages/pageUtils";
-import { WorkspacePage } from "../pages/WorkspacePage";
 
 export const Route = createFileRoute("/$workspaceId/publish")({
   component: WorkspacePublishRoute,
@@ -30,27 +29,25 @@ function WorkspacePublishRoute() {
   }
 
   return (
-    <WorkspacePage app={shell}>
-      <PublishPage
-        app={shell}
-        attemptPreview={publish.attemptPreview}
-        executeDisabledReason={publish.executeDisabledReason}
-        isRationaleRequired={publish.isRationaleRequired}
-        onExecute={publish.handleExecutePublish}
-        onGoToApprovals={() => shell.handleAreaChange("approvals")}
-        onGoToDocuments={() => shell.handleAreaChange("documents")}
-        onGoToEditor={() => shell.handleAreaChange("editor")}
-        onRationaleDetailsChange={publish.handleRationaleDetailsChange}
-        onRationaleSummaryChange={publish.handleRationaleSummaryChange}
-        onReasonCodeToggle={publish.handleReasonCodeToggle}
-        onRetryPreflight={publish.retryPreflight}
-        preflight={publish.preflight}
-        preflightState={publish.preflightState}
-        publishRecord={publish.publishRecord}
-        publishState={publish.publishState}
-        rationaleDraft={publish.rationaleDraft}
-      />
-    </WorkspacePage>
+    <PublishPage
+      app={shell}
+      attemptPreview={publish.attemptPreview}
+      executeDisabledReason={publish.executeDisabledReason}
+      isRationaleRequired={publish.isRationaleRequired}
+      onExecute={publish.handleExecutePublish}
+      onGoToApprovals={() => shell.handleAreaChange("approvals")}
+      onGoToDocuments={() => shell.handleAreaChange("documents")}
+      onGoToEditor={() => shell.handleAreaChange("editor")}
+      onRationaleDetailsChange={publish.handleRationaleDetailsChange}
+      onRationaleSummaryChange={publish.handleRationaleSummaryChange}
+      onReasonCodeToggle={publish.handleReasonCodeToggle}
+      onRetryPreflight={publish.retryPreflight}
+      preflight={publish.preflight}
+      preflightState={publish.preflightState}
+      publishRecord={publish.publishRecord}
+      publishState={publish.publishState}
+      rationaleDraft={publish.rationaleDraft}
+    />
   );
 }
 

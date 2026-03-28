@@ -2,7 +2,6 @@ import { createFileRoute } from "@tanstack/react-router";
 import { buildHarnessDocsNavigation } from "../lib/appNavigation";
 import { useWorkspaceShell } from "../hooks/useWorkspaceShell";
 import { DocumentOverviewPage } from "../pages/DocumentOverviewPage";
-import { WorkspacePage } from "../pages/WorkspacePage";
 import { buildDocumentOverviewView } from "../view-models/documentViews";
 import { WorkspaceRouteErrorBoundary } from "./$workspaceId.ai";
 
@@ -27,9 +26,5 @@ function WorkspaceDocumentDetailRoute() {
       ? buildDocumentOverviewView(shell.activeDocument, shell.activeWorkspaceGraph)
       : null;
 
-  return (
-    <WorkspacePage app={shell}>
-      <DocumentOverviewPage app={shell} overview={overview} />
-    </WorkspacePage>
-  );
+  return <DocumentOverviewPage app={shell} overview={overview} />;
 }

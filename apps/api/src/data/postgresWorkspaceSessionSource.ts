@@ -2043,8 +2043,10 @@ export function createPostgresWorkspaceSessionSource(
         committedFiles: buildCommittedFilesFromGraph(publishRecord, graph),
       });
     },
-    async createWorkspace(input: WorkspaceCreateRequestDto) {
-      const viewer = await db.select().from(users).orderBy(users.createdAt).limit(1).then((rows) => rows[0] ?? null);
+    async createWorkspace(input: WorkspaceCreateRequestDto, viewerUserId?: string) {
+      const viewer = viewerUserId
+        ? await db.select().from(users).where(eq(users.id, viewerUserId)).limit(1).then((rows) => rows[0] ?? null)
+        : null;
 
       if (!viewer) {
         return null;
