@@ -21,7 +21,7 @@ export function SignOutPage({
         <Card className="w-full">
           <CardHeader className="gap-4">
             <Badge className="w-fit" variant="outline">
-              Session
+              세션
             </Badge>
             <CardTitle>{isAuthenticated ? "로그아웃" : "이미 로그아웃됨"}</CardTitle>
             <CardDescription>

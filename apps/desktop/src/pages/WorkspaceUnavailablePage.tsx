@@ -8,9 +8,9 @@ export function WorkspaceUnavailablePage({ app }: { app: WorkspaceShellModel }) 
 
   return (
     <main className="app-frame flex min-h-screen items-center justify-center p-6">
-      <Card className="w-full max-w-lg">
+        <Card className="w-full max-w-lg">
         <CardHeader>
-          <CardTitle>No active workspace</CardTitle>
+          <CardTitle>활성 워크스페이스 없음</CardTitle>
           <CardDescription>
             로그인은 유지되지만 활성 워크스페이스 멤버십이 없습니다. 워크스페이스 생성이나
             초대 수락 흐름으로 이동할 수 있습니다.

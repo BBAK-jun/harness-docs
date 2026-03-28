@@ -10,7 +10,8 @@
   "scripts": {
     "check": "tsc --noEmit -p tsconfig.json",
     "db:generate": "drizzle-kit generate --config drizzle.config.ts",
-    "db:migrate": "node scripts/migrate.mjs"
+    "db:migrate": "node scripts/migrate.mjs",
+    "db:studio": "drizzle-kit studio --config drizzle.config.ts --host 127.0.0.1 --port 4983"
   },
   "dependencies": {
     "drizzle-orm": "^0.44.6",

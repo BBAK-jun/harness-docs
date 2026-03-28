@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/card";
 import type { WorkspaceSummary } from "../types";
 import type { useAppBootstrap } from "../hooks/useAppBootstrap";
-import { MetricTile } from "./pageUtils";
+import { MetricTile, translateWorkspaceRole } from "./pageUtils";
 
 export function WorkspaceSelectionPage({
   app,
@@ -61,14 +61,14 @@ export function WorkspaceSelectionPage({
       <div className="mx-auto flex min-h-[calc(100vh-3rem)] max-w-6xl flex-col gap-6">
         <header className="flex flex-col gap-3">
           <Badge variant="outline" className="w-fit">
-            Workspace Selection
+            워크스페이스 선택
           </Badge>
           <h1 className="text-4xl font-semibold tracking-tight text-[var(--foreground)]">
-            Pick a workspace
+            워크스페이스 선택
           </h1>
           <p className="max-w-2xl text-sm leading-6 text-[var(--muted-foreground)]">
-            Each workspace maps to one dedicated GitHub documentation repository and its own
-            app-managed approvals and publication history.
+            각 워크스페이스는 전용 GitHub 문서 저장소 하나와, 앱이 관리하는 승인 및 발행
+            이력을 가집니다.
           </p>
         </header>
 
@@ -81,22 +81,22 @@ export function WorkspaceSelectionPage({
                     <CardTitle>{workspace.name}</CardTitle>
                     <CardDescription>{workspace.description}</CardDescription>
                   </div>
-                  <Badge variant="secondary">{workspace.role}</Badge>
+                  <Badge variant="secondary">{translateWorkspaceRole(workspace.role)}</Badge>
                 </div>
               </CardHeader>
               <CardContent className="grid gap-4">
                 <div className="grid gap-3 sm:grid-cols-3">
-                  <MetricTile label="Open reviews" value={workspace.openReviews} />
-                  <MetricTile label="Pending drafts" value={workspace.pendingDrafts} />
-                  <MetricTile label="Stale docs" value={workspace.staleDocuments} />
+                  <MetricTile label="열린 리뷰" value={workspace.openReviews} />
+                  <MetricTile label="진행 중 초안" value={workspace.pendingDrafts} />
+                  <MetricTile label="오래된 문서" value={workspace.staleDocuments} />
                 </div>
                 <div className="rounded-[var(--radius)] border border-[var(--border)] bg-[var(--surface)] p-4 text-sm text-[var(--muted-foreground)]">
-                  Target repository: {workspace.repo}
+                  대상 저장소: {workspace.repo}
                 </div>
               </CardContent>
               <CardFooter>
                 <Button onClick={() => app.handleWorkspaceEnter(workspace.id)}>
-                  Enter workspace
+                  워크스페이스 열기
                 </Button>
               </CardFooter>
             </Card>

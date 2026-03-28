@@ -34,9 +34,9 @@ export function WorkspacePage({
         <Sheet onOpenChange={setMobileNavOpen} open={mobileNavOpen}>
           <SheetContent side="left">
             <SheetHeader>
-              <SheetTitle>Workspace Navigation</SheetTitle>
+              <SheetTitle>워크스페이스 탐색</SheetTitle>
               <SheetDescription>
-                Move between focused work areas from the left navigation.
+                왼쪽 탐색에서 집중 작업 영역 사이를 이동합니다.
               </SheetDescription>
             </SheetHeader>
             <SheetBody>
@@ -49,7 +49,7 @@ export function WorkspacePage({
           <header className="mb-4 flex items-center justify-between gap-3 lg:hidden">
             <Button onClick={() => setMobileNavOpen(true)} size="sm" variant="outline">
               <Menu data-icon="inline-start" />
-              Menu
+              메뉴
             </Button>
             <div className="min-w-0 text-right">
               <p className="truncate font-medium text-[var(--foreground)]">

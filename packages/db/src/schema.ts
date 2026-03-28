@@ -95,6 +95,7 @@ export const publishPreflightStatusEnum = pgEnum("publish_preflight_status", [
   "blocked",
 ]);
 export const aiProviderEnum = pgEnum("ai_provider", ["Codex", "Claude"]);
+export const authProviderEnum = pgEnum("auth_provider", ["github_oauth"]);
 export const aiDraftKindEnum = pgEnum("ai_draft_kind", [
   "document_content",
   "document_links",
@@ -123,6 +124,48 @@ export const users = pgTable(
     handleIdx: uniqueIndex("users_handle_idx").on(table.handle),
     githubLoginIdx: uniqueIndex("users_github_login_idx").on(table.githubLogin),
     primaryEmailIdx: uniqueIndex("users_primary_email_idx").on(table.primaryEmail),
+  }),
+);
+
+export const authAccounts = pgTable(
+  "auth_accounts",
+  {
+    id: text("id").primaryKey(),
+    userId: text("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    provider: authProviderEnum("provider").notNull(),
+    providerAccountId: text("provider_account_id").notNull(),
+    providerEmail: text("provider_email"),
+    accessScope: text("access_scope"),
+    lastAuthenticatedAt: timestamp("last_authenticated_at", { withTimezone: true }),
+    ...timestamps,
+  },
+  (table) => ({
+    providerAccountIdx: uniqueIndex("auth_accounts_provider_account_idx").on(
+      table.provider,
+      table.providerAccountId,
+    ),
+    userProviderIdx: uniqueIndex("auth_accounts_user_provider_idx").on(table.userId, table.provider),
+  }),
+);
+
+export const appSessions = pgTable(
+  "app_sessions",
+  {
+    id: text("id").primaryKey(),
+    userId: text("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    sessionToken: text("session_token").notNull(),
+    expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+    revokedAt: timestamp("revoked_at", { withTimezone: true }),
+    lastAccessedAt: timestamp("last_accessed_at", { withTimezone: true }),
+    ...timestamps,
+  },
+  (table) => ({
+    sessionTokenIdx: uniqueIndex("app_sessions_session_token_idx").on(table.sessionToken),
+    activeSessionByUserIdx: index("app_sessions_user_idx").on(table.userId, table.expiresAt),
   }),
 );
 

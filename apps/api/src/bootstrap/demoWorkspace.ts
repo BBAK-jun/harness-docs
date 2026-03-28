@@ -1,7 +1,9 @@
 import {
+  appSessions,
   aiDrafts,
   approvalEvents,
   approvalRequests,
+  authAccounts,
   documentInvalidations,
   documentLinks,
   documentLocks,
@@ -221,6 +223,8 @@ function buildInitialDocuments() {
 
 export async function resetHarnessDocsDatabase(db: HarnessDocsDatabase) {
   await db.transaction(async (tx) => {
+    await tx.delete(appSessions);
+    await tx.delete(authAccounts);
     await tx.delete(publishNotifications);
     await tx.delete(publishRecordArtifacts);
     await tx.delete(publishRecords);

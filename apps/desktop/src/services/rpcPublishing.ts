@@ -8,12 +8,12 @@ import { harnessApiBaseUrl } from "../lib/rpc/client";
 
 interface CreateRpcPublishingServiceOptions {
   fallbackService: PublishingService;
-  allowPreflightFallback?: boolean;
+  getSessionToken?: () => Promise<string | null> | string | null;
 }
 
 export function createRpcPublishingService({
   fallbackService,
-  allowPreflightFallback = false,
+  getSessionToken,
 }: CreateRpcPublishingServiceOptions): PublishingService {
   return {
     ...fallbackService,
@@ -22,8 +22,12 @@ export function createRpcPublishingService({
       documentId: string,
     ): Promise<PublishPreflightView | null> {
       try {
+        const sessionToken = await getSessionToken?.();
         const response = await fetch(
           `${harnessApiBaseUrl}/api/workspaces/${workspaceId}/documents/${documentId}/publish-preflight`,
+          {
+            headers: sessionToken ? { authorization: `Bearer ${sessionToken}` } : undefined,
+          },
         );
 
         if (!response.ok) {
@@ -33,11 +37,7 @@ export function createRpcPublishingService({
         const payload = unwrapApiResponse<PublishPreflightEnvelopeDto>(await response.json());
         return payload.preflight;
       } catch {
-        if (!allowPreflightFallback) {
-          throw new Error("Publish preflight must be loaded from the API before publish can continue.");
-        }
-
-        return fallbackService.getDocumentPublishPreflight(workspaceId, documentId);
+        throw new Error("Publish preflight must be loaded from the API before publish can continue.");
       }
     },
   };

@@ -30,7 +30,7 @@ export function WorkspaceLnb({
 
       <div className="rounded-[var(--radius)] border border-[var(--border)] bg-[var(--surface)] p-4">
         <p className="text-xs uppercase tracking-[0.18em] text-[var(--muted-foreground)]">
-          Workspace
+          워크스페이스
         </p>
         <p className="mt-3 text-sm leading-6 text-[var(--foreground)]">{workspace.description}</p>
       </div>
@@ -69,7 +69,7 @@ export function WorkspaceLnb({
 
       <div className="flex flex-col gap-2">
         <Button onClick={() => app.handleWorkspaceLeave()} size="sm" variant="outline">
-          Workspaces
+          워크스페이스 목록
         </Button>
         <Button
           onClick={() => {
@@ -78,7 +78,7 @@ export function WorkspaceLnb({
           size="sm"
           variant="ghost"
         >
-          Sign out
+          로그아웃
         </Button>
       </div>
     </div>

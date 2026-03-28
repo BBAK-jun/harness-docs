@@ -52,7 +52,7 @@ export function usePublishPage(shell: WorkspaceShellModel) {
     enabled: Boolean(workspaceId && targetDocumentId),
     queryFn: async (): Promise<PublishPreflightView> => {
       if (!workspaceId || !targetDocumentId) {
-        throw new Error("A document must be selected before publish preflight can load.");
+        throw new Error("발행 전검증을 불러오기 전에 문서를 선택해야 합니다.");
       }
 
       const preflight = await shell.services.publishing.getDocumentPublishPreflight(
@@ -61,7 +61,7 @@ export function usePublishPage(shell: WorkspaceShellModel) {
       );
 
       if (!preflight) {
-        throw new Error("The selected document is not available for publish preflight.");
+        throw new Error("선택한 문서는 발행 전검증 대상이 아닙니다.");
       }
 
       return preflight;
@@ -133,7 +133,7 @@ export function usePublishPage(shell: WorkspaceShellModel) {
       );
 
       if (!publishInput) {
-        throw new Error("No publish record is available for the active workspace.");
+        throw new Error("현재 워크스페이스에서 사용할 발행 기록이 없습니다.");
       }
 
       return shell.services.publishing.executePublish(publishInput);
@@ -173,7 +173,7 @@ export function usePublishPage(shell: WorkspaceShellModel) {
           error:
             publishMutation.error instanceof Error
               ? publishMutation.error.message
-              : "GitHub publish failed.",
+              : "GitHub 발행에 실패했습니다.",
           result: null,
         }
       : publishMutation.isSuccess
@@ -189,17 +189,17 @@ export function usePublishPage(shell: WorkspaceShellModel) {
           };
 
   const executeDisabledReason = !publishRecord
-    ? "A publish record must exist before GitHub automation can start."
+    ? "GitHub 자동화를 시작하려면 먼저 발행 기록이 있어야 합니다."
     : preflightQuery.isLoading && !preflight
-      ? "Publish preflight is loading."
+      ? "발행 전검증을 불러오는 중입니다."
       : preflightQuery.isError && !preflight
         ? preflightQuery.error instanceof Error
           ? preflightQuery.error.message
-          : "Publish preflight could not be loaded."
+          : "발행 전검증을 불러오지 못했습니다."
         : preflight?.document.publishEligibility.status === "blocked"
-          ? "Publish is blocked until the blocking issues are resolved."
+          ? "차단 이슈가 해결될 때까지 발행할 수 없습니다."
           : isRationaleRequired && !isRationaleComplete
-            ? "Record a stale publish rationale before starting GitHub automation."
+            ? "GitHub 자동화를 시작하기 전에 stale 발행 사유를 기록하세요."
             : null;
   const preflightState: PreflightQueryState = {
     status: preflightQuery.isPending ? "loading" : preflightQuery.isError ? "error" : "ready",
@@ -207,7 +207,7 @@ export function usePublishPage(shell: WorkspaceShellModel) {
       preflightQuery.error instanceof Error
         ? preflightQuery.error.message
         : preflightQuery.isError
-          ? "Publish preflight failed."
+          ? "발행 전검증에 실패했습니다."
           : null,
   };
 

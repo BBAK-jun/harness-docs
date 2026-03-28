@@ -4,7 +4,14 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { cn } from "@/lib/utils";
 import type { AITaskEntryPoint, WorkspaceDocument } from "../types";
 import type { WorkspaceShellModel } from "../hooks/useWorkspaceShell";
-import { EmptyStateCard, formatDateTime, SignalTile, statusBadgeVariant } from "./pageUtils";
+import {
+  EmptyStateCard,
+  formatDateTime,
+  SignalTile,
+  statusBadgeVariant,
+  translateDocumentType,
+  translateLabel,
+} from "./pageUtils";
 
 export function DocumentsPage({
   app,
@@ -43,25 +50,25 @@ export function DocumentsPage({
     <div className="flex flex-col gap-4">
       <Card>
         <CardHeader>
-          <CardTitle>Choose a document</CardTitle>
+          <CardTitle>문서 선택</CardTitle>
           <CardDescription>
-            Start by choosing one document. Everything else follows from that selection.
+            먼저 문서 하나를 고르세요. 이후 작업은 그 선택을 기준으로 이어집니다.
           </CardDescription>
         </CardHeader>
         <CardContent className="grid gap-4 md:grid-cols-3">
           <SignalTile
-            description="Artifacts already staged for publication."
-            label="Publish batch"
+            description="이미 발행 대상으로 묶인 아티팩트 수입니다."
+            label="발행 배치"
             value={publishRecord?.artifacts.length ?? 0}
           />
           <SignalTile
-            description="Action-first tasks available from current workspace state."
-            label="AI entry points"
+            description="현재 워크스페이스 상태에서 바로 실행할 수 있는 AI 작업 수입니다."
+            label="AI 진입점"
             value={aiEntryPoints.length}
           />
           <SignalTile
-            description={app.activeDocument?.title ?? "Select a document to inspect details."}
-            label="Selected doc"
+            description={app.activeDocument?.title ?? "상세를 보려면 문서를 선택하세요."}
+            label="선택된 문서"
             value={app.activeDocument ? 1 : 0}
           />
         </CardContent>
@@ -69,9 +76,9 @@ export function DocumentsPage({
 
       <Card>
         <CardHeader>
-          <CardTitle>Document list</CardTitle>
+          <CardTitle>문서 목록</CardTitle>
           <CardDescription>
-            One row, one decision: pick the document you want to work on.
+            한 줄에 한 판단만 담습니다. 지금 작업할 문서를 고르세요.
           </CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col gap-3">
@@ -106,9 +113,9 @@ function DocumentRow({
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-2">
             <p className="font-medium text-[var(--foreground)]">{document.title}</p>
-            <Badge variant="outline">{document.type}</Badge>
+            <Badge variant="outline">{translateDocumentType(document.type)}</Badge>
             <Badge variant={statusBadgeVariant(document.lifecycle.review.freshness.status)}>
-              {document.lifecycle.review.freshness.status}
+              {translateLabel(document.lifecycle.review.freshness.status)}
             </Badge>
           </div>
           <p className="mt-2 text-sm leading-6 text-[var(--muted-foreground)]">
@@ -116,13 +123,13 @@ function DocumentRow({
           </p>
         </div>
         <Badge variant={statusBadgeVariant(document.prePublication.github.status)}>
-          {document.prePublication.github.status}
+          {translateLabel(document.prePublication.github.status)}
         </Badge>
       </div>
       <div className="grid gap-3 text-sm text-[var(--muted-foreground)] sm:grid-cols-3">
-        <span>Review: {document.lifecycle.review.status}</span>
-        <span>Links: {document.linkedDocumentIds.length}</span>
-        <span>Updated: {formatDateTime(document.lifecycle.updatedAt)}</span>
+        <span>리뷰: {translateLabel(document.lifecycle.review.status)}</span>
+        <span>연결 문서: {document.linkedDocumentIds.length}</span>
+        <span>업데이트: {formatDateTime(document.lifecycle.updatedAt)}</span>
       </div>
     </button>
   );

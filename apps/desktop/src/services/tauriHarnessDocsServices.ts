@@ -1,11 +1,12 @@
 import type { DesktopInfrastructure } from "../desktop/contracts";
-import { mockSession, mockUser } from "../data/mockSession";
+import { openUrl } from "@tauri-apps/plugin-opener";
 import type { AITaskExecutionInput, AITaskExecutionResult, AITaskService } from "../domain/aiTasks";
 import type {
   PublishExecutionInput,
   PublishExecutionResult,
   PublishingService,
 } from "../domain/publishing";
+import type { WorkspaceGraph } from "../types";
 import type {
   AppSessionSnapshot,
   AppPreferences,
@@ -17,18 +18,23 @@ import type {
   WorkspaceSessionService,
   WorkspaceSessionSnapshot,
 } from "./contracts";
-import {
-  createMockApprovalService,
-  createMockPublishingService,
-  createMockWorkspaceMembershipService,
-} from "./mockDomainServices";
 import { createRpcPublishingService } from "./rpcPublishing";
+import { createSessionBackedApprovalService } from "./sessionBackedApprovalService";
+import { createSessionBackedPublishingService } from "./sessionBackedPublishingService";
+import { createSessionBackedWorkspaceMembershipService } from "./sessionBackedWorkspaceMembershipService";
 import { createDesktopShellService } from "./tauriDesktopShell";
 import {
   defaultAppPreferences,
   readAppPreferences,
   writeAppPreferences,
 } from "../lib/appPreferences";
+import { clearAppSessionToken, readAppSessionToken, writeAppSessionToken } from "./appSessionToken";
+import {
+  getApiSession,
+  getGitHubOAuthAttempt,
+  revokeApiSession,
+  startGitHubOAuth,
+} from "./rpcAuthentication";
 import { createRpcWorkspaceSessionService } from "./rpcWorkspaceSession";
 
 const githubAuthProvider: AuthenticationProviderDescriptor = {
@@ -38,32 +44,10 @@ const githubAuthProvider: AuthenticationProviderDescriptor = {
   loginCtaLabel: "Sign in with GitHub",
 };
 
-interface GitHubIdentity {
-  login: string;
-  name?: string | null;
-  email?: string | null;
-}
-
-interface RawAuthenticationSession {
-  status: AuthenticationSessionSnapshot["status"];
-  user: GitHubIdentity | null;
-  message?: string | null;
-}
-
-function createAvatarInitials(name: string, login: string) {
-  const parts = name.trim().split(/\s+/).filter(Boolean).slice(0, 2);
-
-  if (parts.length > 0) {
-    return parts.map((part) => part.charAt(0).toUpperCase()).join("");
-  }
-
-  return login.slice(0, 2).toUpperCase();
-}
-
-function mapAuthenticationSession(
-  rawSession: RawAuthenticationSession,
+function mapApiAuthenticationSession(
+  session: Awaited<ReturnType<typeof getApiSession>>,
 ): AuthenticationSessionSnapshot {
-  if (rawSession.status !== "authenticated" || !rawSession.user) {
+  if (session.status !== "authenticated") {
     return {
       status: "signed_out",
       provider: githubAuthProvider,
@@ -71,21 +55,69 @@ function mapAuthenticationSession(
     };
   }
 
-  const name = rawSession.user.name?.trim() || mockUser.name;
-  const githubLogin = rawSession.user.login;
-
   return {
     status: "authenticated",
     provider: githubAuthProvider,
     user: {
-      ...mockUser,
-      name,
-      handle: `@${githubLogin}`,
-      avatarInitials: createAvatarInitials(name, githubLogin),
-      githubLogin,
-      primaryEmail: rawSession.user.email?.trim() || mockUser.primaryEmail,
+      id: session.user.id,
+      name: session.user.name,
+      handle: session.user.handle,
+      avatarInitials: session.user.avatarInitials,
+      githubLogin: session.user.githubLogin,
+      primaryEmail: session.user.primaryEmail,
     },
   };
+}
+
+async function openOAuthUrl(url: string, runtime: DesktopInfrastructure["runtime"]) {
+  if (runtime === "tauri") {
+    await openUrl(url);
+    return;
+  }
+
+  if (typeof window !== "undefined") {
+    window.open(url, "_blank", "noopener,noreferrer");
+  }
+}
+
+function signedOutAuthenticationSession(): AuthenticationSessionSnapshot {
+  return {
+    status: "signed_out",
+    provider: githubAuthProvider,
+    user: null,
+  };
+}
+
+async function runGitHubOAuthSignIn(
+  desktopInfrastructure: DesktopInfrastructure,
+): Promise<AuthenticationSessionSnapshot> {
+  const start = await startGitHubOAuth();
+
+  await openOAuthUrl(start.authorizationUrl, desktopInfrastructure.runtime);
+
+  const deadline = Date.parse(start.expiresAt);
+
+  while (Date.now() < deadline) {
+    await new Promise((resolve) => setTimeout(resolve, start.pollIntervalMs));
+
+    const attempt = await getGitHubOAuthAttempt(start.attemptId);
+
+    if (attempt.status === "pending") {
+      continue;
+    }
+
+    if (attempt.status === "authenticated") {
+      await writeAppSessionToken(desktopInfrastructure.storage, attempt.session.sessionToken);
+
+      return mapApiAuthenticationSession(attempt.session);
+    }
+
+    await clearAppSessionToken(desktopInfrastructure.storage);
+    throw new Error(attempt.error);
+  }
+
+  await clearAppSessionToken(desktopInfrastructure.storage);
+  throw new Error("GitHub OAuth did not complete before the sign-in attempt expired.");
 }
 
 function createTauriAuthenticationService(
@@ -96,76 +128,114 @@ function createTauriAuthenticationService(
       return githubAuthProvider;
     },
     async restoreSession() {
-      if (desktopInfrastructure.runtime !== "tauri") {
-        return {
-          status: "signed_out",
-          provider: githubAuthProvider,
-          user: null,
-        };
+      const storedToken = await readAppSessionToken(desktopInfrastructure.storage);
+
+      if (storedToken) {
+        try {
+          const session = await getApiSession(storedToken);
+
+          if (session.status === "authenticated") {
+            return mapApiAuthenticationSession(session);
+          }
+
+          await clearAppSessionToken(desktopInfrastructure.storage);
+        } catch {
+          await clearAppSessionToken(desktopInfrastructure.storage);
+        }
       }
 
-      const rawSession = await desktopInfrastructure.commands.invoke<RawAuthenticationSession>(
-        "get_github_authentication_session",
-      );
-
-      return mapAuthenticationSession(rawSession);
+      return signedOutAuthenticationSession();
     },
     async startSignIn(provider: AuthenticationProvider) {
       if (provider !== githubAuthProvider.id) {
         throw new Error(`Unsupported authentication provider: ${provider}`);
       }
 
-      if (desktopInfrastructure.runtime !== "tauri") {
-        throw new Error("GitHub OAuth requires the Tauri runtime.");
-      }
-
-      const rawSession =
-        await desktopInfrastructure.commands.invoke<RawAuthenticationSession>(
-          "start_github_sign_in",
-        );
-
-      return mapAuthenticationSession(rawSession);
+      return runGitHubOAuthSignIn(desktopInfrastructure);
     },
     async signOut() {
-      if (desktopInfrastructure.runtime !== "tauri") {
-        return {
-          status: "signed_out",
-          provider: githubAuthProvider,
-          user: null,
-        };
+      const storedToken = await readAppSessionToken(desktopInfrastructure.storage);
+
+      if (storedToken) {
+        try {
+          await revokeApiSession(storedToken);
+        } finally {
+          await clearAppSessionToken(desktopInfrastructure.storage);
+        }
       }
 
-      const rawSession =
-        await desktopInfrastructure.commands.invoke<RawAuthenticationSession>("sign_out_github");
+      await clearAppSessionToken(desktopInfrastructure.storage);
 
-      return mapAuthenticationSession(rawSession);
+      return signedOutAuthenticationSession();
     },
   };
 }
 
-function createTauriWorkspaceSessionService(): WorkspaceSessionService {
+function createTauriWorkspaceSessionService(
+  desktopInfrastructure: DesktopInfrastructure,
+): WorkspaceSessionService {
   return createRpcWorkspaceSessionService({
-    fallbackSnapshot: () => ({
-      user: mockSession.user,
-      workspaces: mockSession.workspaces,
-      workspaceGraphs: mockSession.workspaceGraphs,
-      lastActiveWorkspaceId: mockSession.lastActiveWorkspaceId,
-    }),
+    getSessionToken: () => readAppSessionToken(desktopInfrastructure.storage),
   });
+}
+
+function createCurrentSessionReaders(
+  authentication: AuthenticationService,
+  workspaceSession: WorkspaceSessionService,
+) {
+  async function getCurrentSessionSnapshot() {
+    const session = await authentication.restoreSession();
+
+    if (session.status !== "authenticated") {
+      return null;
+    }
+
+    return workspaceSession.getSnapshot(session);
+  }
+
+  return {
+    async getWorkspaceGraph(workspaceId: string) {
+      const snapshot = await getCurrentSessionSnapshot();
+
+      return snapshot?.workspaceGraphs.find((entry) => entry.workspace.id === workspaceId) ?? null;
+    },
+    async listWorkspaceGraphsForUser(userId: string) {
+      const snapshot = await getCurrentSessionSnapshot();
+
+      return (snapshot?.workspaceGraphs ?? []).filter((entry) =>
+        entry.memberships.some(
+          (membership) => membership.userId === userId && membership.lifecycle.status === "active",
+        ),
+      );
+    },
+    async getCurrentSessionUser() {
+      const session = await authentication.restoreSession();
+
+      return session.status === "authenticated" ? session.user : null;
+    },
+  };
 }
 
 function createTauriPublishingService(
   desktopInfrastructure: DesktopInfrastructure,
+  options: {
+    getWorkspaceGraph: (workspaceId: string) => Promise<WorkspaceGraph | null>;
+  },
 ): PublishingService {
+  const sessionBackedPublishing = createSessionBackedPublishingService({
+    getWorkspaceGraph: options.getWorkspaceGraph,
+  });
   const basePublishing = createRpcPublishingService({
-    fallbackService: createMockPublishingService(),
+    getSessionToken: () => readAppSessionToken(desktopInfrastructure.storage),
+    fallbackService: sessionBackedPublishing,
   });
 
   return {
+    ...sessionBackedPublishing,
     ...basePublishing,
     async executePublish(input: PublishExecutionInput): Promise<PublishExecutionResult> {
       if (desktopInfrastructure.runtime !== "tauri") {
-        return basePublishing.executePublish(input);
+        return sessionBackedPublishing.executePublish(input);
       }
 
       return desktopInfrastructure.commands.invoke<PublishExecutionResult>(
@@ -207,10 +277,19 @@ export function createTauriHarnessDocsServices(
   desktopInfrastructure: DesktopInfrastructure,
 ): HarnessDocsServices {
   const authentication = createTauriAuthenticationService(desktopInfrastructure);
-  const workspaceSession = createTauriWorkspaceSessionService();
-  const workspaceMemberships = createMockWorkspaceMembershipService();
-  const approvals = createMockApprovalService();
-  const publishing = createTauriPublishingService(desktopInfrastructure);
+  const workspaceSession = createTauriWorkspaceSessionService(desktopInfrastructure);
+  const sessionReaders = createCurrentSessionReaders(authentication, workspaceSession);
+  const workspaceMemberships = createSessionBackedWorkspaceMembershipService({
+    getWorkspaceGraph: sessionReaders.getWorkspaceGraph,
+    listWorkspaceGraphsForUser: sessionReaders.listWorkspaceGraphsForUser,
+    getCurrentSessionUser: sessionReaders.getCurrentSessionUser,
+  });
+  const approvals = createSessionBackedApprovalService({
+    getWorkspaceGraph: sessionReaders.getWorkspaceGraph,
+  });
+  const publishing = createTauriPublishingService(desktopInfrastructure, {
+    getWorkspaceGraph: sessionReaders.getWorkspaceGraph,
+  });
   const aiTasks = createTauriAITaskService(desktopInfrastructure);
 
   return {

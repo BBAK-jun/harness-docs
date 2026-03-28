@@ -8,6 +8,7 @@
     "db:logs": "docker compose logs -f db",
     "db:generate": "pnpm --filter @harness-docs/db db:generate",
     "db:migrate": "pnpm --filter @harness-docs/db db:migrate",
+    "db:studio": "pnpm --filter @harness-docs/db db:studio",
     "db:seed": "pnpm --filter @harness-docs/api seed:demo",
     "check:db": "pnpm --filter @harness-docs/db check",
     "dev:desktop": "pnpm --filter @harness-docs/desktop dev",

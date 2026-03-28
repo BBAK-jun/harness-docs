@@ -3,7 +3,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import type { AITaskEntryPoint } from "../types";
-import { EmptyStateCard } from "./pageUtils";
+import { EmptyStateCard, translateLabel } from "./pageUtils";
 
 export function AIPage({
   aiEntryPoints,
@@ -38,9 +38,9 @@ export function AIPage({
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Choose one AI action</CardTitle>
+        <CardTitle>AI 작업 하나 선택</CardTitle>
         <CardDescription>
-          Each action should be explicit. Pick one task and run it against internal docs only.
+          각 작업은 명확해야 합니다. 한 번에 한 작업만 선택하고 내부 문서 기준으로 실행하세요.
         </CardDescription>
       </CardHeader>
       <CardContent className="grid gap-3">
@@ -53,8 +53,8 @@ export function AIPage({
           >
             <div className="flex flex-wrap items-center gap-2">
               <Badge variant="info">{entry.provider}</Badge>
-              <Badge variant="outline">{entry.kind}</Badge>
-              <Badge variant="secondary">{entry.scope}</Badge>
+              <Badge variant="outline">{translateLabel(entry.kind)}</Badge>
+              <Badge variant="secondary">{translateLabel(entry.scope)}</Badge>
             </div>
             <div>
               <p className="font-medium text-[var(--foreground)]">{entry.title}</p>

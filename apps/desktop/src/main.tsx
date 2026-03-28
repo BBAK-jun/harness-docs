@@ -2,6 +2,8 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { RouterProvider } from "@tanstack/react-router";
+import { GlobalUnhandledExceptionBoundary } from "./components/GlobalUnhandledExceptionBoundary";
+import { Toaster } from "./components/ui/sonner";
 import { router } from "./router";
 import { HarnessDocsServicesProvider } from "./services/HarnessDocsServicesProvider";
 import { createAppServices } from "./services/createAppServices";
@@ -12,10 +14,13 @@ const queryClient = new QueryClient();
 
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
   <React.StrictMode>
-    <HarnessDocsServicesProvider services={services}>
-      <QueryClientProvider client={queryClient}>
-        <RouterProvider router={router} />
-      </QueryClientProvider>
-    </HarnessDocsServicesProvider>
+    <GlobalUnhandledExceptionBoundary>
+      <HarnessDocsServicesProvider services={services}>
+        <QueryClientProvider client={queryClient}>
+          <RouterProvider router={router} />
+          <Toaster />
+        </QueryClientProvider>
+      </HarnessDocsServicesProvider>
+    </GlobalUnhandledExceptionBoundary>
   </React.StrictMode>,
 );

@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { z } from "@hono/zod-openapi";
 
 /**
  * Document identity and timestamps are repeated across read models so the
@@ -12,6 +12,15 @@ export interface DocumentReference {
   updatedAt: string;
   lastSyncedAt: string | null;
 }
+
+export const documentReferenceSchema = z.object({
+  id: z.string(),
+  workspaceId: z.string(),
+  title: z.string(),
+  type: z.enum(["PRD", "UX Flow", "Technical Spec", "Policy/Decision"]),
+  updatedAt: z.string(),
+  lastSyncedAt: z.string().nullable(),
+});
 
 /**
  * Persisted document lifecycle owned by the server.
@@ -55,6 +64,14 @@ export interface DocumentStaleReason {
   sourceUpdatedAt?: string | null;
 }
 
+export const documentStaleReasonSchema = z.object({
+  code: staleReasonCodeSchema,
+  summary: z.string(),
+  detectedAt: z.string(),
+  thresholdDays: z.number().optional(),
+  sourceUpdatedAt: z.string().nullable().optional(),
+});
+
 /**
  * Validation and metadata are explicit snapshots so the caller can see why a
  * document is not yet "clean" even if stale publish is allowed with rationale.
@@ -65,11 +82,23 @@ export interface DocumentValidationIssue {
   severity: "info" | "warning" | "blocking";
 }
 
+export const documentValidationIssueSchema = z.object({
+  code: z.string(),
+  message: z.string(),
+  severity: z.enum(["info", "warning", "blocking"]),
+});
+
 export interface DocumentValidationSnapshot {
   status: "not_run" | "passed" | "failed";
   checkedAt: string | null;
   issues: DocumentValidationIssue[];
 }
+
+export const documentValidationSnapshotSchema = z.object({
+  status: z.enum(["not_run", "passed", "failed"]),
+  checkedAt: z.string().nullable(),
+  issues: z.array(documentValidationIssueSchema),
+});
 
 export interface DocumentMetadataIssue {
   code: string;
@@ -77,11 +106,23 @@ export interface DocumentMetadataIssue {
   severity: "info" | "warning" | "blocking";
 }
 
+export const documentMetadataIssueSchema = z.object({
+  code: z.string(),
+  message: z.string(),
+  severity: z.enum(["info", "warning", "blocking"]),
+});
+
 export interface DocumentMetadataSnapshot {
   status: "not_checked" | "current" | "outdated";
   checkedAt: string | null;
   issues: DocumentMetadataIssue[];
 }
+
+export const documentMetadataSnapshotSchema = z.object({
+  status: z.enum(["not_checked", "current", "outdated"]),
+  checkedAt: z.string().nullable(),
+  issues: z.array(documentMetadataIssueSchema),
+});
 
 /**
  * This view is the authoritative policy snapshot returned by API for a single document.
@@ -105,6 +146,13 @@ export interface PublishPullRequestRef {
   branchName: string;
 }
 
+export const publishPullRequestRefSchema = z.object({
+  id: z.string(),
+  number: z.number(),
+  url: z.string(),
+  branchName: z.string(),
+});
+
 /**
  * `blocked` means publish cannot proceed even with rationale.
  * `requires_rationale` means stale publish is allowed, but only with user explanation.
@@ -124,6 +172,18 @@ export interface PublishBlockingIssue {
   summary: string;
   requiredAction: string;
 }
+
+export const publishBlockingIssueSchema = z.object({
+  code: z.enum([
+    "validation_failed",
+    "metadata_refresh_required",
+    "approval_missing",
+    "approval_changes_requested",
+    "document_not_found",
+  ]),
+  summary: z.string(),
+  requiredAction: z.string(),
+});
 
 /**
  * Projection input snapshots are the only inputs that API/Desktop adapters may
@@ -177,6 +237,15 @@ export interface PublishEligibility {
   blockingIssues: PublishBlockingIssue[];
   summary: string;
 }
+
+export const publishEligibilitySchema = z.object({
+  status: publishEligibilityStatusSchema,
+  canPublish: z.boolean(),
+  requiresRationale: z.boolean(),
+  staleReasons: z.array(documentStaleReasonSchema),
+  blockingIssues: z.array(publishBlockingIssueSchema),
+  summary: z.string(),
+});
 
 /**
  * User-provided rationale for stale publish.
@@ -259,6 +328,12 @@ export interface PublishFlowTransition {
   to: PublishFlowState;
 }
 
+export const publishFlowTransitionSchema = z.object({
+  from: publishFlowStateSchema,
+  trigger: publishFlowTriggerSchema,
+  to: publishFlowStateSchema,
+});
+
 /**
  * Preflight response is the server's explanation of where the publish flow stands
  * before any Git automation is started.
@@ -268,6 +343,23 @@ export interface PublishPreflightView {
   currentState: PublishFlowState;
   allowedTransitions: PublishFlowTransition[];
 }
+
+export const documentStatusViewSchema = documentReferenceSchema.extend({
+  storedStatus: documentStoredStatusSchema,
+  freshnessStatus: documentFreshnessStatusSchema,
+  isStale: z.boolean(),
+  staleReasons: z.array(documentStaleReasonSchema),
+  validation: documentValidationSnapshotSchema,
+  metadata: documentMetadataSnapshotSchema,
+  publishEligibility: publishEligibilitySchema,
+  activePullRequest: publishPullRequestRefSchema.nullable(),
+});
+
+export const publishPreflightViewSchema = z.object({
+  document: documentStatusViewSchema,
+  currentState: publishFlowStateSchema,
+  allowedTransitions: z.array(publishFlowTransitionSchema),
+});
 
 export const publishAttemptRequestSchema = z.object({
   initiatedByMembershipId: z.string().min(1),
@@ -285,6 +377,13 @@ export interface PublishSuccessResult {
   pullRequest: PublishPullRequestRef;
 }
 
+export const publishSuccessResultSchema = z.object({
+  kind: z.literal("publish_succeeded"),
+  transition: publishFlowTransitionSchema,
+  publishRecordId: z.string(),
+  pullRequest: publishPullRequestRefSchema,
+});
+
 export interface PublishRationaleRequiredResult {
   kind: "rationale_required";
   transition: PublishFlowTransition;
@@ -292,25 +391,58 @@ export interface PublishRationaleRequiredResult {
   requiredRationaleFields: Array<keyof StalePublishRationaleDto>;
 }
 
+export const publishRationaleRequiredResultSchema = z.object({
+  kind: z.literal("rationale_required"),
+  transition: publishFlowTransitionSchema,
+  staleReasons: z.array(documentStaleReasonSchema),
+  requiredRationaleFields: z.array(
+    z.enum(["summary", "details", "acknowledgedReasonCodes"]),
+  ),
+});
+
 export interface PublishBlockedResult {
   kind: "publish_blocked";
   transition: PublishFlowTransition;
   blockingIssues: PublishBlockingIssue[];
 }
 
+export const publishBlockedResultSchema = z.object({
+  kind: z.literal("publish_blocked"),
+  transition: publishFlowTransitionSchema,
+  blockingIssues: z.array(publishBlockingIssueSchema),
+});
+
 export type PublishAttemptResult =
   | PublishSuccessResult
   | PublishRationaleRequiredResult
   | PublishBlockedResult;
 
+export const publishAttemptResultSchema = z.discriminatedUnion("kind", [
+  publishSuccessResultSchema,
+  publishRationaleRequiredResultSchema,
+  publishBlockedResultSchema,
+]);
+
 export interface DocumentStatusEnvelopeDto {
   document: DocumentStatusView;
 }
+
+export const documentStatusEnvelopeSchema = z.object({
+  document: documentStatusViewSchema,
+});
 
 export interface PublishPreflightEnvelopeDto {
   preflight: PublishPreflightView;
 }
 
+export const publishPreflightEnvelopeSchema = z.object({
+  preflight: publishPreflightViewSchema,
+});
+
 export interface PublishAttemptEnvelopeDto {
   result: PublishAttemptResult;
 }
+
+export const publishAttemptEnvelopeSchema = z.object({
+  result: publishAttemptResultSchema,
+});

@@ -2,7 +2,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import type { WorkspaceShellModel } from "../hooks/useWorkspaceShell";
-import { EmptyStateCard, statusBadgeVariant } from "./pageUtils";
+import { EmptyStateCard, statusBadgeVariant, translateLabel } from "./pageUtils";
 
 export function CommentsPage({
   app,
@@ -20,8 +20,8 @@ export function CommentsPage({
   if (!document) {
     return (
       <EmptyStateCard
-        description="Choose a document to inspect threads and mentions."
-        title="No review context"
+        description="스레드와 멘션을 확인하려면 문서를 선택하세요."
+        title="리뷰 맥락 없음"
         actions={
           <div className="flex flex-wrap gap-2">
             <Button onClick={onGoToDocuments} size="sm" variant="secondary">
@@ -44,7 +44,7 @@ export function CommentsPage({
               onClick={() =>
                 app.handleCreateBlockComment(
                   document,
-                  "@reviewers Please confirm whether stale rationale is enough for this publish batch.",
+                  "@reviewers 이 발행 배치에 이 stale 사유만으로 충분한지 확인해 주세요.",
                 )
               }
               size="sm"
@@ -65,20 +65,20 @@ export function CommentsPage({
       <CardHeader>
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <CardTitle>Review one thread at a time</CardTitle>
+            <CardTitle>한 번에 하나의 스레드 검토</CardTitle>
             <CardDescription>
-              Keep feedback simple: open thread, context excerpt, and the next reply action.
+              피드백은 단순하게 유지합니다. 열린 스레드, 문맥 발췌, 다음 답변 액션만 봅니다.
             </CardDescription>
           </div>
           <Button
             onClick={() =>
               app.handleCreateBlockComment(
                 document,
-                "@reviewers Please confirm whether stale rationale is enough for this publish batch.",
+                "@reviewers 이 발행 배치에 이 stale 사유만으로 충분한지 확인해 주세요.",
               )
             }
           >
-            Add sample thread
+            샘플 스레드 추가
           </Button>
         </div>
       </CardHeader>
@@ -90,7 +90,7 @@ export function CommentsPage({
           >
             <div className="flex flex-wrap items-center gap-2">
               <Badge variant={statusBadgeVariant(thread.lifecycle.status)}>
-                {thread.lifecycle.status}
+                {translateLabel(thread.lifecycle.status)}
               </Badge>
               <span className="text-sm text-[var(--muted-foreground)]">
                 {thread.anchor.headingPath.join(" / ")}
@@ -100,8 +100,8 @@ export function CommentsPage({
               {thread.anchor.excerpt}
             </p>
             <p className="mt-3 text-sm text-[var(--muted-foreground)]">
-              Participants {thread.participantMembershipIds.length} · linked docs{" "}
-              {thread.linkedDocumentIds.length}
+              참여자 {thread.participantMembershipIds.length}명 · 연결 문서{" "}
+              {thread.linkedDocumentIds.length}개
             </p>
           </div>
         ))}

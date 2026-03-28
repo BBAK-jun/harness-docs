@@ -1,19 +1,19 @@
 import "dotenv/config";
 import { serve } from "@hono/node-server";
 import { createApiApp } from "@harness-docs/contracts";
-import { createMockWorkspaceSessionSource } from "./data/mockWorkspaceSessionSource.ts";
+import { createGitHubOAuthDataSource } from "./data/githubOAuthSource.ts";
+import { createPostgresAuthSessionSource } from "./data/postgresAuthSessionSource.ts";
 import { createPostgresWorkspaceSessionSource } from "./data/postgresWorkspaceSessionSource.ts";
 import { createPublishGovernanceAdapter } from "./domain/publishGovernanceAdapter.ts";
 
 const port = Number(process.env.PORT ?? 4020);
 const hostname = process.env.HOST ?? "127.0.0.1";
-const dataSourceMode = process.env.HARNESS_DOCS_API_DATA_SOURCE ?? "mock";
+const authDataSource = createPostgresAuthSessionSource();
 
 const app = createApiApp({
-  dataSource:
-    dataSourceMode === "mock"
-      ? createMockWorkspaceSessionSource()
-      : createPostgresWorkspaceSessionSource(),
+  dataSource: createPostgresWorkspaceSessionSource(),
+  authDataSource,
+  gitHubOAuthDataSource: createGitHubOAuthDataSource(authDataSource),
   publishGovernanceAdapter: createPublishGovernanceAdapter(),
 });
 
@@ -25,7 +25,7 @@ const server = serve(
   },
   (info) => {
     console.log(
-      `Harness Docs API listening on http://${info.address}:${info.port} using ${dataSourceMode} data source`,
+      `Harness Docs API listening on http://${info.address}:${info.port} using postgres data source`,
     );
   },
 );

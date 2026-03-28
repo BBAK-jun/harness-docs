@@ -27,7 +27,7 @@ export function WorkspaceOnboardingPage({
         <Card className="w-full border-[var(--app-border-strong)] bg-[linear-gradient(180deg,rgba(255,255,255,0.92),rgba(248,250,252,0.9))]">
           <CardHeader className="gap-4">
             <Badge className="w-fit" variant="info">
-              Workspace Access
+              워크스페이스 접근
             </Badge>
             <CardTitle className="text-3xl leading-tight sm:text-4xl">{title}</CardTitle>
             <CardDescription className="max-w-2xl text-base">{description}</CardDescription>

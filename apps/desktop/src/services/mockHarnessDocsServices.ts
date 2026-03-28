@@ -17,13 +17,12 @@ import type {
   WorkspaceSessionSnapshot,
 } from "./contracts";
 import {
-  createMockApprovalService,
   createMockAITaskService,
-  createMockPublishingService,
-  createMockWorkspaceMembershipService,
 } from "./mockDomainServices";
-import { createRpcPublishingService } from "./rpcPublishing";
-import { createRpcWorkspaceSessionService } from "./rpcWorkspaceSession";
+import { clearAppSessionToken } from "./appSessionToken";
+import { createSessionBackedApprovalService } from "./sessionBackedApprovalService";
+import { createSessionBackedPublishingService } from "./sessionBackedPublishingService";
+import { createSessionBackedWorkspaceMembershipService } from "./sessionBackedWorkspaceMembershipService";
 import { createDesktopShellService } from "./tauriDesktopShell";
 
 const mockAuthenticationProvider: AuthenticationProviderDescriptor = {
@@ -86,11 +85,13 @@ function createMockAuthenticationService(
       }
 
       await writeStoredAuthenticationStatus(desktopInfrastructure, "authenticated");
+      await clearAppSessionToken(desktopInfrastructure.storage);
 
       return buildAuthenticationSession("authenticated");
     },
     async signOut() {
       await writeStoredAuthenticationStatus(desktopInfrastructure, "signed_out");
+      await clearAppSessionToken(desktopInfrastructure.storage);
 
       return buildAuthenticationSession("signed_out");
     },
@@ -106,22 +107,47 @@ async function getWorkspaceSnapshot(): Promise<WorkspaceSessionSnapshot> {
   };
 }
 
-function createMockWorkspaceSessionService(): WorkspaceSessionService {
-  return createRpcWorkspaceSessionService({
-    fallbackSnapshot: () => getWorkspaceSnapshot(),
-  });
+function createMockWorkspaceSessionService(
+  _desktopInfrastructure: DesktopInfrastructure,
+): WorkspaceSessionService {
+  return {
+    async getSnapshot(session) {
+      if (session.status !== "authenticated") {
+        throw new Error("Workspace session requires an authenticated user session.");
+      }
+
+      return getWorkspaceSnapshot();
+    },
+  };
+}
+
+function getMockWorkspaceGraph(workspaceId: string) {
+  return mockSession.workspaceGraphs.find((entry) => entry.workspace.id === workspaceId) ?? null;
+}
+
+function listMockWorkspaceGraphsForUser(userId: string) {
+  return mockSession.workspaceGraphs.filter((entry) =>
+    entry.memberships.some(
+      (membership) => membership.userId === userId && membership.lifecycle.status === "active",
+    ),
+  );
 }
 
 export function createMockHarnessDocsServices(
   desktopInfrastructure: DesktopInfrastructure,
 ): HarnessDocsServices {
   const authentication = createMockAuthenticationService(desktopInfrastructure);
-  const workspaceSession = createMockWorkspaceSessionService();
-  const workspaceMemberships = createMockWorkspaceMembershipService();
-  const approvals = createMockApprovalService();
-  const publishing = createRpcPublishingService({
-    allowPreflightFallback: true,
-    fallbackService: createMockPublishingService(),
+  const workspaceSession = createMockWorkspaceSessionService(desktopInfrastructure);
+  const workspaceMemberships = createSessionBackedWorkspaceMembershipService({
+    getWorkspaceGraph: getMockWorkspaceGraph,
+    listWorkspaceGraphsForUser: listMockWorkspaceGraphsForUser,
+    getCurrentSessionUser: () => mockSession.user,
+  });
+  const approvals = createSessionBackedApprovalService({
+    getWorkspaceGraph: getMockWorkspaceGraph,
+  });
+  const sessionBackedPublishing = createSessionBackedPublishingService({
+    getWorkspaceGraph: getMockWorkspaceGraph,
   });
   const aiTasks = createMockAITaskService();
 
@@ -136,7 +162,7 @@ export function createMockHarnessDocsServices(
     workspaceSession,
     workspaceMemberships,
     approvals,
-    publishing,
+    publishing: sessionBackedPublishing,
     aiTasks,
     appSession: {
       async getSnapshot(): Promise<AppSessionSnapshot> {

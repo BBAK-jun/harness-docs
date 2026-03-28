@@ -22,48 +22,170 @@ export const areaMeta: Record<
   }
 > = {
   documents: {
-    label: "Documents",
-    summary: "Document selection and current workspace state",
+    label: "문서",
+    summary: "문서 선택과 현재 워크스페이스 상태",
     icon: BookOpenText,
   },
   editor: {
-    label: "Editor",
-    summary: "Markdown source and preview with explicit lock ownership",
+    label: "편집기",
+    summary: "명시적 잠금 소유권과 함께 보는 마크다운 원본/미리보기",
     icon: FilePenLine,
   },
   comments: {
-    label: "Reviews",
-    summary: "Block comments, mentions, and open thread triage",
+    label: "리뷰",
+    summary: "블록 댓글, 멘션, 열린 스레드 정리",
     icon: MessageSquareMore,
   },
   approvals: {
-    label: "Approvals",
-    summary: "App-native approvers and remaining blockers",
+    label: "승인",
+    summary: "앱 내부 승인자와 남은 진행 차단 요소",
     icon: CheckCheck,
   },
   publish: {
-    label: "Publish",
-    summary: "Preflight, stale rationale, and GitHub PR automation",
+    label: "발행",
+    summary: "전검증, stale 사유 기록, GitHub PR 자동화",
     icon: GitPullRequestArrow,
   },
   ai: {
     label: "AI",
-    summary: "Codex and Claude action entry points",
+    summary: "Codex와 Claude 작업 진입점",
     icon: Bot,
   },
 };
 
 export function formatDateTime(value: string | null | undefined) {
   if (!value) {
-    return "Not available";
+    return "정보 없음";
   }
 
-  return new Intl.DateTimeFormat("en-US", {
+  return new Intl.DateTimeFormat("ko-KR", {
     month: "short",
     day: "numeric",
     hour: "numeric",
     minute: "2-digit",
   }).format(new Date(value));
+}
+
+const labelMap: Record<string, string> = {
+  active: "활성",
+  archived: "보관됨",
+  approved: "승인됨",
+  attention: "주의 필요",
+  authenticated: "인증됨",
+  blocked: "차단됨",
+  blocking: "차단",
+  changes_requested: "수정 요청",
+  comment_markdown: "댓글 마크다운",
+  complete: "완료",
+  current: "최신",
+  delivered: "전달됨",
+  document_content: "문서 내용",
+  document_loaded: "문서 불러옴",
+  document_links: "연결 문서",
+  document: "문서",
+  draft: "초안",
+  eligible: "발행 가능",
+  eligible_with_warnings: "경고와 함께 가능",
+  expired: "만료됨",
+  failed: "실패",
+  fresh: "최신",
+  github_import: "GitHub 가져오기",
+  in_app: "앱 내",
+  in_review: "검토 중",
+  invalidated: "무효화됨",
+  idle: "대기",
+  lead: "리드",
+  loading: "불러오는 중",
+  metadata_refresh_required: "메타데이터 갱신 필요",
+  missing: "누락",
+  not_eligible: "발행 불가",
+  not_requested: "요청되지 않음",
+  open: "열림",
+  optional_reviewer: "선택 리뷰어",
+  pending: "대기 중",
+  publish: "발행",
+  publish_memo: "발행 메모",
+  proposed: "제안됨",
+  published: "발행됨",
+  publishing: "발행 중",
+  publish_attempted: "발행 시도",
+  publish_failed: "발행 실패",
+  publish_started: "발행 시작",
+  publish_succeeded: "발행 성공",
+  queued: "대기열 등록",
+  read: "읽음",
+  ready: "준비됨",
+  ready_to_publish: "발행 준비됨",
+  ready_for_publish: "발행 준비 완료",
+  ready_with_warnings: "경고와 함께 준비됨",
+  released: "해제됨",
+  removed: "제거됨",
+  requires_rationale: "사유 필요",
+  resolved: "해결됨",
+  restored: "복원됨",
+  review_requested: "검토 요청됨",
+  stale: "오래됨",
+  success: "성공",
+  suspended: "중단됨",
+  sync_required: "동기화 필요",
+  sync_completed: "동기화 완료",
+  sync_requested: "동기화 요청",
+  system: "시스템",
+  stale_requires_rationale: "stale 사유 필요",
+  template: "템플릿",
+  validation_required: "검증 필요",
+  warning: "경고",
+  webhook: "웹훅",
+  approver_suggestions: "승인자 제안",
+  workspace: "워크스페이스",
+  workspace_membership: "워크스페이스 멤버십",
+  allowed: "허용됨",
+};
+
+const reasonCodeMap: Record<string, string> = {
+  active_edit_lock: "활성 편집 잠금",
+  approval_invalidated: "승인 무효화",
+  approval_missing: "승인 누락",
+  approval_pending: "승인 대기",
+  changes_requested: "수정 요청",
+  github_auth_required: "GitHub 인증 필요",
+  linked_document_updated: "연결 문서 변경됨",
+  missing_repository_binding: "저장소 연결 누락",
+  publish_evaluation_pending: "발행 평가 대기",
+  review_request_required: "검토 요청 필요",
+  stale_rationale: "stale 사유",
+  stale_rationale_required: "stale 사유 기록 필요",
+  unresolved_approval: "미해결 승인",
+  rationale_provided: "사유 제공됨",
+};
+
+const documentTypeMap: Record<string, string> = {
+  PRD: "PRD",
+  "Policy/Decision": "정책/의사결정",
+  "Technical Spec": "기술 명세",
+  "UX Flow": "UX 흐름",
+};
+
+const roleMap: Record<string, string> = {
+  Editor: "편집자",
+  Lead: "리드",
+  Reviewer: "리뷰어",
+};
+
+export function translateLabel(value: string) {
+  return labelMap[value] ?? value;
+}
+
+export function translateReasonCode(value: string) {
+  return reasonCodeMap[value] ?? translateLabel(value);
+}
+
+export function translateDocumentType(value: string) {
+  return documentTypeMap[value] ?? value;
+}
+
+export function translateWorkspaceRole(value: string) {
+  return roleMap[value] ?? value;
 }
 
 export function statusBadgeVariant(status: string) {
@@ -105,38 +227,38 @@ export function pageTitle(area: NavigationArea, document: WorkspaceDocument | nu
   }
 
   if (area === "comments" && document) {
-    return `Review ${document.title}`;
+    return `${document.title} 리뷰`;
   }
 
   if (area === "approvals" && document) {
-    return `Approve ${document.title}`;
+    return `${document.title} 승인`;
   }
 
   if (area === "publish") {
-    return "Publish";
+    return "발행";
   }
 
   if (area === "ai") {
-    return "AI Actions";
+    return "AI 작업";
   }
 
-  return "Documents";
+  return "문서";
 }
 
 export function pageDescription(area: NavigationArea) {
   switch (area) {
     case "documents":
-      return "Select the document you want to work on.";
+      return "작업할 문서를 선택하세요.";
     case "editor":
-      return "Edit a single document with source and preview only.";
+      return "한 문서를 원본과 미리보기 중심으로 편집합니다.";
     case "comments":
-      return "Focus on review feedback and the next reply.";
+      return "리뷰 피드백과 다음 답변에 집중합니다.";
     case "approvals":
-      return "See only the approval state that blocks progress.";
+      return "진행을 막는 승인 상태만 확인합니다.";
     case "publish":
-      return "Validate this publish batch and execute when ready.";
+      return "이 발행 배치를 검증하고 준비되면 실행합니다.";
     case "ai":
-      return "Choose one AI task and run it deliberately.";
+      return "AI 작업 하나를 선택해 명확하게 실행합니다.";
   }
 }
 

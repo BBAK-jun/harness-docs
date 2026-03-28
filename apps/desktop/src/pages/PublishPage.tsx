@@ -5,7 +5,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import type { PublishRecord } from "../types";
-import { EmptyStateCard, statusBadgeVariant } from "./pageUtils";
+import {
+  EmptyStateCard,
+  statusBadgeVariant,
+  translateLabel,
+  translateReasonCode,
+} from "./pageUtils";
 
 function getEligibilityBadgeVariant(status: PublishPreflightView["document"]["publishEligibility"]["status"]) {
   switch (status) {
@@ -90,7 +95,7 @@ export function PublishPage({
     return (
       <EmptyStateCard
         description="현재 워크스페이스에는 발행 배치가 없습니다. 문서를 검토하거나 승인 상태를 확인한 뒤 다시 발행 화면으로 돌아오세요."
-        title="No publish batch"
+        title="발행 배치 없음"
         actions={
           <div className="flex flex-wrap gap-2">
             <Button onClick={onGoToDocuments} size="sm" variant="secondary">
@@ -110,16 +115,16 @@ export function PublishPage({
       <EmptyStateCard
         description={
           preflightState.error ??
-          "The publish route could not determine which document to evaluate for preflight."
+          "발행 전검증에 사용할 문서를 결정하지 못했습니다."
         }
-        title="No publish preflight"
+        title="발행 전검증 없음"
         actions={
           <div className="flex flex-wrap gap-2">
             <Button onClick={() => void onRetryPreflight()} size="sm" variant="outline">
-              Retry preflight
+              전검증 다시 시도
             </Button>
             <Button onClick={onGoToDocuments} size="sm" variant="secondary">
-              Open documents
+              문서 열기
             </Button>
           </div>
         }
@@ -132,14 +137,13 @@ export function PublishPage({
       <CardHeader>
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <CardTitle>Publish this batch</CardTitle>
+            <CardTitle>이 배치 발행</CardTitle>
             <CardDescription>
-              The publish route renders batch stages together with the API-driven preflight for the
-              representative document currently selected for publish.
+              발행 화면은 현재 대표 문서의 API 기반 전검증 결과와 배치 단계를 함께 보여줍니다.
             </CardDescription>
           </div>
           <Button disabled={executeDisabledReason !== null} onClick={() => void onExecute()}>
-            {publishState.status === "running" ? "Publishing..." : "Execute publish"}
+            {publishState.status === "running" ? "발행 중..." : "발행 실행"}
           </Button>
         </div>
       </CardHeader>
@@ -147,35 +151,35 @@ export function PublishPage({
         <div className="grid gap-3 md:grid-cols-4">
           <div className="rounded-[var(--radius)] border border-[var(--border)] bg-[var(--surface)] p-4">
             <p className="text-xs uppercase tracking-[0.18em] text-[var(--muted-foreground)]">
-              Representative document
+              대표 문서
             </p>
             <p className="mt-2 font-medium text-[var(--foreground)]">{preflight.document.title}</p>
           </div>
           <div className="rounded-[var(--radius)] border border-[var(--border)] bg-[var(--surface)] p-4">
             <p className="text-xs uppercase tracking-[0.18em] text-[var(--muted-foreground)]">
-              Flow state
+              흐름 상태
             </p>
             <div className="mt-2">
-              <Badge variant="info">{preflight.currentState}</Badge>
+              <Badge variant="info">{translateLabel(preflight.currentState)}</Badge>
             </div>
           </div>
           <div className="rounded-[var(--radius)] border border-[var(--border)] bg-[var(--surface)] p-4">
             <p className="text-xs uppercase tracking-[0.18em] text-[var(--muted-foreground)]">
-              Eligibility
+              발행 가능 상태
             </p>
             <div className="mt-2">
               <Badge variant={getEligibilityBadgeVariant(preflight.document.publishEligibility.status)}>
-                {preflight.document.publishEligibility.status}
+                {translateLabel(preflight.document.publishEligibility.status)}
               </Badge>
             </div>
           </div>
           <div className="rounded-[var(--radius)] border border-[var(--border)] bg-[var(--surface)] p-4">
             <p className="text-xs uppercase tracking-[0.18em] text-[var(--muted-foreground)]">
-              Freshness
+              최신성
             </p>
             <div className="mt-2">
               <Badge variant={getFreshnessBadgeVariant(preflight.document.freshnessStatus)}>
-                {preflight.document.freshnessStatus}
+                {translateLabel(preflight.document.freshnessStatus)}
               </Badge>
             </div>
           </div>
@@ -188,7 +192,7 @@ export function PublishPage({
             >
               <div className="flex items-center justify-between gap-3">
                 <p className="font-medium text-[var(--foreground)]">{stage.title}</p>
-                <Badge variant={statusBadgeVariant(stage.status)}>{stage.status}</Badge>
+                <Badge variant={statusBadgeVariant(stage.status)}>{translateLabel(stage.status)}</Badge>
               </div>
               <p className="mt-2 text-sm leading-6 text-[var(--muted-foreground)]">
                 {stage.description}
@@ -198,19 +202,19 @@ export function PublishPage({
         </div>
         <div className="grid gap-4 lg:grid-cols-2">
           <div className="rounded-[calc(var(--radius)+0.25rem)] border border-[var(--border)] bg-[var(--surface)] p-4">
-            <p className="font-medium text-[var(--foreground)]">Stale reasons</p>
+            <p className="font-medium text-[var(--foreground)]">stale 사유</p>
             {preflight.document.staleReasons.length === 0 ? (
               <div className="mt-2 flex flex-col gap-3">
                 <p className="text-sm leading-6 text-[var(--muted-foreground)]">
-                  No stale reasons were reported by the API preflight. You can review the selected
-                  draft again or move back to documents to choose a different publish candidate.
+                  API 전검증에서 stale 사유가 보고되지 않았습니다. 선택한 초안을 다시 검토하거나
+                  문서 목록으로 돌아가 다른 발행 후보를 선택할 수 있습니다.
                 </p>
                 <div className="flex flex-wrap gap-2">
                   <Button onClick={onGoToEditor} size="sm" variant="outline">
-                    Review in editor
+                    편집기에서 검토
                   </Button>
                   <Button onClick={onGoToDocuments} size="sm" variant="secondary">
-                    Open documents
+                    문서 열기
                   </Button>
                 </div>
               </div>
@@ -222,7 +226,9 @@ export function PublishPage({
                     key={reason.code}
                   >
                     <div className="flex items-center justify-between gap-3">
-                      <p className="font-medium text-[var(--foreground)]">{reason.code}</p>
+                      <p className="font-medium text-[var(--foreground)]">
+                        {translateReasonCode(reason.code)}
+                      </p>
                       <Badge variant="warning">stale</Badge>
                     </div>
                     <p className="mt-2 text-sm leading-6 text-[var(--muted-foreground)]">
@@ -234,13 +240,12 @@ export function PublishPage({
             )}
           </div>
           <div className="rounded-[calc(var(--radius)+0.25rem)] border border-[var(--border)] bg-[var(--surface)] p-4">
-            <p className="font-medium text-[var(--foreground)]">Blocking issues</p>
+            <p className="font-medium text-[var(--foreground)]">차단 이슈</p>
             {preflight.document.publishEligibility.blockingIssues.length === 0 ? (
               <div className="mt-2 flex flex-col gap-3">
                 <p className="text-sm leading-6 text-[var(--muted-foreground)]">
-                  No blocking issues are attached to this preflight. You can continue with publish,
-                  or open approvals if you want to inspect the current review state before
-                  proceeding.
+                  이 전검증에는 차단 이슈가 없습니다. 그대로 발행을 계속하거나, 진행 전에 현재
+                  리뷰 상태를 확인하려면 승인 화면을 열 수 있습니다.
                 </p>
                 <div className="flex flex-wrap gap-2">
                   <Button
@@ -248,10 +253,10 @@ export function PublishPage({
                     onClick={() => void onExecute()}
                     size="sm"
                   >
-                    Execute publish
+                    발행 실행
                   </Button>
                   <Button onClick={onGoToApprovals} size="sm" variant="outline">
-                    Open approvals
+                    승인 열기
                   </Button>
                 </div>
               </div>
@@ -263,14 +268,16 @@ export function PublishPage({
                     key={`${issue.code}-${issue.summary}`}
                   >
                     <div className="flex items-center justify-between gap-3">
-                      <p className="font-medium text-[var(--foreground)]">{issue.code}</p>
-                      <Badge variant="destructive">blocked</Badge>
+                      <p className="font-medium text-[var(--foreground)]">
+                        {translateReasonCode(issue.code)}
+                      </p>
+                      <Badge variant="destructive">차단</Badge>
                     </div>
                     <p className="mt-2 text-sm leading-6 text-[var(--muted-foreground)]">
                       {issue.summary}
                     </p>
                     <p className="mt-2 text-sm leading-6 text-[var(--muted-foreground)]">
-                      Required action: {issue.requiredAction}
+                      필요한 조치: {issue.requiredAction}
                     </p>
                   </div>
                 ))}
@@ -280,22 +287,22 @@ export function PublishPage({
         </div>
         <div className="rounded-[calc(var(--radius)+0.25rem)] border border-[var(--border)] bg-[var(--surface)] p-4">
           <div className="flex items-center justify-between gap-3">
-            <p className="font-medium text-[var(--foreground)]">Allowed transitions</p>
-            <Badge variant="outline">{preflight.allowedTransitions.length} transitions</Badge>
+            <p className="font-medium text-[var(--foreground)]">허용된 전이</p>
+            <Badge variant="outline">{preflight.allowedTransitions.length}개</Badge>
           </div>
           <div className="mt-3 flex flex-wrap gap-2">
             {preflight.allowedTransitions.length === 0 ? (
               <div className="flex flex-col gap-3">
                 <p className="text-sm leading-6 text-[var(--muted-foreground)]">
-                  No further transitions are available from the current state. Refresh the preflight
-                  or revisit documents to change the publish input.
+                  현재 상태에서 더 진행할 수 있는 전이가 없습니다. 전검증을 새로고침하거나
+                  문서로 돌아가 발행 입력을 바꾸세요.
                 </p>
                 <div className="flex flex-wrap gap-2">
                   <Button onClick={() => void onRetryPreflight()} size="sm" variant="outline">
-                    Retry preflight
+                    전검증 다시 시도
                   </Button>
                   <Button onClick={onGoToDocuments} size="sm" variant="secondary">
-                    Open documents
+                    문서 열기
                   </Button>
                 </div>
               </div>
@@ -306,7 +313,8 @@ export function PublishPage({
                   key={`${transition.from}-${transition.trigger}-${transition.to}`}
                   variant="secondary"
                 >
-                  {transition.from} {"->"} {transition.trigger} {"->"} {transition.to}
+                  {translateLabel(transition.from)} {"->"} {translateLabel(transition.trigger)} {"->"}{" "}
+                  {translateLabel(transition.to)}
                 </Badge>
               ))
             )}
@@ -314,30 +322,30 @@ export function PublishPage({
         </div>
         {isRationaleRequired ? (
           <div className="rounded-[calc(var(--radius)+0.25rem)] border border-[var(--warning-foreground)]/20 bg-[var(--warning-soft)]/40 p-4">
-            <p className="font-medium text-[var(--foreground)]">Stale rationale</p>
+            <p className="font-medium text-[var(--foreground)]">stale 사유</p>
             <p className="mt-2 text-sm leading-6 text-[var(--muted-foreground)]">
-              This document can publish, but only after the user records why stale state is
-              acceptable for this PR.
+              이 문서는 발행할 수 있지만, 사용자가 이 PR에서 stale 상태를 왜 허용하는지
+              먼저 기록해야 합니다.
             </p>
             <div className="mt-4 grid gap-4">
               <div className="grid gap-2">
-                <p className="text-sm font-medium text-[var(--foreground)]">Summary</p>
+                <p className="text-sm font-medium text-[var(--foreground)]">요약</p>
                 <Input
                   onChange={(event) => onRationaleSummaryChange(event.target.value)}
-                  placeholder="Why is stale publish acceptable for this batch?"
+                  placeholder="이 배치에서 stale 발행을 허용하는 이유를 적어 주세요."
                   value={rationaleDraft.summary}
                 />
               </div>
               <div className="grid gap-2">
-                <p className="text-sm font-medium text-[var(--foreground)]">Details</p>
+                <p className="text-sm font-medium text-[var(--foreground)]">상세</p>
                 <Textarea
                   onChange={(event) => onRationaleDetailsChange(event.target.value)}
-                  placeholder="Capture the tradeoff, what is stale, and why the PR may still proceed."
+                  placeholder="어떤 항목이 stale 인지, 어떤 트레이드오프가 있는지, 왜 PR을 계속 진행할 수 있는지 기록하세요."
                   value={rationaleDraft.details}
                 />
               </div>
               <div className="grid gap-2">
-                <p className="text-sm font-medium text-[var(--foreground)]">Acknowledge reasons</p>
+                <p className="text-sm font-medium text-[var(--foreground)]">사유 확인</p>
                 <div className="flex flex-wrap gap-2">
                   {preflight.document.staleReasons.map((reason) => {
                     const selected = rationaleDraft.acknowledgedReasonCodes.includes(reason.code);
@@ -350,7 +358,7 @@ export function PublishPage({
                         type="button"
                         variant={selected ? "default" : "outline"}
                       >
-                        {reason.code}
+                        {translateReasonCode(reason.code)}
                       </Button>
                     );
                   })}
@@ -361,7 +369,7 @@ export function PublishPage({
         ) : null}
         {attemptPreview ? (
           <div className="rounded-[calc(var(--radius)+0.25rem)] border border-[var(--border)] bg-[var(--surface)] p-4">
-            <p className="font-medium text-[var(--foreground)]">Attempt preview</p>
+            <p className="font-medium text-[var(--foreground)]">시도 미리보기</p>
             <div className="mt-3 flex items-center gap-3">
               <Badge
                 variant={
@@ -372,18 +380,19 @@ export function PublishPage({
                       : "destructive"
                 }
               >
-                {attemptPreview.kind}
+                {translateLabel(attemptPreview.kind)}
               </Badge>
               <p className="text-sm text-[var(--muted-foreground)]">
-                {attemptPreview.transition.from} {"->"} {attemptPreview.transition.trigger} {"->"}{" "}
-                {attemptPreview.transition.to}
+                {translateLabel(attemptPreview.transition.from)} {"->"}{" "}
+                {translateLabel(attemptPreview.transition.trigger)} {"->"}{" "}
+                {translateLabel(attemptPreview.transition.to)}
               </p>
             </div>
           </div>
         ) : null}
         {executeDisabledReason ? (
           <div className="rounded-[calc(var(--radius)+0.25rem)] border border-[var(--warning-foreground)]/20 bg-[var(--warning-soft)]/40 p-4">
-            <p className="font-medium text-[var(--foreground)]">Execution gated</p>
+            <p className="font-medium text-[var(--foreground)]">실행 제한됨</p>
             <p className="mt-2 text-sm leading-6 text-[var(--muted-foreground)]">
               {executeDisabledReason}
             </p>
@@ -391,7 +400,7 @@ export function PublishPage({
         ) : null}
         {publishState.status === "failed" && publishState.error ? (
           <div className="rounded-[calc(var(--radius)+0.25rem)] border border-[var(--destructive)]/20 bg-[color:color-mix(in_srgb,var(--destructive)_8%,transparent)] p-4">
-            <p className="font-medium text-[var(--foreground)]">Publish failed</p>
+            <p className="font-medium text-[var(--foreground)]">발행 실패</p>
             <p className="mt-2 text-sm leading-6 text-[var(--muted-foreground)]">
               {publishState.error}
             </p>
@@ -399,13 +408,12 @@ export function PublishPage({
         ) : null}
         {publishState.status === "succeeded" && publishState.result ? (
           <div className="rounded-[calc(var(--radius)+0.25rem)] border border-[var(--success-foreground)]/20 bg-[var(--success-soft)]/40 p-4">
-            <p className="font-medium text-[var(--foreground)]">Publish succeeded</p>
+            <p className="font-medium text-[var(--foreground)]">발행 성공</p>
             <p className="mt-2 text-sm leading-6 text-[var(--muted-foreground)]">
-              Branch `{publishState.result.branchName}` prepared for repository{" "}
-              {publishState.result.repository}.
+              저장소 {publishState.result.repository}에 대해 브랜치 `{publishState.result.branchName}`가 준비되었습니다.
             </p>
             <p className="mt-2 text-sm leading-6 text-[var(--muted-foreground)]">
-              PR URL: {publishState.result.pullRequestUrl ?? "Not returned"}
+              PR URL: {publishState.result.pullRequestUrl ?? "반환되지 않음"}
             </p>
           </div>
         ) : null}

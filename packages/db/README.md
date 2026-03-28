@@ -38,6 +38,16 @@ pnpm db:generate
 pnpm db:migrate
 ```
 
+Drizzle Studio 실행:
+
+```bash
+pnpm db:studio
+```
+
+기본 접속 주소:
+
+- `http://127.0.0.1:4983`
+
 타입 체크:
 
 ```bash

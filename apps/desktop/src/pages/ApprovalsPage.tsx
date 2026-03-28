@@ -2,7 +2,12 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import type { WorkspaceShellModel } from "../hooks/useWorkspaceShell";
-import { EmptyStateCard, formatDateTime, statusBadgeVariant } from "./pageUtils";
+import {
+  EmptyStateCard,
+  formatDateTime,
+  statusBadgeVariant,
+  translateLabel,
+} from "./pageUtils";
 
 export function ApprovalsPage({
   app,
@@ -20,8 +25,8 @@ export function ApprovalsPage({
   if (!document) {
     return (
       <EmptyStateCard
-        description="Select a document to inspect app-native approval state."
-        title="No approval context"
+        description="앱 내부 승인 상태를 확인하려면 먼저 문서를 선택하세요."
+        title="승인 맥락 없음"
         actions={
           <div className="flex flex-wrap gap-2">
             <Button onClick={onGoToDocuments} size="sm" variant="secondary">
@@ -55,9 +60,9 @@ export function ApprovalsPage({
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Approval state</CardTitle>
+        <CardTitle>승인 상태</CardTitle>
         <CardDescription>
-          This page is only about who still needs to approve and why.
+          이 화면은 누가 아직 승인해야 하는지와 그 이유만 보여줍니다.
         </CardDescription>
       </CardHeader>
       <CardContent className="flex flex-col gap-3">
@@ -69,16 +74,16 @@ export function ApprovalsPage({
             <div className="min-w-0">
               <div className="flex flex-wrap items-center gap-2">
                 <p className="font-medium text-[var(--foreground)]">{approval.reviewerLabel}</p>
-                <Badge variant="outline">{approval.authority}</Badge>
-                <Badge variant="secondary">{approval.source}</Badge>
+                <Badge variant="outline">{translateLabel(approval.authority)}</Badge>
+                <Badge variant="secondary">{translateLabel(approval.source)}</Badge>
               </div>
               <p className="mt-2 text-sm text-[var(--muted-foreground)]">
-                Requested {formatDateTime(approval.lifecycle.requestedAt)} · decision{" "}
-                {approval.decision ?? "pending"}
+                요청 시각 {formatDateTime(approval.lifecycle.requestedAt)} · 결정{" "}
+                {translateLabel(approval.decision ?? "pending")}
               </p>
             </div>
             <Badge variant={statusBadgeVariant(approval.lifecycle.state)}>
-              {approval.lifecycle.state}
+              {translateLabel(approval.lifecycle.state)}
             </Badge>
           </div>
         ))}

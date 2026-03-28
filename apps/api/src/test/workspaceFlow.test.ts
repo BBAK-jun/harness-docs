@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { after, before, beforeEach, describe, test } from "node:test";
 import { createDatabaseContext } from "@harness-docs/db";
 import { createApiApp } from "@harness-docs/contracts";
+import { createPostgresAuthSessionSource } from "../data/postgresAuthSessionSource.ts";
 import { createPostgresWorkspaceSessionSource } from "../data/postgresWorkspaceSessionSource.ts";
 import { createPublishGovernanceAdapter } from "../domain/publishGovernanceAdapter.ts";
 import {
@@ -13,24 +14,68 @@ import {
 const { db, pool } = createDatabaseContext();
 const app = createApiApp({
   dataSource: createPostgresWorkspaceSessionSource(db),
+  authDataSource: createPostgresAuthSessionSource(db),
+  publishGovernanceAdapter: createPublishGovernanceAdapter(),
+});
+
+const oauthApp = createApiApp({
+  dataSource: createPostgresWorkspaceSessionSource(db),
+  authDataSource: createPostgresAuthSessionSource(db),
+  gitHubOAuthDataSource: {
+    async startAuthorization() {
+      return {
+        attemptId: "gha_test_attempt",
+        authorizationUrl: "https://github.com/login/oauth/authorize?client_id=test",
+        expiresAt: "2026-12-31T00:00:00.000Z",
+        pollIntervalMs: 1000,
+      };
+    },
+    async getAuthorizationAttempt(attemptId) {
+      if (attemptId !== "gha_test_attempt") {
+        return null;
+      }
+
+      return {
+        status: "pending",
+        expiresAt: "2026-12-31T00:00:00.000Z",
+        completedAt: null,
+        error: null,
+        session: null,
+      };
+    },
+    async completeAuthorization(input) {
+      return {
+        statusCode: input.error ? 400 : 200,
+        html: input.error
+          ? "<html><body>oauth failed</body></html>"
+          : "<html><body>oauth ok</body></html>",
+      };
+    },
+  },
   publishGovernanceAdapter: createPublishGovernanceAdapter(),
 });
 
 async function requestJson(
   path: string,
   init?: {
+    sessionToken?: string;
     method?: string;
     body?: unknown;
   },
 ) {
+  const headers: Record<string, string> = {};
+
+  if (init?.body != null) {
+    headers["content-type"] = "application/json";
+  }
+
+  if (init?.sessionToken) {
+    headers.authorization = `Bearer ${init.sessionToken}`;
+  }
+
   const response = await app.request(path, {
     method: init?.method,
-    headers:
-      init?.body != null
-        ? {
-            "content-type": "application/json",
-          }
-        : undefined,
+    headers: Object.keys(headers).length > 0 ? headers : undefined,
     body: init?.body != null ? JSON.stringify(init.body) : undefined,
   });
   const payload = (await response.json()) as {
@@ -60,9 +105,112 @@ after(async () => {
 });
 
 describe("workspace flow integration", () => {
+  test("serves OpenAPI JSON and Scalar HTML", async () => {
+    const openApiResponse = await app.request("/doc");
+    assert.equal(openApiResponse.status, 200);
+
+    const openApiPayload = (await openApiResponse.json()) as {
+      openapi: string;
+      info?: { title?: string };
+      paths?: Record<string, unknown>;
+    };
+
+    assert.equal(openApiPayload.info?.title, "Harness Docs API");
+    assert.ok(typeof openApiPayload.openapi === "string");
+    assert.ok(openApiPayload.paths?.["/api/session/bootstrap"]);
+    assert.ok(
+      openApiPayload.paths?.[
+        "/api/workspaces/{workspaceId}/documents/{documentId}/publish-preflight"
+      ],
+    );
+
+    const scalarResponse = await app.request("/scalar");
+    assert.equal(scalarResponse.status, 200);
+    assert.ok((scalarResponse.headers.get("content-type") ?? "").includes("text/html"));
+
+    const scalarHtml = await scalarResponse.text();
+    assert.match(scalarHtml, /Harness Docs API Reference/);
+    assert.ok(scalarHtml.includes("/doc"));
+
+    const oauthStartResponse = await oauthApp.request("/api/auth/github/start");
+    assert.equal(oauthStartResponse.status, 200);
+    assert.match(await oauthStartResponse.text(), /gha_test_attempt/);
+
+    const oauthAttemptResponse = await oauthApp.request(
+      "/api/auth/github/attempts/gha_test_attempt",
+    );
+    assert.equal(oauthAttemptResponse.status, 200);
+    assert.match(await oauthAttemptResponse.text(), /pending/);
+
+    const oauthCallbackResponse = await oauthApp.request(
+      "/api/auth/github/callback?state=gha_test_state&error=access_denied",
+    );
+    assert.equal(oauthCallbackResponse.status, 400);
+    assert.match(await oauthCallbackResponse.text(), /oauth failed/);
+  });
+
+  test("requires an app session for bootstrap and supports exchange + sign-out", async () => {
+    await assert.rejects(() => requestJson("/api/session/bootstrap"));
+
+    const exchanged = (await requestJson("/api/auth/session/exchange", {
+      method: "POST",
+      body: {
+        provider: "github_oauth",
+        identity: {
+          login: "dana-lead",
+          name: "Dana Lead",
+          email: "dana@example.com",
+        },
+      },
+    })) as {
+      status: string;
+      sessionToken: string;
+      user: { id: string };
+    };
+
+    assert.equal(exchanged.status, "authenticated");
+    assert.equal(exchanged.user.id, demoWorkspaceFixture.users.lead);
+
+    const restored = (await requestJson("/api/auth/session", {
+      sessionToken: exchanged.sessionToken,
+    })) as {
+      status: string;
+      user: { id: string } | null;
+    };
+
+    assert.equal(restored.status, "authenticated");
+    assert.equal(restored.user?.id, demoWorkspaceFixture.users.lead);
+
+    await requestJson("/api/auth/sign-out", {
+      method: "POST",
+      sessionToken: exchanged.sessionToken,
+    });
+
+    await assert.rejects(() =>
+      requestJson("/api/session/bootstrap", {
+        sessionToken: exchanged.sessionToken,
+      }),
+    );
+  });
+
   test("returns contracts-driven publish preflight for a document", async () => {
+    const exchanged = (await requestJson("/api/auth/session/exchange", {
+      method: "POST",
+      body: {
+        provider: "github_oauth",
+        identity: {
+          login: "dana-lead",
+          name: "Dana Lead",
+          email: "dana@example.com",
+        },
+      },
+    })) as { sessionToken: string };
+
     const result = (await requestJson(
       `/api/workspaces/${demoWorkspaceFixture.workspace.id}/documents/${demoWorkspaceFixture.documents.prd}/publish-preflight`,
+      {
+        sessionToken: exchanged.sessionToken,
+      },
     )) as {
       preflight: {
         currentState: string;
@@ -96,7 +244,21 @@ describe("workspace flow integration", () => {
   });
 
   test("bootstraps the workspace and executes document -> approval -> publish flow", async () => {
-    const bootstrap = (await requestJson("/api/session/bootstrap")) as {
+    const exchanged = (await requestJson("/api/auth/session/exchange", {
+      method: "POST",
+      body: {
+        provider: "github_oauth",
+        identity: {
+          login: "dana-lead",
+          name: "Dana Lead",
+          email: "dana@example.com",
+        },
+      },
+    })) as { sessionToken: string };
+
+    const bootstrap = (await requestJson("/api/session/bootstrap", {
+      sessionToken: exchanged.sessionToken,
+    })) as {
       user: { id: string };
       workspaces: Array<{ id: string }>;
       lastActiveWorkspaceId: string | null;
@@ -111,6 +273,7 @@ describe("workspace flow integration", () => {
       `/api/workspaces/${demoWorkspaceFixture.workspace.id}/documents`,
       {
         method: "POST",
+        sessionToken: exchanged.sessionToken,
         body: {
           title: "Approval and Publish Integration Test",
           type: "Technical Spec",
@@ -144,6 +307,7 @@ describe("workspace flow integration", () => {
       `/api/workspaces/${demoWorkspaceFixture.workspace.id}/documents/${documentId}/approvals/request`,
       {
         method: "POST",
+        sessionToken: exchanged.sessionToken,
         body: {
           authority: "lead",
           source: "workspace_membership",
@@ -178,6 +342,7 @@ describe("workspace flow integration", () => {
       `/api/workspaces/${demoWorkspaceFixture.workspace.id}/approvals/${approvalId}/decision`,
       {
         method: "POST",
+        sessionToken: exchanged.sessionToken,
         body: {
           decision: "approved",
           decisionByMembershipId: demoWorkspaceFixture.memberships.lead,
@@ -207,6 +372,7 @@ describe("workspace flow integration", () => {
       `/api/workspaces/${demoWorkspaceFixture.workspace.id}/publish-records`,
       {
         method: "POST",
+        sessionToken: exchanged.sessionToken,
         body: {
           source: {
             kind: "document",
@@ -236,6 +402,7 @@ describe("workspace flow integration", () => {
       `/api/workspaces/${demoWorkspaceFixture.workspace.id}/publish-records/${publishRecordId}/execute`,
       {
         method: "POST",
+        sessionToken: exchanged.sessionToken,
         body: {
           initiatedByMembershipId: demoWorkspaceFixture.memberships.lead,
           commitMessage: "docs: publish integration flow",

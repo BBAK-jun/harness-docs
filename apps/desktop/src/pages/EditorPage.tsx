@@ -13,8 +13,8 @@ export function EditorPage({ app }: AppPageProps) {
   if (!document) {
     return (
       <EmptyStateCard
-        description="Select a document from the library first."
-        title="No document selected"
+        description="먼저 문서 목록에서 문서를 선택하세요."
+        title="선택된 문서 없음"
         actions={
           <div className="flex flex-wrap gap-2">
             <Button onClick={() => app.handleAreaChange("documents")} size="sm" variant="secondary">
@@ -37,17 +37,16 @@ export function EditorPage({ app }: AppPageProps) {
           <div>
             <CardTitle>{document.title}</CardTitle>
             <CardDescription>
-              Edit one document at a time. Preview stays beside the source, and everything else is
-              removed.
+              한 번에 한 문서만 편집합니다. 원본 옆에 미리보기만 두고 나머지는 제거합니다.
             </CardDescription>
           </div>
           <div className="flex gap-2">
             {isLockedByActiveMember ? (
               <Button variant="outline" onClick={() => app.handleReleaseEditing(document)}>
-                Release lock
+                잠금 해제
               </Button>
             ) : (
-              <Button onClick={() => app.handleStartEditing(document)}>Start Editing</Button>
+              <Button onClick={() => app.handleStartEditing(document)}>편집 시작</Button>
             )}
           </div>
         </div>
@@ -58,8 +57,8 @@ export function EditorPage({ app }: AppPageProps) {
             <Lock className="size-4" />
             <span>
               {app.activeDocumentLock
-                ? `Lock ${app.activeDocumentLock.lifecycle.status} · last activity ${formatDateTime(app.activeDocumentLock.lastActivityAt)}`
-                : "No active lock on this document."}
+                ? `잠금 상태 ${app.activeDocumentLock.lifecycle.status} · 마지막 활동 ${formatDateTime(app.activeDocumentLock.lastActivityAt)}`
+                : "이 문서에는 현재 활성 잠금이 없습니다."}
             </span>
           </div>
           <Textarea
@@ -71,7 +70,7 @@ export function EditorPage({ app }: AppPageProps) {
         </div>
         <div className="rounded-[calc(var(--radius)+0.25rem)] border border-[var(--border)] bg-[var(--surface)] p-5">
           <div className="flex items-center justify-between gap-3">
-            <p className="text-sm font-medium text-[var(--foreground)]">Preview</p>
+            <p className="text-sm font-medium text-[var(--foreground)]">미리보기</p>
             <Badge variant="outline">Markdown</Badge>
           </div>
           <Separator className="my-4" />

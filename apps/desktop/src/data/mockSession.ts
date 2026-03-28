@@ -234,8 +234,8 @@ const horizonCommentThreads: DocumentCommentThread[] = [
       kind: "paragraph",
       blockId: "prd_problem",
       blockKind: "paragraph",
-      headingPath: ["Problem"],
-      excerpt: "The current checkout drops users during plan selection on desktop.",
+      headingPath: ["문제"],
+      excerpt: "현재 체크아웃은 데스크톱에서 요금제 선택 단계 중 사용자를 이탈시킵니다.",
       startOffset: 0,
       endOffset: 62,
     },
@@ -259,8 +259,8 @@ const horizonCommentThreads: DocumentCommentThread[] = [
       kind: "block",
       blockId: "tech_responsibilities",
       blockKind: "checklist_item",
-      headingPath: ["Responsibilities"],
-      excerpt: "Open a pull request in the mapped docs repository",
+      headingPath: ["책임"],
+      excerpt: "연결된 문서 저장소에서 풀 리퀘스트를 엽니다.",
       startOffset: null,
       endOffset: null,
     },
@@ -287,7 +287,7 @@ const horizonComments: DocumentComment[] = [
     threadId: "thread_horizon_prd_problem",
     authorMembershipId: "mbr_horizon_sam",
     bodyMarkdown:
-      "@mina We should connect this problem statement to the recovery flow so review can confirm where users drop.",
+      "@mina 사용자가 어디에서 이탈하는지 리뷰가 확인할 수 있도록 이 문제 진술을 복구 흐름과 연결해야 합니다.",
     kind: "comment",
     mentions: [
       {
@@ -330,8 +330,7 @@ const horizonComments: DocumentComment[] = [
     documentId: "doc_horizon_prd_checkout",
     threadId: "thread_horizon_prd_problem",
     authorMembershipId: "mbr_horizon_mina",
-    bodyMarkdown:
-      "Added the UX Flow link and kept the thread open until the updated review request is sent.",
+    bodyMarkdown: "UX 흐름 링크를 추가했고, 업데이트된 리뷰 요청이 보내질 때까지 스레드를 열어 두었습니다.",
     kind: "comment",
     mentions: [],
     lifecycle: {
@@ -346,7 +345,7 @@ const horizonComments: DocumentComment[] = [
     threadId: "thread_horizon_publish_links",
     authorMembershipId: "mbr_horizon_lee",
     bodyMarkdown:
-      "Confirmed the publish step still creates the PR after recording stale rationale, so this can resolve.",
+      "stale 사유를 기록한 뒤에도 발행 단계가 PR을 생성하는 것을 확인했으므로 이 스레드는 해결할 수 있습니다.",
     kind: "comment",
     mentions: [],
     lifecycle: {
@@ -671,7 +670,7 @@ const horizonDocuments: WorkspaceDocument[] = [
   {
     id: "doc_horizon_prd_checkout",
     workspaceId: "ws_horizon",
-    title: "Checkout Modernization",
+    title: "체크아웃 현대화",
     slug: "checkout-modernization",
     type: "PRD",
     ownerMembershipId: "mbr_horizon_mina",
@@ -679,20 +678,20 @@ const horizonDocuments: WorkspaceDocument[] = [
     templateId: "tpl_prd_system",
     aiDraftSuggestionIds: ["ai_horizon_prd_refine", "ai_horizon_prd_links"],
     commentThreadIds: ["thread_horizon_prd_problem"],
-    markdownSource: `# Checkout Modernization
+    markdownSource: `# 체크아웃 현대화
 
-## Problem
-The current checkout drops users during plan selection on desktop.
+## 문제
+현재 체크아웃은 데스크톱에서 요금제 선택 단계 중 사용자를 이탈시킵니다.
 
-    ## Goals
-- Improve conversion for annual plans
-- Reduce checkout support tickets`,
+    ## 목표
+- 연간 요금제 전환율을 높입니다
+- 체크아웃 관련 지원 티켓을 줄입니다`,
     mentions: [],
     linkedDocumentIds: ["doc_horizon_ux_checkout", "doc_horizon_tech_publish"],
     prePublication: createPrePublicationState({
       readiness: "attention_required",
       summary:
-        "The document is in the publish batch with stale rationale captured, but linked approval and review issues remain visible.",
+        "이 문서는 stale 사유가 기록된 상태로 발행 배치에 포함되어 있지만, 연결된 승인 및 리뷰 이슈가 아직 남아 있습니다.",
       evaluatedAt: "2026-03-27T08:47:00Z",
       evaluatedByMembershipId: "mbr_horizon_mina",
       publishRecordId: "pub_horizon_release_20260327",
@@ -811,7 +810,7 @@ The current checkout drops users during plan selection on desktop.
   {
     id: "doc_horizon_ux_checkout",
     workspaceId: "ws_horizon",
-    title: "Checkout Recovery Flow",
+    title: "체크아웃 복구 흐름",
     slug: "checkout-recovery-flow",
     type: "UX Flow",
     ownerMembershipId: "mbr_horizon_lee",
@@ -819,21 +818,21 @@ The current checkout drops users during plan selection on desktop.
     templateId: "tpl_ux_flow_system",
     aiDraftSuggestionIds: [],
     commentThreadIds: [],
-    markdownSource: `# Checkout Recovery Flow
+    markdownSource: `# 체크아웃 복구 흐름
 
-## Entry Points
-- Payment failure
-- Session expiration
+## 진입점
+- 결제 실패
+- 세션 만료
 
-## Recovery Moments
-1. Re-authenticate with GitHub
-2. Restore workspace context
-3. Return to the interrupted step`,
+## 복구 단계
+1. GitHub로 다시 인증
+2. 워크스페이스 문맥 복원
+3. 중단된 단계로 복귀`,
     mentions: [],
     linkedDocumentIds: ["doc_horizon_prd_checkout"],
     prePublication: createPrePublicationState({
       readiness: "attention_required",
-      summary: "The UX flow is scoped for publish, but a reviewer approval is still pending.",
+      summary: "이 UX 흐름은 발행 범위에 포함되지만, 리뷰어 승인이 아직 대기 중입니다.",
       evaluatedAt: "2026-03-27T08:47:00Z",
       evaluatedByMembershipId: "mbr_horizon_mina",
       publishRecordId: "pub_horizon_release_20260327",
@@ -909,7 +908,7 @@ The current checkout drops users during plan selection on desktop.
   {
     id: "doc_horizon_tech_publish",
     workspaceId: "ws_horizon",
-    title: "Publish Pipeline Foundation",
+    title: "발행 파이프라인 기반",
     slug: "publish-pipeline-foundation",
     type: "Technical Spec",
     ownerMembershipId: "mbr_horizon_lee",
@@ -917,18 +916,18 @@ The current checkout drops users during plan selection on desktop.
     templateId: "tpl_tech_spec_system",
     aiDraftSuggestionIds: ["ai_horizon_publish_memo"],
     commentThreadIds: ["thread_horizon_publish_links"],
-    markdownSource: `# Publish Pipeline Foundation
+    markdownSource: `# 발행 파이프라인 기반
 
-## Responsibilities
-- Create a publish branch
-- Generate the commit payload from app state
-- Open a pull request in the mapped docs repository`,
+## 책임
+- 발행 브랜치 생성
+- 앱 상태에서 커밋 페이로드 생성
+- 연결된 문서 저장소에서 풀 리퀘스트 열기`,
     mentions: [],
     linkedDocumentIds: ["doc_horizon_prd_checkout", "doc_horizon_policy_rollout"],
     prePublication: createPrePublicationState({
       readiness: "ready",
       summary:
-        "The technical spec is current, approved, and ready to enter GitHub publish automation.",
+        "이 기술 명세는 최신이며 승인되었고, GitHub 발행 자동화에 바로 들어갈 준비가 되어 있습니다.",
       evaluatedAt: "2026-03-27T08:47:00Z",
       evaluatedByMembershipId: "mbr_horizon_mina",
       publishRecordId: "pub_horizon_release_20260327",
@@ -1191,7 +1190,7 @@ const horizonPublishRecords: PublishRecord[] = [
         workspaceId: "ws_horizon",
         documentId: null,
         templateId: null,
-        label: "Horizon workspace publish batch",
+        label: "Horizon 워크스페이스 발행 배치",
         changeSummary:
           "Publishes the checkout modernization document set from the app-native workspace source of truth.",
       },
@@ -1230,8 +1229,8 @@ const horizonPublishRecords: PublishRecord[] = [
       stages: [
         {
           id: "scope",
-          title: "Select publish scope",
-          description: "Confirm which documents and templates belong in this publish batch.",
+          title: "발행 범위 선택",
+          description: "이 발행 배치에 포함될 문서와 템플릿을 확인합니다.",
           status: "complete",
           primaryAction: "Review included artifacts",
           guidance: [
@@ -1241,9 +1240,9 @@ const horizonPublishRecords: PublishRecord[] = [
         },
         {
           id: "freshness",
-          title: "Evaluate stale state",
+          title: "stale 상태 평가",
           description:
-            "Review linked invalidations, determine current versus stale status, and record rationale when stale publish remains allowed.",
+            "연결된 무효화를 검토하고 최신/오래됨 상태를 판단하며, stale 발행이 허용될 때는 사유를 기록합니다.",
           status: "complete",
           primaryAction: "Inspect invalidations",
           guidance: [
@@ -1253,9 +1252,9 @@ const horizonPublishRecords: PublishRecord[] = [
         },
         {
           id: "approvals",
-          title: "Capture approval snapshot",
+          title: "승인 스냅샷 기록",
           description:
-            "Freeze app-native approval state, including unresolved or restored decisions, before GitHub publication starts.",
+            "GitHub 발행을 시작하기 전에 미해결/복원된 결정을 포함한 앱 내부 승인 상태를 고정합니다.",
           status: "complete",
           primaryAction: "Audit approvers",
           guidance: [
@@ -1265,9 +1264,9 @@ const horizonPublishRecords: PublishRecord[] = [
         },
         {
           id: "memo",
-          title: "Draft publish memo",
+          title: "발행 메모 초안 작성",
           description:
-            "Prepare the rationale, affected documents, and notification summary that will accompany the branch and pull request.",
+            "브랜치와 풀 리퀘스트에 함께 기록될 사유, 영향 문서, 알림 요약을 준비합니다.",
           status: "attention",
           primaryAction: "Review memo draft",
           guidance: [
@@ -1277,9 +1276,9 @@ const horizonPublishRecords: PublishRecord[] = [
         },
         {
           id: "github",
-          title: "Create branch, commit, and PR",
+          title: "브랜치, 커밋, PR 생성",
           description:
-            "Publish automation executes against the mapped docs repository after the app-side review state is captured.",
+            "앱 쪽 리뷰 상태를 기록한 뒤 연결된 문서 저장소를 대상으로 발행 자동화를 실행합니다.",
           status: "ready",
           primaryAction: "Start GitHub publish",
           guidance: [
@@ -1293,7 +1292,7 @@ const horizonPublishRecords: PublishRecord[] = [
           id: "pub_artifact_horizon_prd",
           kind: "document",
           targetId: "doc_horizon_prd_checkout",
-          label: "Checkout Modernization",
+          label: "체크아웃 현대화",
           documentType: "PRD",
           changeSummary:
             "Updated problem framing and linked stale approval context for publish review.",
@@ -1336,7 +1335,7 @@ const horizonPublishRecords: PublishRecord[] = [
           id: "pub_artifact_horizon_ux",
           kind: "document",
           targetId: "doc_horizon_ux_checkout",
-          label: "Checkout Recovery Flow",
+          label: "체크아웃 복구 흐름",
           documentType: "UX Flow",
           changeSummary: "Carries linked UX updates triggered by the PRD review thread.",
           linkedDocumentIds: ["doc_horizon_prd_checkout"],
@@ -1364,7 +1363,7 @@ const horizonPublishRecords: PublishRecord[] = [
           id: "pub_artifact_horizon_publish",
           kind: "document",
           targetId: "doc_horizon_tech_publish",
-          label: "Publish Pipeline Foundation",
+          label: "발행 파이프라인 기반",
           documentType: "Technical Spec",
           changeSummary: "Defines the branch, commit, and pull request automation path.",
           linkedDocumentIds: ["doc_horizon_prd_checkout", "doc_horizon_policy_rollout"],
@@ -1656,7 +1655,7 @@ const northstarDocuments: WorkspaceDocument[] = [
   {
     id: "doc_northstar_policy_release",
     workspaceId: "ws_northstar",
-    title: "Release Readiness Policy",
+    title: "릴리즈 준비도 정책",
     slug: "release-readiness-policy",
     type: "Policy/Decision",
     ownerMembershipId: "mbr_northstar_alex",
@@ -1664,21 +1663,21 @@ const northstarDocuments: WorkspaceDocument[] = [
     templateId: "tpl_policy_system",
     aiDraftSuggestionIds: [],
     commentThreadIds: [],
-    markdownSource: `# Release Readiness Policy
+    markdownSource: `# 릴리즈 준비도 정책
 
-## Current Position
-Publish remains allowed even when linked approvals are stale.
+## 현재 입장
+연결된 승인이 stale 이어도 발행은 허용됩니다.
 
-## Required Capture
-- Rationale
-- Unresolved invalidations
-- Affected approvers`,
+## 필수 기록
+- 사유
+- 미해결 무효화
+- 영향받는 승인자`,
     mentions: [],
     linkedDocumentIds: ["doc_northstar_prd_release", "doc_northstar_tech_dependencies"],
     prePublication: createPrePublicationState({
       readiness: "ready",
       summary:
-        "The release policy is current and can serve as a clean publish-time authority source.",
+        "릴리즈 정책은 최신 상태이며 발행 시점의 기준 권한 문서로 사용할 수 있습니다.",
       evaluatedAt: "2026-03-27T05:40:00Z",
       evaluatedByMembershipId: "mbr_northstar_alex",
       publishRecordId: null,
@@ -1729,7 +1728,7 @@ Publish remains allowed even when linked approvals are stale.
   {
     id: "doc_northstar_prd_release",
     workspaceId: "ws_northstar",
-    title: "Release Readiness Hub",
+    title: "릴리즈 준비도 허브",
     slug: "release-readiness-hub",
     type: "PRD",
     ownerMembershipId: "mbr_northstar_mina",
@@ -1737,16 +1736,16 @@ Publish remains allowed even when linked approvals are stale.
     templateId: "tpl_prd_system",
     aiDraftSuggestionIds: ["ai_northstar_prd_approvers"],
     commentThreadIds: ["thread_northstar_prd_scope"],
-    markdownSource: `# Release Readiness Hub
+    markdownSource: `# 릴리즈 준비도 허브
 
-## Scope
-Coordinate approvals, stale rationale, and final publish decisions across linked docs.`,
+## 범위
+연결 문서 전반의 승인, stale 사유, 최종 발행 결정을 조율합니다.`,
     mentions: [],
     linkedDocumentIds: ["doc_northstar_policy_release"],
     prePublication: createPrePublicationState({
       readiness: "blocked",
       summary:
-        "The PRD is stale and lacks the required rationale capture, so it is not yet eligible for GitHub publication.",
+        "이 PRD는 stale 상태이며 필요한 사유 기록이 없어 아직 GitHub 발행 대상이 아닙니다.",
       evaluatedAt: "2026-03-27T05:35:00Z",
       evaluatedByMembershipId: "mbr_northstar_alex",
       publishRecordId: "pub_northstar_release_20260327",
@@ -1851,7 +1850,7 @@ Coordinate approvals, stale rationale, and final publish decisions across linked
   {
     id: "doc_northstar_tech_dependencies",
     workspaceId: "ws_northstar",
-    title: "Dependency Review Spec",
+    title: "의존성 검토 명세",
     slug: "dependency-review-spec",
     type: "Technical Spec",
     ownerMembershipId: "mbr_northstar_alex",
@@ -1859,16 +1858,16 @@ Coordinate approvals, stale rationale, and final publish decisions across linked
     templateId: "tpl_tech_spec_system",
     aiDraftSuggestionIds: [],
     commentThreadIds: [],
-    markdownSource: `# Dependency Review Spec
+    markdownSource: `# 의존성 검토 명세
 
-## Goal
-Represent linked document invalidations and outbound webhook notifications in the client.`,
+## 목표
+클라이언트에서 연결 문서 무효화와 외부 웹훅 알림을 표현합니다.`,
     mentions: [],
     linkedDocumentIds: ["doc_northstar_policy_release"],
     prePublication: createPrePublicationState({
       readiness: "blocked",
       summary:
-        "The spec has not entered review and still needs a fresh review request before it can participate in publish automation.",
+        "이 명세는 아직 리뷰에 들어가지 않았으며, 발행 자동화에 포함되기 전에 새로운 리뷰 요청이 필요합니다.",
       evaluatedAt: "2026-03-27T05:30:00Z",
       evaluatedByMembershipId: "mbr_northstar_alex",
       publishRecordId: null,
@@ -2108,7 +2107,7 @@ const northstarPublishRecords: PublishRecord[] = [
         workspaceId: "ws_northstar",
         documentId: null,
         templateId: null,
-        label: "Northstar workspace publish batch",
+        label: "Northstar 워크스페이스 발행 배치",
         changeSummary:
           "Publishes release-readiness documents and policy template changes from the workspace source of truth.",
       },
@@ -2158,9 +2157,9 @@ const northstarPublishRecords: PublishRecord[] = [
       stages: [
         {
           id: "scope",
-          title: "Select publish scope",
+          title: "발행 범위 선택",
           description:
-            "Bundle changed documents and customized templates for a single workspace publish.",
+            "변경된 문서와 맞춤 템플릿을 하나의 워크스페이스 발행 배치로 묶습니다.",
           status: "complete",
           primaryAction: "Review publish set",
           guidance: [
@@ -2170,9 +2169,9 @@ const northstarPublishRecords: PublishRecord[] = [
         },
         {
           id: "freshness",
-          title: "Evaluate stale state",
+          title: "stale 상태 평가",
           description:
-            "Check linked policy invalidations and identify which artifacts require stale rationale before publish.",
+            "연결된 정책 무효화를 확인하고 발행 전에 stale 사유가 필요한 아티팩트를 식별합니다.",
           status: "complete",
           primaryAction: "Review stale artifacts",
           guidance: [
@@ -2182,9 +2181,9 @@ const northstarPublishRecords: PublishRecord[] = [
         },
         {
           id: "approvals",
-          title: "Capture approval snapshot",
+          title: "승인 스냅샷 기록",
           description:
-            "Record pending lead approval and any unresolved invalidations before handing off to GitHub automation.",
+            "GitHub 자동화로 넘기기 전에 대기 중인 리드 승인과 미해결 무효화를 기록합니다.",
           status: "attention",
           primaryAction: "Freeze approval state",
           guidance: [
@@ -2194,9 +2193,9 @@ const northstarPublishRecords: PublishRecord[] = [
         },
         {
           id: "memo",
-          title: "Draft publish memo",
+          title: "발행 메모 초안 작성",
           description:
-            "Summarize stale rationale, linked document impact, and notification recipients for the publish event.",
+            "발행 이벤트를 위한 stale 사유, 연결 문서 영향, 알림 수신자를 요약합니다.",
           status: "ready",
           primaryAction: "Write publish memo",
           guidance: [
@@ -2206,9 +2205,9 @@ const northstarPublishRecords: PublishRecord[] = [
         },
         {
           id: "github",
-          title: "Create branch, commit, and PR",
+          title: "브랜치, 커밋, PR 생성",
           description:
-            "After the approval snapshot is captured, the publish action creates the repo branch, commit, and pull request.",
+            "승인 스냅샷을 기록한 뒤 발행 액션이 저장소 브랜치, 커밋, 풀 리퀘스트를 생성합니다.",
           status: "pending",
           primaryAction: "Await publish readiness",
           guidance: [
@@ -2222,7 +2221,7 @@ const northstarPublishRecords: PublishRecord[] = [
           id: "pub_artifact_northstar_prd",
           kind: "document",
           targetId: "doc_northstar_prd_release",
-          label: "Release Readiness Coverage",
+          label: "릴리즈 준비도 범위",
           documentType: "PRD",
           changeSummary: "Tracks release-scope updates now affected by policy invalidation.",
           linkedDocumentIds: ["doc_northstar_policy_release", "doc_northstar_tech_dependencies"],
@@ -2250,7 +2249,7 @@ const northstarPublishRecords: PublishRecord[] = [
           id: "pub_artifact_northstar_tech",
           kind: "document",
           targetId: "doc_northstar_tech_dependencies",
-          label: "Dependency Notification Routing",
+          label: "의존성 알림 라우팅",
           documentType: "Technical Spec",
           changeSummary:
             "Captures outbound webhook handling and linked dependency invalidation coverage.",
@@ -2279,7 +2278,7 @@ const northstarPublishRecords: PublishRecord[] = [
           id: "pub_artifact_northstar_template",
           kind: "template",
           targetId: "tpl_policy_system",
-          label: "Release Governance Policy template",
+          label: "릴리즈 거버넌스 정책 템플릿",
           documentType: "Policy/Decision",
           changeSummary: "Workspace template v2 adds explicit stale-publish capture requirements.",
           linkedDocumentIds: ["doc_northstar_policy_release"],
@@ -2380,7 +2379,7 @@ export const mockWorkspaceGraphs: WorkspaceGraph[] = [
       name: "Horizon",
       slug: "horizon",
       description:
-        "Core product workspace covering roadmap PRDs, UX flows, technical specs, and policy decisions.",
+        "로드맵 PRD, UX 흐름, 기술 명세, 정책 결정을 다루는 핵심 제품 워크스페이스입니다.",
       docsRepository: {
         owner: "harness-docs",
         name: "horizon-docs",
@@ -2421,7 +2420,7 @@ export const mockWorkspaceGraphs: WorkspaceGraph[] = [
       name: "Northstar",
       slug: "northstar",
       description:
-        "Expansion workspace focused on approvals, linked doc reviews, and release policy decisions.",
+        "승인, 연결 문서 리뷰, 릴리즈 정책 결정을 중심으로 확장 작업을 다루는 워크스페이스입니다.",
       docsRepository: {
         owner: "harness-docs",
         name: "northstar-docs",

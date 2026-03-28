@@ -51,6 +51,53 @@ Rust 쪽 체크:
 pnpm --filter @harness-docs/desktop check:rust
 ```
 
+## 인증과 배포 연결
+
+현재 `apps/desktop`은 Tauri 런타임과 browser 런타임 모두 API가 소유하는 GitHub OAuth와 앱 세션을 사용합니다.
+
+클라이언트가 알아야 하는 핵심 환경 변수:
+
+- `VITE_HARNESS_API_BASE_URL`
+
+예시:
+
+- local: `VITE_HARNESS_API_BASE_URL=http://127.0.0.1:4020`
+- staging: `VITE_HARNESS_API_BASE_URL=https://api-staging.example.com`
+- prod: `VITE_HARNESS_API_BASE_URL=https://api.example.com`
+
+브라우저와 데스크톱 모두 이 값을 기준으로 다음 흐름을 사용합니다.
+
+1. `/api/auth/github/start` 호출
+2. GitHub authorize 페이지로 이동
+3. API callback 완료
+4. 앱 세션 토큰 저장
+5. `/api/session/bootstrap` 호출
+
+운영 시 capability 차이:
+
+- browser: OAuth 로그인, 세션 bootstrap, 조회 중심 기능
+- tauri: 위 기능 + 로컬 publish 실행 + 로컬 AI task 실행
+
+즉 로그인과 세션은 공통이지만, 로컬 명령 실행이 필요한 기능은 Tauri 전용입니다.
+
+## 권장 배포 조합
+
+현재 구조에서 browser 앱은 정적 호스팅에 배포하고, API는 별도 Node 런타임에 배포하는 구성이 가장 단순합니다.
+
+권장 예시:
+
+- browser app: Cloudflare Pages
+- API: Render 또는 Fly.io
+- DNS/SSL: Cloudflare
+- DB: managed PostgreSQL
+
+배포 체크리스트:
+
+1. browser build env에 `VITE_HARNESS_API_BASE_URL` 설정
+2. API가 공개 HTTPS origin으로 배포되었는지 확인
+3. GitHub OAuth callback URL이 API origin과 일치하는지 확인
+4. 로그인 후 `/api/session/bootstrap`이 정상 응답하는지 확인
+
 ## 설계 원칙
 
 - 이 패키지는 사용자 경험과 화면 상태를 담당합니다.

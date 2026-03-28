@@ -20,6 +20,9 @@ import {
 import type {
   BootstrapSessionDto,
   SessionUserDto,
+  WorkspaceCreateRequestDto,
+  WorkspaceInvitationAcceptRequestDto,
+  WorkspaceOnboardingEnvelopeDto,
   WorkspaceSessionDataSource,
   WorkspaceSummaryDto,
 } from "@harness-docs/contracts";
@@ -737,8 +740,15 @@ export function createPostgresWorkspaceSessionSource(
     };
   }
 
-  async function getBootstrapSessionSnapshot() {
-    const [userRow] = await db.select().from(users).orderBy(users.createdAt).limit(1);
+  async function getBootstrapSessionSnapshot(viewerUserId?: string) {
+    const [userRow] = viewerUserId
+      ? await db.select().from(users).where(eq(users.id, viewerUserId)).limit(1)
+      : await db.select().from(users).orderBy(users.createdAt).limit(1);
+
+    if (!userRow) {
+      return null;
+    }
+
     const sessionUser = mapUser(userRow);
     const { graphs, membershipByWorkspaceId } = await listWorkspaceGraphsForUser(sessionUser.id);
     const workspaceSummaries = graphs.map((graph) =>
@@ -765,7 +775,7 @@ export function createPostgresWorkspaceSessionSource(
       getBootstrapSessionSnapshot(),
     ]);
 
-    if (!graph) {
+    if (!graph || !bootstrap) {
       return null;
     }
 
@@ -778,6 +788,32 @@ export function createPostgresWorkspaceSessionSource(
     return {
       workspace,
       workspaceGraph: graph,
+      lastActiveWorkspaceId: bootstrap.lastActiveWorkspaceId,
+    };
+  }
+
+  async function buildWorkspaceOnboardingEnvelope(
+    workspaceId: string,
+    viewerUserId: string,
+  ): Promise<WorkspaceOnboardingEnvelopeDto | null> {
+    const [graph, bootstrap] = await Promise.all([
+      buildWorkspaceGraph(workspaceId),
+      getBootstrapSessionSnapshot(viewerUserId),
+    ]);
+
+    if (!graph || !bootstrap) {
+      return null;
+    }
+
+    const workspace = bootstrap.workspaces.find((entry) => entry.id === workspaceId);
+
+    if (!workspace) {
+      return null;
+    }
+
+    return {
+      workspace,
+      bootstrap,
       lastActiveWorkspaceId: bootstrap.lastActiveWorkspaceId,
     };
   }
@@ -1186,8 +1222,8 @@ export function createPostgresWorkspaceSessionSource(
   }
 
   return {
-    async getBootstrapSession() {
-      return getBootstrapSessionSnapshot();
+    async getBootstrapSession(viewerUserId) {
+      return getBootstrapSessionSnapshot(viewerUserId);
     },
     async getWorkspaceGraph(workspaceId) {
       return buildWorkspaceGraph(workspaceId);
@@ -2006,6 +2042,153 @@ export function createPostgresWorkspaceSessionSource(
         ...executionMeta,
         committedFiles: buildCommittedFilesFromGraph(publishRecord, graph),
       });
+    },
+    async createWorkspace(input: WorkspaceCreateRequestDto) {
+      const viewer = await db.select().from(users).orderBy(users.createdAt).limit(1).then((rows) => rows[0] ?? null);
+
+      if (!viewer) {
+        return null;
+      }
+
+      const timestamp = nowIso();
+      const workspaceId = buildId("ws");
+      const membershipId = buildId("mbr");
+      const slugBase = slugify(input.slug || input.name) || workspaceId;
+      let workspaceSlug = slugBase;
+      let suffix = 1;
+
+      while (true) {
+        const existing = await db
+          .select({ id: workspaces.id })
+          .from(workspaces)
+          .where(eq(workspaces.slug, workspaceSlug))
+          .limit(1);
+
+        if (existing.length === 0) {
+          break;
+        }
+
+        suffix += 1;
+        workspaceSlug = `${slugBase}-${suffix}`;
+      }
+
+      await db.transaction(async (tx) => {
+        await tx.insert(workspaces).values({
+          id: workspaceId,
+          slug: workspaceSlug,
+          name: input.name,
+          description: input.description,
+          status: "active",
+          docsRepoOwner: input.docsRepoOwner ?? viewer.githubLogin,
+          docsRepoName: input.docsRepoName ?? `${workspaceSlug}-docs`,
+          docsRepoDefaultBranch: input.docsRepoDefaultBranch,
+          githubInstallationId: null,
+          createdByUserId: viewer.id,
+          leadMembershipId: membershipId,
+          provisionedAt: toDate(timestamp),
+          lastOpenedAt: toDate(timestamp),
+          createdAt: toDate(timestamp),
+          updatedAt: toDate(timestamp),
+        });
+
+        await tx.insert(workspaceMemberships).values({
+          id: membershipId,
+          workspaceId,
+          userId: viewer.id,
+          role: "Lead",
+          status: "active",
+          invitedByUserId: viewer.id,
+          notificationWebhookUrl: null,
+          invitedAt: toDate(timestamp),
+          joinedAt: toDate(timestamp),
+          lastActiveAt: toDate(timestamp),
+          removedAt: null,
+          createdAt: toDate(timestamp),
+          updatedAt: toDate(timestamp),
+        });
+
+        await tx
+          .update(workspaces)
+          .set({
+            leadMembershipId: membershipId,
+            updatedAt: toDate(timestamp),
+          })
+          .where(eq(workspaces.id, workspaceId));
+      });
+
+      return buildWorkspaceOnboardingEnvelope(workspaceId, viewer.id);
+    },
+    async acceptWorkspaceInvitation(input: WorkspaceInvitationAcceptRequestDto) {
+      const viewer = await db.select().from(users).orderBy(users.createdAt).limit(1).then((rows) => rows[0] ?? null);
+
+      if (!viewer) {
+        return null;
+      }
+
+      const timestamp = nowIso();
+      const workspaceExists = await db
+        .select({ id: workspaces.id })
+        .from(workspaces)
+        .where(eq(workspaces.id, input.workspaceId))
+        .limit(1)
+        .then((rows) => rows[0] ?? null);
+
+      if (!workspaceExists) {
+        return null;
+      }
+
+      await db.transaction(async (tx) => {
+        const membership = await tx
+          .select()
+          .from(workspaceMemberships)
+          .where(
+            and(
+              eq(workspaceMemberships.workspaceId, input.workspaceId),
+              eq(workspaceMemberships.userId, viewer.id),
+            ),
+          )
+          .limit(1)
+          .then((rows: MembershipRow[]) => rows[0] ?? null);
+
+        if (membership) {
+          await tx
+            .update(workspaceMemberships)
+            .set({
+              status: "active",
+              joinedAt: membership.joinedAt ?? toDate(timestamp),
+              lastActiveAt: toDate(timestamp),
+              removedAt: null,
+              updatedAt: toDate(timestamp),
+            })
+            .where(eq(workspaceMemberships.id, membership.id));
+        } else {
+          await tx.insert(workspaceMemberships).values({
+            id: buildId("mbr"),
+            workspaceId: input.workspaceId,
+            userId: viewer.id,
+            role: "Editor",
+            status: "active",
+            invitedByUserId: viewer.id,
+            notificationWebhookUrl: null,
+            invitedAt: toDate(timestamp),
+            joinedAt: toDate(timestamp),
+            lastActiveAt: toDate(timestamp),
+            removedAt: null,
+            createdAt: toDate(timestamp),
+            updatedAt: toDate(timestamp),
+          });
+        }
+
+        await tx
+          .update(workspaces)
+          .set({
+            lastOpenedAt: toDate(timestamp),
+            updatedAt: toDate(timestamp),
+          })
+          .where(eq(workspaces.id, input.workspaceId));
+      });
+
+      return buildWorkspaceOnboardingEnvelope(input.workspaceId, viewer.id);
     },
   };
 }
