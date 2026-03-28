@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useRouter } from "@tanstack/react-router";
+import { defaultAppPreferences } from "../lib/appPreferences";
 import { desktopMutationKeys, desktopQueryKeys } from "../queries/queryKeys";
 import { useHarnessDocsServices } from "../services/HarnessDocsServicesProvider";
 import type {
@@ -8,9 +10,7 @@ import type {
   AuthenticationSessionSnapshot,
   DesktopShellMetadata,
 } from "../services/contracts";
-import { fallbackAppPreferences } from "../services/mockHarnessDocsServices";
 import type { FileRouteTypes } from "../routeTree.gen";
-import { useRouter } from "@tanstack/react-router";
 
 export interface HarnessDocsBootstrapData {
   desktopShell: DesktopShellMetadata | null;
@@ -41,8 +41,9 @@ export function useAppBootstrap() {
   const bootstrapQuery = useQuery({
     queryKey: desktopQueryKeys.bootstrap(),
     queryFn: () => loadBootstrapState(services),
+    throwOnError: true,
   });
-  const [preferences, setPreferences] = useState<AppPreferences>(fallbackAppPreferences);
+  const [preferences, setPreferences] = useState<AppPreferences>(defaultAppPreferences);
 
   useEffect(() => {
     if (!bootstrapQuery.data) {

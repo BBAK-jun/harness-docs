@@ -2,7 +2,7 @@ import { ArrowRight, CheckCircle2, Clock3, MessageSquareMore } from "lucide-reac
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import type { WorkspaceShellModel } from "../hooks/useWorkspaceShell";
-import { getMemberSummaryByMembershipId } from "../view-models/mockAdapters";
+import { getMemberSummaryByMembershipId } from "../view-models/memberSummaries";
 import {
   EmptyStateCard,
   formatDateTime,

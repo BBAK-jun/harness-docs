@@ -325,5 +325,3 @@ export function createTauriHarnessDocsServices(
     },
   };
 }
-
-export const fallbackAppPreferences = defaultAppPreferences;

@@ -1,5 +1,5 @@
 import type { WorkspaceDocument, WorkspaceGraph } from "../types";
-import { getMemberSummaryByMembershipId, type MemberSummaryView } from "./mockAdapters";
+import { getMemberSummaryByMembershipId, type MemberSummaryView } from "./memberSummaries";
 
 export interface DocumentListItemView {
   id: string;

@@ -1,5 +1,5 @@
 import type { AITaskEntryPoint, WorkspaceGraph, WorkspaceSummary } from "../types";
-import { getMemberSummaryByMembershipId, listWorkspaceMembers, type MemberSummaryView } from "./mockAdapters";
+import { getMemberSummaryByMembershipId, listWorkspaceMembers, type MemberSummaryView } from "./memberSummaries";
 
 export interface DashboardStatCard {
   label: string;
