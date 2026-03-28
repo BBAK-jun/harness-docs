@@ -13,9 +13,9 @@ const cardGridColumnsClassName: Record<GridColumnCount, string> = {
 };
 
 export function getSplitGridClassName(columns: GridColumnCount) {
-  return `grid gap-6 ${splitGridColumnsClassName[columns]}`;
+  return `grid h-full min-h-full auto-rows-fr items-stretch gap-6 ${splitGridColumnsClassName[columns]}`;
 }
 
 export function getCardGridClassName(columns: GridColumnCount) {
-  return `grid gap-4 ${cardGridColumnsClassName[columns]}`;
+  return `grid auto-rows-fr items-stretch gap-4 ${cardGridColumnsClassName[columns]}`;
 }

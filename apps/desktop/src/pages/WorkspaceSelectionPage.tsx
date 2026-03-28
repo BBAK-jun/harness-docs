@@ -35,20 +35,20 @@ export function WorkspaceSelectionPage({
   withinShell?: boolean;
 }) {
   const rootClassName = withinShell
-    ? "flex flex-col gap-6"
+    ? "flex h-full min-h-full flex-col gap-6"
     : "app-frame min-h-screen p-6";
   const contentClassName = withinShell
     ? getSplitGridClassName(emptyStateColumns)
     : `mx-auto min-h-[calc(100vh-3rem)] max-w-6xl items-center ${getSplitGridClassName(emptyStateColumns)}`;
   const listRootClassName = withinShell
-    ? "flex flex-col gap-6"
+    ? "flex h-full min-h-full flex-col gap-6"
     : "mx-auto flex min-h-[calc(100vh-3rem)] max-w-6xl flex-col gap-6";
 
   if (app.workspaces.length === 0) {
     return (
       <main className={rootClassName}>
         <div className={contentClassName}>
-          <section className="rounded-[calc(var(--radius)+0.75rem)] border border-[var(--border)] bg-[rgba(255,255,255,0.62)] p-6 shadow-[0_30px_120px_-80px_rgba(15,23,42,0.5)] backdrop-blur-xl sm:p-8">
+          <section className="h-full rounded-[calc(var(--radius)+0.75rem)] border border-[var(--border)] bg-[rgba(255,255,255,0.62)] p-6 shadow-[0_30px_120px_-80px_rgba(15,23,42,0.5)] backdrop-blur-xl sm:p-8">
             <Badge className="w-fit" variant="warning">
               워크스페이스 접근
             </Badge>
@@ -62,7 +62,7 @@ export function WorkspaceSelectionPage({
             </p>
           </section>
 
-          <Card className="overflow-hidden">
+          <Card className="h-full overflow-hidden">
             <CardHeader className="border-b border-[var(--border)]">
               <CardTitle>다음 단계</CardTitle>
               <CardDescription className="text-base">
@@ -124,7 +124,7 @@ export function WorkspaceSelectionPage({
 
         <section className={getCardGridClassName(workspaceCardColumns)}>
           {app.workspaces.map((workspace) => (
-            <Card key={workspace.id}>
+            <Card className="h-full" key={workspace.id}>
               <CardHeader className="border-b border-[var(--border)]">
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex flex-col gap-2">

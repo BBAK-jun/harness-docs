@@ -60,7 +60,7 @@ export function WorkspaceCreatePage({
     docsRepoDefaultBranch.trim().length > 0;
 
   return (
-    <main className={withinShell ? "flex flex-col gap-6" : "app-frame min-h-screen p-6"}>
+    <main className={withinShell ? "flex h-full min-h-full flex-col gap-6" : "app-frame min-h-screen p-6"}>
       <div
         className={
           withinShell
@@ -68,7 +68,7 @@ export function WorkspaceCreatePage({
             : `mx-auto min-h-[calc(100vh-3rem)] max-w-6xl ${getSplitGridClassName(layoutColumns)}`
         }
       >
-        <section className="rounded-[calc(var(--radius)+0.75rem)] border border-[var(--border)] bg-[rgba(255,255,255,0.62)] p-6 shadow-[0_30px_120px_-80px_rgba(15,23,42,0.5)] backdrop-blur-xl sm:p-8">
+        <section className="h-full rounded-[calc(var(--radius)+0.75rem)] border border-[var(--border)] bg-[rgba(255,255,255,0.62)] p-6 shadow-[0_30px_120px_-80px_rgba(15,23,42,0.5)] backdrop-blur-xl sm:p-8">
           <Badge className="w-fit" variant="info">
             워크스페이스 생성
           </Badge>
@@ -97,7 +97,7 @@ export function WorkspaceCreatePage({
           </div>
         </section>
 
-        <Card className="overflow-hidden">
+        <Card className="h-full overflow-hidden">
           <CardHeader className="border-b border-[var(--border)]">
             <CardTitle>생성 정보</CardTitle>
             <CardDescription className="text-base">
