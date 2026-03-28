@@ -29,6 +29,7 @@ function WorkspaceDocumentsRoute() {
       <DocumentsPage
         aiEntryPoints={ai.aiEntryPoints}
         app={shell}
+        onGoToDashboard={() => shell.handleAreaChange("dashboard")}
         onGoToAI={() => shell.handleAreaChange("ai")}
         onOpenWorkspaces={shell.handleWorkspaceLeave}
       />

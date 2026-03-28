@@ -7,5 +7,5 @@ export const Route = createFileRoute("/$workspaceId")({
 function WorkspaceRedirectRoute() {
   const { workspaceId } = Route.useParams();
 
-  return <Navigate params={{ workspaceId }} to="/$workspaceId/documents" />;
+  return <Navigate params={{ workspaceId }} to="/$workspaceId/dashboard" />;
 }

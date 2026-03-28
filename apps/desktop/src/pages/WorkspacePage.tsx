@@ -25,9 +25,9 @@ export function WorkspacePage({
   const activeArea = areaMeta[app.activeArea];
 
   return (
-    <main className="app-frame min-h-screen p-4 sm:p-6">
-      <div className="mx-auto flex max-w-6xl gap-6">
-        <aside className="hidden w-72 shrink-0 lg:block">
+    <main className="app-frame min-h-screen p-3 sm:p-4">
+      <div className="mx-auto flex min-h-[calc(100vh-2rem)] max-w-[1520px] gap-4">
+        <aside className="hidden w-[300px] shrink-0 xl:block">
           <WorkspaceLnb app={app} />
         </aside>
 
@@ -45,8 +45,8 @@ export function WorkspacePage({
           </SheetContent>
         </Sheet>
 
-        <section className="min-w-0 flex-1">
-          <header className="mb-4 flex items-center justify-between gap-3 lg:hidden">
+        <section className="min-w-0 flex-1 rounded-[calc(var(--radius)+0.75rem)] border border-[var(--border)] bg-[rgba(255,255,255,0.55)] p-4 shadow-[0_30px_120px_-80px_rgba(15,23,42,0.45)] backdrop-blur-xl sm:p-5">
+          <header className="mb-4 flex items-center justify-between gap-3 xl:hidden">
             <Button onClick={() => setMobileNavOpen(true)} size="sm" variant="outline">
               <Menu data-icon="inline-start" />
               메뉴
@@ -59,14 +59,14 @@ export function WorkspacePage({
             </div>
           </header>
 
-          <div className="mb-4 flex flex-col gap-2">
+          <div className="mb-5 rounded-[calc(var(--radius)+0.25rem)] border border-[var(--border)] bg-[var(--surface)] px-4 py-4 sm:px-5">
             <Badge variant="info" className="w-fit">
               {activeArea.label}
             </Badge>
-            <h1 className="text-3xl font-semibold tracking-tight text-[var(--foreground)]">
+            <h1 className="mt-3 text-3xl font-semibold tracking-tight text-[var(--foreground)]">
               {pageTitle(app.activeArea, app.activeDocument)}
             </h1>
-            <p className="max-w-2xl text-sm leading-6 text-[var(--muted-foreground)]">
+            <p className="mt-2 max-w-3xl text-sm leading-6 text-[var(--muted-foreground)]">
               {pageDescription(app.activeArea)}
             </p>
           </div>

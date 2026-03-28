@@ -1,3 +1,4 @@
+import { ArrowRight, CheckCircle2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -23,29 +24,44 @@ export function WorkspaceOnboardingPage({
 }) {
   return (
     <main className="app-frame min-h-screen p-6">
-      <div className="mx-auto flex min-h-[calc(100vh-3rem)] max-w-4xl items-center">
-        <Card className="w-full border-[var(--app-border-strong)] bg-[linear-gradient(180deg,rgba(255,255,255,0.92),rgba(248,250,252,0.9))]">
-          <CardHeader className="gap-4">
-            <Badge className="w-fit" variant="info">
-              워크스페이스 접근
-            </Badge>
-            <CardTitle className="text-3xl leading-tight sm:text-4xl">{title}</CardTitle>
-            <CardDescription className="max-w-2xl text-base">{description}</CardDescription>
+      <div className="mx-auto grid min-h-[calc(100vh-3rem)] max-w-6xl items-center gap-6 xl:grid-cols-[1.05fr_0.95fr]">
+        <section className="rounded-[calc(var(--radius)+0.75rem)] border border-[var(--border)] bg-[rgba(255,255,255,0.62)] p-6 shadow-[0_30px_120px_-80px_rgba(15,23,42,0.5)] backdrop-blur-xl sm:p-8">
+          <Badge className="w-fit" variant="info">
+            워크스페이스 접근
+          </Badge>
+          <h1 className="mt-4 text-4xl font-semibold tracking-tight text-[var(--foreground)]">
+            {title}
+          </h1>
+          <p className="mt-4 max-w-2xl text-base leading-8 text-[var(--muted-foreground)]">
+            {description}
+          </p>
+        </section>
+
+        <Card className="overflow-hidden">
+          <CardHeader className="border-b border-[var(--border)]">
+            <CardTitle>Next Steps</CardTitle>
+            <CardDescription className="text-base">
+              현재 구현에서는 실제 입력 폼 대신 다음 단계와 시스템 전제를 안내합니다.
+            </CardDescription>
           </CardHeader>
-          <CardContent className="flex flex-col gap-5">
+          <CardContent className="flex flex-col gap-5 pt-6">
             <div className="grid gap-3">
               {checklist.map((item) => (
                 <div
                   className="rounded-[var(--radius)] border border-[var(--border)] bg-[var(--surface)] p-4 text-sm leading-6 text-[var(--foreground)]"
                   key={item}
                 >
-                  {item}
+                  <div className="flex gap-3">
+                    <CheckCircle2 className="mt-1 size-4 shrink-0 text-[var(--info-foreground)]" />
+                    <span>{item}</span>
+                  </div>
                 </div>
               ))}
             </div>
             <div className="flex flex-col gap-2 sm:flex-row">
               <Button className="sm:flex-1" onClick={onPrimaryAction}>
                 {primaryLabel}
+                <ArrowRight />
               </Button>
               <Button className="sm:flex-1" onClick={onSecondaryAction} variant="outline">
                 {secondaryLabel}

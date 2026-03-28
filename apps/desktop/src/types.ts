@@ -1,4 +1,30 @@
-export type NavigationArea = "documents" | "editor" | "comments" | "approvals" | "publish" | "ai";
+import type {
+  AIProvider,
+  ApprovalAuthority as DocumentApprovalAuthority,
+  ApprovalCandidateSource,
+  ApprovalDecision,
+  DocumentType,
+  MembershipStatus,
+  WorkspaceRole,
+} from "@harness-docs/contracts";
+export type {
+  AIProvider,
+  ApprovalCandidateSource,
+  ApprovalDecision,
+  DocumentApprovalAuthority,
+  DocumentType,
+  MembershipStatus,
+  WorkspaceRole,
+};
+
+export type NavigationArea =
+  | "dashboard"
+  | "documents"
+  | "editor"
+  | "comments"
+  | "approvals"
+  | "publish"
+  | "ai";
 
 export type WorkspaceId = string;
 export type MembershipId = string;
@@ -16,10 +42,7 @@ export type ApprovalId = string;
 export type DocumentInvalidationId = string;
 export type PublishRecordId = string;
 
-export type WorkspaceRole = "Lead" | "Editor" | "Reviewer";
 export type WorkspaceStatus = "active" | "provisioning" | "archived";
-export type MembershipStatus = "active" | "invited" | "suspended" | "removed";
-export type DocumentType = "PRD" | "UX Flow" | "Technical Spec" | "Policy/Decision";
 export type DocumentStatus = "draft" | "in_review" | "approved" | "published" | "archived";
 export type TemplateSource = "system" | "workspace";
 export type TemplateStatus = "active" | "archived";
@@ -31,9 +54,6 @@ export type DocumentApprovalState =
   | "changes_requested"
   | "invalidated"
   | "restored";
-export type DocumentApprovalAuthority = "lead" | "required_reviewer" | "optional_reviewer";
-export type ApprovalCandidateSource = "workspace_membership" | "github_import";
-export type ApprovalDecision = "approved" | "changes_requested" | "restored";
 export type PublishStalenessStatus = "current" | "stale";
 export type DocumentFreshnessReason =
   | "linked_document_updated"
@@ -45,7 +65,6 @@ export type DocumentEditingReleaseReason =
   | "timeout"
   | "handoff"
   | "publish_started";
-export type AIProvider = "Codex" | "Claude";
 export type AITaskEntryPointScope = "workspace" | "document" | "publish";
 export type AITaskEntryPointContext =
   | "workspace_overview"

@@ -19,6 +19,13 @@ import { createPublishRecordWithPreflight } from "../lib/publishPreflight";
 
 const workspaceAreaSummaries: Record<string, Record<string, WorkspaceAreaSummary>> = {
   ws_horizon: {
+    dashboard: {
+      title: "Workspace Overview",
+      description:
+        "See document velocity, open reviews, stale hotspots, and team context before entering a specific flow.",
+      primaryAction: "Review workspace dashboard",
+      highlights: ["Recent updates", "Pending reviews", "Team visibility"],
+    },
     documents: {
       title: "Document Library",
       description:
@@ -71,6 +78,12 @@ const workspaceAreaSummaries: Record<string, Record<string, WorkspaceAreaSummary
     },
   },
   ws_northstar: {
+    dashboard: {
+      title: "Workspace Overview",
+      description: "Review release readiness, stale dependencies, and current review load in one place.",
+      primaryAction: "Open workspace dashboard",
+      highlights: ["Release readiness", "Review queue", "Team presence"],
+    },
     documents: {
       title: "Document Library",
       description: "View document coverage across release readiness and dependency policies.",

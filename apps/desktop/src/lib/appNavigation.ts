@@ -6,6 +6,10 @@ import type {
 import type { NavigationArea } from "../types";
 
 function workspaceAreaPath(area: NavigationArea, documentId: string | null) {
+  if (area === "dashboard") {
+    return "/$workspaceId/dashboard";
+  }
+
   if (area === "documents") {
     return documentId ? "/$workspaceId/documents/$documentId" : "/$workspaceId/documents";
   }
@@ -91,7 +95,7 @@ export function buildHarnessDocsNavigation(
     },
     onWorkspaceEnter: (workspaceId: string) => {
       void navigate({
-        to: "/$workspaceId/documents",
+        to: "/$workspaceId/dashboard",
         params: {
           workspaceId,
         },

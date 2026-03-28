@@ -36,17 +36,17 @@ export function AIPage({
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>AI 작업 하나 선택</CardTitle>
+    <Card className="overflow-hidden">
+      <CardHeader className="border-b border-[var(--border)]">
+        <CardTitle>AI Assistant</CardTitle>
         <CardDescription>
-          각 작업은 명확해야 합니다. 한 번에 한 작업만 선택하고 내부 문서 기준으로 실행하세요.
+          초안 생성, 링크 제안, 발행 메모 준비 같은 명확한 작업 단위만 노출합니다.
         </CardDescription>
       </CardHeader>
-      <CardContent className="grid gap-3">
+      <CardContent className="grid gap-0 p-0">
         {aiEntryPoints.map((entry) => (
           <button
-            className="flex w-full flex-col gap-3 rounded-[calc(var(--radius)+0.25rem)] border border-[var(--border)] bg-[var(--surface)] p-4 text-left transition-colors hover:bg-[var(--secondary)]"
+            className="flex w-full flex-col gap-3 border-b border-[var(--border)] px-5 py-4 text-left transition-colors last:border-b-0 hover:bg-[var(--secondary)]/55"
             key={entry.id}
             onClick={() => void onLaunch(entry)}
             type="button"

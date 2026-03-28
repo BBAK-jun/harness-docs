@@ -58,17 +58,17 @@ export function ApprovalsPage({
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>승인 상태</CardTitle>
+    <Card className="overflow-hidden">
+      <CardHeader className="border-b border-[var(--border)]">
+        <CardTitle>Review Approvals</CardTitle>
         <CardDescription>
-          이 화면은 누가 아직 승인해야 하는지와 그 이유만 보여줍니다.
+          앱 내부 권한 기준으로 남아 있는 승인자와 상태만 보여줍니다.
         </CardDescription>
       </CardHeader>
-      <CardContent className="flex flex-col gap-3">
+      <CardContent className="flex flex-col gap-0 p-0">
         {approvals.map((approval) => (
           <div
-            className="flex flex-col gap-3 rounded-[calc(var(--radius)+0.25rem)] border border-[var(--border)] bg-[var(--surface)] p-4 sm:flex-row sm:items-center sm:justify-between"
+            className="flex flex-col gap-3 border-b border-[var(--border)] px-5 py-4 last:border-b-0 sm:flex-row sm:items-center sm:justify-between"
             key={approval.id}
           >
             <div className="min-w-0">

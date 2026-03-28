@@ -1,4 +1,4 @@
-import { createFileRoute, useRouter } from "@tanstack/react-router";
+import { Navigate, createFileRoute, useRouter } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
 import { useAppBootstrap } from "../hooks/useAppBootstrap";
 import { buildHarnessDocsNavigation } from "../lib/appNavigation";
@@ -14,7 +14,7 @@ function WorkspacesRoute() {
   const bootstrap = useAppBootstrap();
   const router = useRouter();
   const routeState = {
-    activeArea: "documents" as const,
+    activeArea: "dashboard" as const,
     activeWorkspaceId: null,
     selectedDocumentId: null,
   };
@@ -24,6 +24,15 @@ function WorkspacesRoute() {
     workspaces: bootstrap.session?.workspaces ?? [],
     handleWorkspaceEnter: navigation.onWorkspaceEnter,
   };
+
+  const preferredWorkspaceId =
+    bootstrap.session?.lastActiveWorkspaceId ??
+    app.workspaces[0]?.id ??
+    null;
+
+  if (preferredWorkspaceId) {
+    return <Navigate params={{ workspaceId: preferredWorkspaceId }} to="/$workspaceId/dashboard" />;
+  }
 
   return (
     <WorkspaceSelectionPage

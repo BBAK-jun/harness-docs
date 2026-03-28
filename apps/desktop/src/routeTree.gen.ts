@@ -18,6 +18,7 @@ import { Route as WorkspaceIdRouteImport } from './routes/$workspaceId'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as WorkspaceIdPublishRouteImport } from './routes/$workspaceId.publish'
 import { Route as WorkspaceIdDocumentsRouteImport } from './routes/$workspaceId.documents'
+import { Route as WorkspaceIdDashboardRouteImport } from './routes/$workspaceId.dashboard'
 import { Route as WorkspaceIdAiRouteImport } from './routes/$workspaceId.ai'
 import { Route as WorkspaceIdDocumentsDocumentIdRouteImport } from './routes/$workspaceId.documents.$documentId'
 import { Route as WorkspaceIdDocumentsDocumentIdEditRouteImport } from './routes/$workspaceId.documents.$documentId.edit'
@@ -69,6 +70,11 @@ const WorkspaceIdDocumentsRoute = WorkspaceIdDocumentsRouteImport.update({
   path: '/documents',
   getParentRoute: () => WorkspaceIdRoute,
 } as any)
+const WorkspaceIdDashboardRoute = WorkspaceIdDashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => WorkspaceIdRoute,
+} as any)
 const WorkspaceIdAiRoute = WorkspaceIdAiRouteImport.update({
   id: '/ai',
   path: '/ai',
@@ -108,6 +114,7 @@ export interface FileRoutesByFullPath {
   '/workspace-create': typeof WorkspaceCreateRoute
   '/workspaces': typeof WorkspacesRoute
   '/$workspaceId/ai': typeof WorkspaceIdAiRoute
+  '/$workspaceId/dashboard': typeof WorkspaceIdDashboardRoute
   '/$workspaceId/documents': typeof WorkspaceIdDocumentsRouteWithChildren
   '/$workspaceId/publish': typeof WorkspaceIdPublishRoute
   '/$workspaceId/documents/$documentId': typeof WorkspaceIdDocumentsDocumentIdRouteWithChildren
@@ -124,6 +131,7 @@ export interface FileRoutesByTo {
   '/workspace-create': typeof WorkspaceCreateRoute
   '/workspaces': typeof WorkspacesRoute
   '/$workspaceId/ai': typeof WorkspaceIdAiRoute
+  '/$workspaceId/dashboard': typeof WorkspaceIdDashboardRoute
   '/$workspaceId/documents': typeof WorkspaceIdDocumentsRouteWithChildren
   '/$workspaceId/publish': typeof WorkspaceIdPublishRoute
   '/$workspaceId/documents/$documentId': typeof WorkspaceIdDocumentsDocumentIdRouteWithChildren
@@ -141,6 +149,7 @@ export interface FileRoutesById {
   '/workspace-create': typeof WorkspaceCreateRoute
   '/workspaces': typeof WorkspacesRoute
   '/$workspaceId/ai': typeof WorkspaceIdAiRoute
+  '/$workspaceId/dashboard': typeof WorkspaceIdDashboardRoute
   '/$workspaceId/documents': typeof WorkspaceIdDocumentsRouteWithChildren
   '/$workspaceId/publish': typeof WorkspaceIdPublishRoute
   '/$workspaceId/documents/$documentId': typeof WorkspaceIdDocumentsDocumentIdRouteWithChildren
@@ -159,6 +168,7 @@ export interface FileRouteTypes {
     | '/workspace-create'
     | '/workspaces'
     | '/$workspaceId/ai'
+    | '/$workspaceId/dashboard'
     | '/$workspaceId/documents'
     | '/$workspaceId/publish'
     | '/$workspaceId/documents/$documentId'
@@ -175,6 +185,7 @@ export interface FileRouteTypes {
     | '/workspace-create'
     | '/workspaces'
     | '/$workspaceId/ai'
+    | '/$workspaceId/dashboard'
     | '/$workspaceId/documents'
     | '/$workspaceId/publish'
     | '/$workspaceId/documents/$documentId'
@@ -191,6 +202,7 @@ export interface FileRouteTypes {
     | '/workspace-create'
     | '/workspaces'
     | '/$workspaceId/ai'
+    | '/$workspaceId/dashboard'
     | '/$workspaceId/documents'
     | '/$workspaceId/publish'
     | '/$workspaceId/documents/$documentId'
@@ -274,6 +286,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof WorkspaceIdDocumentsRouteImport
       parentRoute: typeof WorkspaceIdRoute
     }
+    '/$workspaceId/dashboard': {
+      id: '/$workspaceId/dashboard'
+      path: '/dashboard'
+      fullPath: '/$workspaceId/dashboard'
+      preLoaderRoute: typeof WorkspaceIdDashboardRouteImport
+      parentRoute: typeof WorkspaceIdRoute
+    }
     '/$workspaceId/ai': {
       id: '/$workspaceId/ai'
       path: '/ai'
@@ -347,12 +366,14 @@ const WorkspaceIdDocumentsRouteWithChildren =
 
 interface WorkspaceIdRouteChildren {
   WorkspaceIdAiRoute: typeof WorkspaceIdAiRoute
+  WorkspaceIdDashboardRoute: typeof WorkspaceIdDashboardRoute
   WorkspaceIdDocumentsRoute: typeof WorkspaceIdDocumentsRouteWithChildren
   WorkspaceIdPublishRoute: typeof WorkspaceIdPublishRoute
 }
 
 const WorkspaceIdRouteChildren: WorkspaceIdRouteChildren = {
   WorkspaceIdAiRoute: WorkspaceIdAiRoute,
+  WorkspaceIdDashboardRoute: WorkspaceIdDashboardRoute,
   WorkspaceIdDocumentsRoute: WorkspaceIdDocumentsRouteWithChildren,
   WorkspaceIdPublishRoute: WorkspaceIdPublishRoute,
 }

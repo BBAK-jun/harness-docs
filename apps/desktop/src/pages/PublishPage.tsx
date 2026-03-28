@@ -1,4 +1,5 @@
 import type { PublishAttemptResult, PublishPreflightView, StaleReasonCode } from "@harness-docs/contracts";
+import { AlertTriangle, CheckCircle2, GitBranch, ShieldCheck } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -94,8 +95,8 @@ export function PublishPage({
   if (!publishRecord) {
     return (
       <EmptyStateCard
-        description="현재 워크스페이스에는 발행 배치가 없습니다. 문서를 검토하거나 승인 상태를 확인한 뒤 다시 발행 화면으로 돌아오세요."
-        title="발행 배치 없음"
+        description="발행 화면이 비어 있더라도 대시보드는 다음 작업을 설명해야 합니다. 먼저 문서를 고르고 리뷰/승인 흐름을 만든 뒤 publish batch를 준비하세요."
+        title="비어 있는 Publish Flow"
         actions={
           <div className="flex flex-wrap gap-2">
             <Button onClick={onGoToDocuments} size="sm" variant="secondary">
@@ -115,7 +116,7 @@ export function PublishPage({
       <EmptyStateCard
         description={
           preflightState.error ??
-          "발행 전검증에 사용할 문서를 결정하지 못했습니다."
+          "전검증 대상 문서가 아직 결정되지 않았습니다. 대시보드와 문서 개요에서 대표 문서를 고른 뒤 다시 돌아오세요."
         }
         title="발행 전검증 없음"
         actions={
@@ -133,13 +134,13 @@ export function PublishPage({
   }
 
   return (
-    <Card>
-      <CardHeader>
+    <Card className="overflow-hidden">
+      <CardHeader className="border-b border-[var(--border)]">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <CardTitle>이 배치 발행</CardTitle>
+            <CardTitle>Publish Flow</CardTitle>
             <CardDescription>
-              발행 화면은 현재 대표 문서의 API 기반 전검증 결과와 배치 단계를 함께 보여줍니다.
+              대표 문서의 API 전검증 결과, 발행 단계, stale rationale 입력을 한 화면에서 정리합니다.
             </CardDescription>
           </div>
           <Button disabled={executeDisabledReason !== null} onClick={() => void onExecute()}>
@@ -147,47 +148,51 @@ export function PublishPage({
           </Button>
         </div>
       </CardHeader>
-      <CardContent className="flex flex-col gap-4">
+      <CardContent className="flex flex-col gap-5">
         <div className="grid gap-3 md:grid-cols-4">
-          <div className="rounded-[var(--radius)] border border-[var(--border)] bg-[var(--surface)] p-4">
-            <p className="text-xs uppercase tracking-[0.18em] text-[var(--muted-foreground)]">
-              대표 문서
-            </p>
-            <p className="mt-2 font-medium text-[var(--foreground)]">{preflight.document.title}</p>
-          </div>
-          <div className="rounded-[var(--radius)] border border-[var(--border)] bg-[var(--surface)] p-4">
-            <p className="text-xs uppercase tracking-[0.18em] text-[var(--muted-foreground)]">
-              흐름 상태
-            </p>
-            <div className="mt-2">
-              <Badge variant="info">{translateLabel(preflight.currentState)}</Badge>
-            </div>
-          </div>
-          <div className="rounded-[var(--radius)] border border-[var(--border)] bg-[var(--surface)] p-4">
-            <p className="text-xs uppercase tracking-[0.18em] text-[var(--muted-foreground)]">
-              발행 가능 상태
-            </p>
-            <div className="mt-2">
+          <SummaryCard icon={GitBranch} label="대표 문서" value={preflight.document.title} />
+          <SummaryCard
+            badge={<Badge variant="info">{translateLabel(preflight.currentState)}</Badge>}
+            icon={ShieldCheck}
+            label="흐름 상태"
+            value={translateLabel(preflight.currentState)}
+          />
+          <SummaryCard
+            badge={
               <Badge variant={getEligibilityBadgeVariant(preflight.document.publishEligibility.status)}>
                 {translateLabel(preflight.document.publishEligibility.status)}
               </Badge>
-            </div>
-          </div>
-          <div className="rounded-[var(--radius)] border border-[var(--border)] bg-[var(--surface)] p-4">
-            <p className="text-xs uppercase tracking-[0.18em] text-[var(--muted-foreground)]">
-              최신성
-            </p>
-            <div className="mt-2">
+            }
+            icon={CheckCircle2}
+            label="발행 가능 상태"
+            value={translateLabel(preflight.document.publishEligibility.status)}
+          />
+          <SummaryCard
+            badge={
               <Badge variant={getFreshnessBadgeVariant(preflight.document.freshnessStatus)}>
                 {translateLabel(preflight.document.freshnessStatus)}
               </Badge>
-            </div>
-          </div>
+            }
+            icon={AlertTriangle}
+            label="최신성"
+            value={translateLabel(preflight.document.freshnessStatus)}
+          />
         </div>
-        <div className="grid gap-3 md:grid-cols-5">
+
+        <div className="rounded-[calc(var(--radius)+0.25rem)] border border-[var(--border)] bg-[var(--surface)] p-4">
+          <div className="flex items-center justify-between gap-3">
+            <div>
+              <p className="text-sm font-medium text-[var(--foreground)]">발행 단계</p>
+              <p className="mt-1 text-sm text-[var(--muted-foreground)]">
+                API 전검증과 배치 메타데이터가 합쳐진 실행 순서입니다.
+              </p>
+            </div>
+            <Badge variant="outline">{publishRecord.stages.length}개</Badge>
+          </div>
+          <div className="mt-4 grid gap-3 md:grid-cols-5">
           {publishRecord.stages.map((stage) => (
             <div
-              className="rounded-[var(--radius)] border border-[var(--border)] bg-[var(--surface)] p-4"
+              className="rounded-[var(--radius)] border border-[var(--border)] bg-[var(--card)] p-4"
               key={stage.id}
             >
               <div className="flex items-center justify-between gap-3">
@@ -199,7 +204,9 @@ export function PublishPage({
               </p>
             </div>
           ))}
+          </div>
         </div>
+
         <div className="grid gap-4 lg:grid-cols-2">
           <div className="rounded-[calc(var(--radius)+0.25rem)] border border-[var(--border)] bg-[var(--surface)] p-4">
             <p className="font-medium text-[var(--foreground)]">stale 사유</p>
@@ -419,5 +426,28 @@ export function PublishPage({
         ) : null}
       </CardContent>
     </Card>
+  );
+}
+
+function SummaryCard({
+  label,
+  value,
+  icon: Icon,
+  badge,
+}: {
+  label: string;
+  value: string;
+  icon: typeof GitBranch;
+  badge?: React.ReactNode;
+}) {
+  return (
+    <div className="rounded-[var(--radius)] border border-[var(--border)] bg-[var(--surface)] p-4">
+      <div className="flex items-center justify-between gap-3">
+        <p className="text-xs uppercase tracking-[0.18em] text-[var(--muted-foreground)]">{label}</p>
+        <Icon className="size-4 text-[var(--muted-foreground)]" />
+      </div>
+      <p className="mt-3 line-clamp-2 font-medium text-[var(--foreground)]">{value}</p>
+      {badge ? <div className="mt-3">{badge}</div> : null}
+    </div>
   );
 }

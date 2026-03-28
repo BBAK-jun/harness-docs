@@ -23,6 +23,11 @@ export const areaMeta: Record<
     icon: typeof BookOpenText;
   }
 > = {
+  dashboard: {
+    label: "대시보드",
+    summary: "최근 변경, 리뷰 대기, 팀 상태 요약",
+    icon: RefreshCw,
+  },
   documents: {
     label: "문서",
     summary: "문서 선택과 현재 워크스페이스 상태",
@@ -224,6 +229,10 @@ export function statusBadgeVariant(status: string) {
 }
 
 export function pageTitle(area: NavigationArea, document: WorkspaceDocument | null) {
+  if (area === "dashboard") {
+    return "워크스페이스 개요";
+  }
+
   if (area === "editor" && document) {
     return document.title;
   }
@@ -249,6 +258,8 @@ export function pageTitle(area: NavigationArea, document: WorkspaceDocument | nu
 
 export function pageDescription(area: NavigationArea) {
   switch (area) {
+    case "dashboard":
+      return "워크스페이스 전체 상태와 지금 열어야 할 문서를 먼저 확인합니다.";
     case "documents":
       return "작업할 문서를 선택하세요.";
     case "editor":
@@ -302,12 +313,19 @@ export function EmptyStateCard({
   actions?: React.ReactNode;
 }) {
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>{title}</CardTitle>
-        <CardDescription>{description}</CardDescription>
-        {actions ? <div className="pt-2">{actions}</div> : null}
+    <Card className="overflow-hidden">
+      <CardHeader className="border-b border-[var(--border)]">
+        <Badge className="w-fit" variant="outline">
+          State
+        </Badge>
+        <CardTitle className="mt-2 text-2xl">{title}</CardTitle>
+        <CardDescription className="max-w-2xl text-base">{description}</CardDescription>
       </CardHeader>
+      {actions ? (
+        <div className="px-6 py-5">
+          <div className="flex flex-wrap gap-2">{actions}</div>
+        </div>
+      ) : null}
     </Card>
   );
 }
@@ -334,11 +352,16 @@ export function RouteErrorStateCard({
 
   return (
     <main className="app-frame min-h-screen p-4 sm:p-6">
-      <div className="mx-auto max-w-3xl">
-        <Card>
-          <CardHeader>
-            <CardTitle>{title}</CardTitle>
-            <CardDescription>{description}</CardDescription>
+      <div className="mx-auto max-w-4xl">
+        <Card className="overflow-hidden">
+          <CardHeader className="border-b border-[var(--border)]">
+            <Badge className="w-fit" variant="destructive">
+              Error
+            </Badge>
+            <CardTitle className="mt-2 text-3xl">{title}</CardTitle>
+            <CardDescription className="max-w-2xl text-base">{description}</CardDescription>
+          </CardHeader>
+          <div className="px-6 py-6">
             <div className="rounded-[var(--radius)] border border-[var(--destructive)]/20 bg-[color:color-mix(in_srgb,var(--destructive)_8%,transparent)] p-4 text-sm leading-6 text-[var(--muted-foreground)]">
               {errorMessage}
             </div>
@@ -346,7 +369,7 @@ export function RouteErrorStateCard({
               <Button onClick={onRetry}>다시 시도</Button>
               {secondaryAction}
             </div>
-          </CardHeader>
+          </div>
         </Card>
       </div>
     </main>

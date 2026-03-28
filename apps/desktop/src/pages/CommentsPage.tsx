@@ -61,13 +61,13 @@ export function CommentsPage({
   }
 
   return (
-    <Card>
-      <CardHeader>
+    <Card className="overflow-hidden">
+      <CardHeader className="border-b border-[var(--border)]">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <CardTitle>한 번에 하나의 스레드 검토</CardTitle>
+            <CardTitle>Discussion</CardTitle>
             <CardDescription>
-              피드백은 단순하게 유지합니다. 열린 스레드, 문맥 발췌, 다음 답변 액션만 봅니다.
+              열린 리뷰 스레드, 발췌된 문맥, 다음 액션만 빠르게 확인하도록 구성합니다.
             </CardDescription>
           </div>
           <Button
@@ -82,10 +82,10 @@ export function CommentsPage({
           </Button>
         </div>
       </CardHeader>
-      <CardContent className="flex flex-col gap-3">
+      <CardContent className="flex flex-col gap-0 p-0">
         {threads.map((thread) => (
           <div
-            className="rounded-[calc(var(--radius)+0.25rem)] border border-[var(--border)] bg-[var(--surface)] p-4"
+            className="border-b border-[var(--border)] px-5 py-4 last:border-b-0"
             key={thread.id}
           >
             <div className="flex flex-wrap items-center gap-2">
@@ -99,10 +99,10 @@ export function CommentsPage({
             <p className="mt-3 text-sm leading-6 text-[var(--foreground)]">
               {thread.anchor.excerpt}
             </p>
-            <p className="mt-3 text-sm text-[var(--muted-foreground)]">
-              참여자 {thread.participantMembershipIds.length}명 · 연결 문서{" "}
-              {thread.linkedDocumentIds.length}개
-            </p>
+            <div className="mt-3 grid gap-2 text-sm text-[var(--muted-foreground)] sm:grid-cols-2">
+              <span>참여자 {thread.participantMembershipIds.length}명</span>
+              <span>연결 문서 {thread.linkedDocumentIds.length}개</span>
+            </div>
           </div>
         ))}
       </CardContent>

@@ -27,6 +27,7 @@ Harness Docs는 현재 `데스크톱 앱 골격 + authoritative API + PostgreSQL
 - `Tauri v2 + React + TypeScript + Vite` 기반 프로젝트 생성 완료
 - `shadcn 스타일 + Tailwind CSS` 기반 UI foundation 반영 완료
 - 문서 라이브러리, 에디터, 승인, publish, AI 화면 골격 반영 완료
+- Lovable 기준 dashboard-first 정보구조와 projection/view-model 계층 반영 진행 중
 
 ### API 계약과 서버 기반
 
@@ -184,6 +185,7 @@ integration test는 아래 시나리오를 검증합니다.
 
 - [패키지 구성](/reference/packages)
 - [Publish Governance RPC](/reference/publish-governance-rpc)
+- [Lovable UI SSOT](/reference/lovable-ui-ssot)
 - [아키텍처](/guide/architecture)
 - [도메인 모델](/guide/domain-model)
 - [원문 사양](/reference/spec-sources)
