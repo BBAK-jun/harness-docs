@@ -1,17 +1,7 @@
 import {
-  appSessions,
-  aiDrafts,
-  approvalEvents,
-  approvalRequests,
-  authAccounts,
-  documentInvalidations,
   documentLinks,
-  documentLocks,
   documents,
   documentVersions,
-  publishNotifications,
-  publishRecordArtifacts,
-  publishRecords,
   templates,
   type HarnessDocsDatabase,
   users,
@@ -19,48 +9,8 @@ import {
   workspaceMemberships,
   workspaces,
 } from "@harness-docs/db";
-import { buildDocumentMarkdown, deriveDocumentState } from "../domain/documentAggregate.ts";
-
-const seedTimestamps = {
-  provisionedAt: "2026-01-15T09:00:00.000Z",
-  joinedAt: "2026-01-15T09:05:00.000Z",
-  prdCreatedAt: "2026-01-15T09:30:00.000Z",
-  specCreatedAt: "2026-01-15T10:15:00.000Z",
-  workspaceOpenedAt: "2026-01-16T03:00:00.000Z",
-};
-
-export const demoWorkspaceFixture = {
-  users: {
-    lead: "usr_demo_lead",
-    pm: "usr_demo_pm",
-    reviewer: "usr_demo_reviewer",
-  },
-  workspace: {
-    id: "ws_harness_docs",
-    slug: "harness-docs",
-  },
-  memberships: {
-    lead: "wsm_harness_lead",
-    pm: "wsm_harness_pm",
-    reviewer: "wsm_harness_reviewer",
-  },
-  invitations: {
-    editor: "winv_harness_editor",
-  },
-  invitationCodes: {
-    editor: "invite-harness-docs",
-  },
-  templates: {
-    prd: "tpl_prd_system",
-    uxFlow: "tpl_ux_flow_system",
-    technicalSpec: "tpl_technical_spec_system",
-    policy: "tpl_policy_decision_system",
-  },
-  documents: {
-    prd: "doc_publish_prd",
-    technicalSpec: "doc_publish_technical_spec",
-  },
-};
+import { buildDocumentMarkdown, deriveDocumentState } from "../../src/domain/documentAggregate.ts";
+import { demoWorkspaceFixture, seedTimestamps } from "./demoWorkspaceFixture.ts";
 
 function toDate(value: string) {
   return new Date(value);
@@ -226,29 +176,6 @@ function buildInitialDocuments() {
       createdAt: seedTimestamps.specCreatedAt,
     },
   };
-}
-
-export async function resetHarnessDocsDatabase(db: HarnessDocsDatabase) {
-  await db.transaction(async (tx) => {
-    await tx.delete(appSessions);
-    await tx.delete(authAccounts);
-    await tx.delete(publishNotifications);
-    await tx.delete(publishRecordArtifacts);
-    await tx.delete(publishRecords);
-    await tx.delete(approvalEvents);
-    await tx.delete(approvalRequests);
-    await tx.delete(documentInvalidations);
-    await tx.delete(documentLocks);
-    await tx.delete(documentLinks);
-    await tx.delete(documentVersions);
-    await tx.delete(aiDrafts);
-    await tx.delete(documents);
-    await tx.delete(templates);
-    await tx.delete(workspaceInvitations);
-    await tx.delete(workspaceMemberships);
-    await tx.delete(workspaces);
-    await tx.delete(users);
-  });
 }
 
 export async function seedDemoWorkspace(db: HarnessDocsDatabase) {

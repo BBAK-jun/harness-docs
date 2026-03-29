@@ -11,12 +11,14 @@
     "check": "tsc --noEmit -p tsconfig.json",
     "db:generate": "drizzle-kit generate --config drizzle.config.ts",
     "db:migrate": "node scripts/migrate.mjs",
+    "db:test:prepare": "docker compose -f ../../compose.yaml up -d --wait db-test && DOTENV_CONFIG_PATH=.env.test node scripts/prepare-test-db.mjs",
     "db:studio": "drizzle-kit studio --config drizzle.config.ts --host 127.0.0.1 --port 4983"
   },
   "dependencies": {
     "@harness-docs/contracts": "workspace:*",
     "drizzle-orm": "^0.44.6",
-    "pg": "^8.16.3"
+    "pg": "^8.16.3",
+    "zod": "^4.3.6"
   },
   "devDependencies": {
     "@types/node": "^25.5.0",

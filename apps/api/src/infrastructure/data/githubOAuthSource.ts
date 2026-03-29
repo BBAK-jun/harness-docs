@@ -1,5 +1,6 @@
 import type { GitHubOAuthAttemptDto, GitHubOAuthStartDto } from "@harness-docs/contracts";
 import type { ApiAuthDataSource, GitHubOAuthDataSource } from "../../application/ports.ts";
+import { readApiRuntimeEnvironment } from "../env/runtimeEnv.ts";
 
 interface GitHubAccessTokenResponse {
   access_token?: string;
@@ -80,11 +81,12 @@ export function createGitHubOAuthDataSource(
     attemptLifetimeMs?: number;
   },
 ): GitHubOAuthDataSource {
+  const runtimeEnvironment = readApiRuntimeEnvironment();
   const attempts = new Map<string, PendingAttemptState>();
   const stateToAttemptId = new Map<string, string>();
-  const clientId = options?.clientId ?? process.env.GITHUB_CLIENT_ID ?? "";
-  const clientSecret = options?.clientSecret ?? process.env.GITHUB_CLIENT_SECRET ?? "";
-  const scope = options?.scope ?? process.env.GITHUB_OAUTH_SCOPE ?? "read:user user:email";
+  const clientId = options?.clientId ?? runtimeEnvironment.GITHUB_CLIENT_ID ?? "";
+  const clientSecret = options?.clientSecret ?? runtimeEnvironment.GITHUB_CLIENT_SECRET ?? "";
+  const scope = options?.scope ?? runtimeEnvironment.GITHUB_OAUTH_SCOPE;
   const authorizationBaseUrl =
     options?.authorizationBaseUrl ?? "https://github.com/login/oauth/authorize";
   const tokenUrl = options?.tokenUrl ?? "https://github.com/login/oauth/access_token";
@@ -143,7 +145,7 @@ export function createGitHubOAuthDataSource(
   }
 
   function buildRedirectUri(requestOrigin: string) {
-    const configuredBaseUrl = process.env.HARNESS_DOCS_API_BASE_URL?.trim();
+    const configuredBaseUrl = runtimeEnvironment.HARNESS_DOCS_API_BASE_URL?.trim();
     const origin =
       configuredBaseUrl && configuredBaseUrl.length > 0 ? configuredBaseUrl : requestOrigin;
 

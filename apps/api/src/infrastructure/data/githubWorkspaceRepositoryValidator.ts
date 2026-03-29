@@ -3,6 +3,7 @@ import type {
   WorkspaceRepositoryValidationResult,
   WorkspaceRepositoryValidator,
 } from "../../application/ports.ts";
+import { readApiRuntimeEnvironment } from "../env/runtimeEnv.ts";
 
 interface GitHubRepositoryResponse {
   default_branch?: string;
@@ -14,8 +15,9 @@ export function createGitHubWorkspaceRepositoryValidator(options?: {
   apiBaseUrl?: string;
   token?: string;
 }): WorkspaceRepositoryValidator {
+  const runtimeEnvironment = readApiRuntimeEnvironment();
   const apiBaseUrl = options?.apiBaseUrl ?? "https://api.github.com";
-  const token = options?.token ?? process.env.GITHUB_TOKEN ?? "";
+  const token = options?.token ?? runtimeEnvironment.GITHUB_TOKEN ?? "";
 
   function buildHeaders() {
     return {

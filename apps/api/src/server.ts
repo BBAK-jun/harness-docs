@@ -2,13 +2,15 @@ import "dotenv/config";
 import { serve } from "@hono/node-server";
 import { createGitHubOAuthDataSource } from "./infrastructure/data/githubOAuthSource.ts";
 import { createGitHubWorkspaceRepositoryValidator } from "./infrastructure/data/githubWorkspaceRepositoryValidator.ts";
+import { readApiRuntimeEnvironment } from "./infrastructure/env/runtimeEnv.ts";
 import { createPostgresAuthSessionSource } from "./infrastructure/data/postgresAuthSessionSource.ts";
 import { createPostgresWorkspaceSessionSource } from "./infrastructure/data/postgresWorkspaceSessionSource.ts";
 import { createPublishGovernanceAdapter } from "./domain/publishGovernanceAdapter.ts";
 import { createApiApp } from "./app.ts";
 
-const port = Number(process.env.PORT ?? 4020);
-const hostname = process.env.HOST ?? "127.0.0.1";
+const runtimeEnvironment = readApiRuntimeEnvironment();
+const port = runtimeEnvironment.PORT;
+const hostname = runtimeEnvironment.HOST;
 const authDataSource = createPostgresAuthSessionSource();
 
 const app = createApiApp({

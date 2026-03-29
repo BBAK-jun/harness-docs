@@ -181,8 +181,10 @@ demo seed는 아래 fixture를 생성합니다.
 
 관련 소스:
 
-- `apps/api/src/bootstrap/demoWorkspace.ts`
-- `apps/api/src/bootstrap/seedDemoWorkspace.ts`
+- `apps/api/scripts/lib/demoWorkspaceFixture.ts`
+- `apps/api/scripts/lib/resetHarnessDocsDatabase.ts`
+- `apps/api/scripts/lib/seedDemoWorkspace.ts`
+- `apps/api/scripts/seedDemoWorkspace.ts`
 - `packages/db/scripts/migrate.mjs`
 
 ## 검증된 항목

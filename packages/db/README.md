@@ -32,6 +32,9 @@ pnpm db:migrate
 
 ```bash
 pnpm db:generate
+pnpm db:test:up
+pnpm db:test:prepare
+pnpm db:test:down
 pnpm db:studio
 pnpm check:db
 ```
@@ -46,12 +49,18 @@ Drizzle Studio 기본 주소:
 
 ```env
 DATABASE_URL=postgresql://harness_docs:harness_docs@127.0.0.1:5432/harness_docs
+TEST_DATABASE_URL=postgresql://harness_docs:harness_docs@127.0.0.1:5433/harness_docs_test
 PGHOST=127.0.0.1
 PGPORT=5432
 PGUSER=harness_docs
 PGPASSWORD=harness_docs
 PGDATABASE=harness_docs
 ```
+
+- `TEST_DATABASE_URL`는 필수입니다. dev DB fallback은 허용하지 않습니다.
+- `TEST_DATABASE_URL`는 `DATABASE_URL`와 같을 수 없습니다.
+- `pnpm db:test:up`은 `db-test` 전용 Postgres container를 띄웁니다.
+- `pnpm db:test:prepare`는 `db-test`에 연결해 test DB를 준비하고 마이그레이션을 적용합니다.
 
 ## 변경 원칙
 

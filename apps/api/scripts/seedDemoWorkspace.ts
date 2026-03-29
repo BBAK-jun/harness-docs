@@ -1,10 +1,7 @@
-import "dotenv/config";
 import { createDatabaseContext } from "@harness-docs/db";
-import {
-  demoWorkspaceFixture,
-  resetHarnessDocsDatabase,
-  seedDemoWorkspace,
-} from "./demoWorkspace.ts";
+import "dotenv/config";
+import { resetHarnessDocsDatabase } from "./lib/resetHarnessDocsDatabase.ts";
+import { seedDemoWorkspace } from "./lib/seedDemoWorkspace.ts";
 
 async function main() {
   const { db, pool } = createDatabaseContext();

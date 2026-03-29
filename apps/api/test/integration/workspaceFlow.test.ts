@@ -1,15 +1,13 @@
 import assert from "node:assert/strict";
 import { after, before, beforeEach, describe, test } from "node:test";
-import { createDatabaseContext } from "@harness-docs/db";
-import { createPostgresAuthSessionSource } from "../infrastructure/data/postgresAuthSessionSource.ts";
-import { createPostgresWorkspaceSessionSource } from "../infrastructure/data/postgresWorkspaceSessionSource.ts";
-import { createPublishGovernanceAdapter } from "../domain/publishGovernanceAdapter.ts";
-import { createApiApp } from "../app.ts";
-import {
-  demoWorkspaceFixture,
-  resetHarnessDocsDatabase,
-  seedDemoWorkspace,
-} from "../bootstrap/demoWorkspace.ts";
+import { createDatabaseContext, resolveTestDatabaseUrl } from "@harness-docs/db";
+import { createPostgresAuthSessionSource } from "../../src/infrastructure/data/postgresAuthSessionSource.ts";
+import { createPostgresWorkspaceSessionSource } from "../../src/infrastructure/data/postgresWorkspaceSessionSource.ts";
+import { createPublishGovernanceAdapter } from "../../src/domain/publishGovernanceAdapter.ts";
+import { createApiApp } from "../../src/app.ts";
+import { demoWorkspaceFixture } from "../../scripts/lib/demoWorkspaceFixture.ts";
+import { resetHarnessDocsDatabase } from "../../scripts/lib/resetHarnessDocsDatabase.ts";
+import { seedDemoWorkspace } from "../../scripts/lib/seedDemoWorkspace.ts";
 
 const workspaceRepositoryValidationCalls: Array<{
   repositoryOwner: string;
@@ -19,7 +17,7 @@ const workspaceRepositoryValidationCalls: Array<{
 }> = [];
 const workspaceRepositoryValidationFailures = new Map<string, { code: string; message: string }>();
 
-const { db, pool } = createDatabaseContext();
+const { db, pool } = createDatabaseContext(resolveTestDatabaseUrl());
 const app = createApiApp({
   dataSource: createPostgresWorkspaceSessionSource(db),
   authDataSource: createPostgresAuthSessionSource(db),

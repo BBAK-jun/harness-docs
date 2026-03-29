@@ -18,8 +18,9 @@
     "dev": "node --watch --import tsx src/server.ts",
     "start": "node --import tsx src/server.ts",
     "build": "tsc --noEmit -p tsconfig.json",
-    "seed:demo": "node --import tsx src/bootstrap/seedDemoWorkspace.ts",
-    "test": "node --import tsx --test src/test/*.test.ts"
+    "seed:demo": "node --import tsx scripts/seedDemoWorkspace.ts",
+    "seed:demo:ensure": "node --import tsx scripts/ensureDemoWorkspace.ts",
+    "test": "pnpm --filter @harness-docs/db db:test:prepare && NODE_ENV=test DOTENV_CONFIG_PATH=.env.test node --import dotenv/config --import tsx --test test/integration/*.test.ts"
   },
   "dependencies": {
     "@hono/zod-openapi": "^1.2.3",
@@ -29,7 +30,8 @@
     "@scalar/hono-api-reference": "^0.9.23",
     "dotenv": "^17.2.3",
     "drizzle-orm": "^0.44.6",
-    "hono": "^4.12.9"
+    "hono": "^4.12.9",
+    "zod": "^4.3.6"
   },
   "devDependencies": {
     "@types/node": "^25.5.0",

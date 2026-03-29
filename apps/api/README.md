@@ -38,6 +38,8 @@ pnpm check:api
 pnpm test:api
 ```
 
+테스트는 dev DB를 재사용하지 않습니다. `db-test` 전용 Postgres service와 `TEST_DATABASE_URL`만 사용하고, 그 DB에만 reset/seed를 수행합니다.
+
 문서 확인:
 
 - OpenAPI JSON: `http://127.0.0.1:4020/doc`
@@ -48,6 +50,7 @@ pnpm test:api
 - `PORT`: 기본 포트. 기본값 `4020`
 - `HOST`: 바인딩 호스트. 기본값 `127.0.0.1`
 - `DATABASE_URL`: PostgreSQL 연결 문자열
+- `TEST_DATABASE_URL`: API 테스트 전용 PostgreSQL 연결 문자열. 필수이며 dev DB와 같을 수 없음
 - `GITHUB_CLIENT_ID`: GitHub OAuth App client id
 - `GITHUB_CLIENT_SECRET`: GitHub OAuth App client secret
 - `HARNESS_DOCS_API_BASE_URL`: callback origin을 고정해야 할 때 사용

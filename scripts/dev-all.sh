@@ -45,8 +45,8 @@ done
 echo "[dev:all] applying migrations"
 pnpm db:migrate
 
-echo "[dev:all] seeding demo workspace"
-pnpm db:seed
+echo "[dev:all] ensuring demo workspace"
+pnpm db:seed:ensure
 
 echo "[dev:all] starting api"
 (
