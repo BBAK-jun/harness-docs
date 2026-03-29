@@ -4,7 +4,12 @@ import type {
   WorkspaceMembershipService,
   WorkspaceMembershipSnapshot,
 } from "../domain/workspaceMembership";
-import type { SessionUser, UserId, WorkspaceGraph, WorkspaceId, WorkspaceMembership } from "../types";
+import type {
+  SessionUser,
+  WorkspaceGraph,
+  WorkspaceMembership,
+} from "../types/contracts";
+import type { UserId, WorkspaceId } from "../types/domain-ui";
 
 interface SessionBackedWorkspaceMembershipServiceOptions {
   getWorkspaceGraph: (

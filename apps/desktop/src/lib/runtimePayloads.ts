@@ -2,11 +2,11 @@ import type { StalePublishRationaleDto } from "@harness-docs/contracts";
 import type { AITaskExecutionInput } from "../domain/aiTasks";
 import type { PublishExecutionInput, PublishRepositoryFile } from "../domain/publishing";
 import type {
-  AITaskEntryPoint,
   DocumentTemplate,
   WorkspaceDocument,
   WorkspaceGraph,
-} from "../types";
+} from "../types/contracts";
+import type { AITaskEntryPoint } from "../types/domain-ui";
 
 function getDocumentSource(document: WorkspaceDocument, documentDrafts: Record<string, string>) {
   return documentDrafts[document.id] ?? document.markdownSource;

@@ -6,12 +6,12 @@ import {
   users,
 } from "@harness-docs/db";
 import type {
-  ApiAuthDataSource,
   AuthSessionExchangeRequestDto,
   AuthenticatedApiSessionDto,
   SessionUserDto,
 } from "@harness-docs/contracts";
 import { and, eq, gt, isNull, or } from "drizzle-orm";
+import type { ApiAuthDataSource } from "../../application/ports.ts";
 
 const sessionLifetimeMs = 1000 * 60 * 60 * 24 * 30;
 

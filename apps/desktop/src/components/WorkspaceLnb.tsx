@@ -1,10 +1,11 @@
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { useClientActivityLog } from "@/components/ClientActivityLogProvider";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "@tanstack/react-router";
 import { FileText } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { WorkspaceShellModel } from "../hooks/useWorkspaceShell";
-import type { NavigationArea } from "../types";
+import type { NavigationArea } from "../types/contracts";
 import { areaMeta } from "../pages/pageUtils";
 
 export function WorkspaceLnb({
@@ -14,6 +15,7 @@ export function WorkspaceLnb({
   app: WorkspaceShellModel;
   onNavigate?: () => void;
 }) {
+  const { logEvent } = useClientActivityLog();
   const workspace = app.activeWorkspace!;
   const navigate = useNavigate();
   const documents = app.activeWorkspaceGraph?.documents ?? [];
@@ -66,6 +68,7 @@ export function WorkspaceLnb({
               )}
               key={areaKey}
               onClick={() => {
+                logEvent({ action: `${meta.label} LNB CTA 클릭`, source: "workspace-lnb" });
                 app.handleAreaChange(areaKey);
                 onNavigate?.();
               }}
@@ -86,6 +89,7 @@ export function WorkspaceLnb({
       <div className="space-y-2 border-t border-[var(--sidebar-border)] px-4 py-4">
         <Button
           className="w-full justify-start border-[var(--sidebar-border)] bg-transparent text-[var(--sidebar-accent-foreground)] hover:bg-[var(--sidebar-accent)]"
+          clientLog={{ action: "워크스페이스 목록 CTA 클릭", source: "workspace-lnb" }}
           onClick={() => app.handleWorkspaceLeave()}
           size="sm"
           variant="outline"
@@ -94,6 +98,7 @@ export function WorkspaceLnb({
         </Button>
         <Button
           className="w-full justify-start text-[var(--sidebar-foreground)] hover:bg-[var(--sidebar-accent)] hover:text-[var(--sidebar-accent-foreground)]"
+          clientLog={{ action: "로그아웃 CTA 클릭", source: "workspace-lnb" }}
           onClick={() => {
             void navigate({ to: "/sign-out" });
           }}

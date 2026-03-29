@@ -70,6 +70,7 @@ function PublishRouteErrorBoundary({
       }}
       secondaryAction={
         <Button
+          clientLog="워크스페이스 목록"
           onClick={() => {
             reset();
             void router.navigate({ to: "/workspaces" });

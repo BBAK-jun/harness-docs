@@ -3,6 +3,17 @@
   "private": true,
   "version": "0.1.0",
   "type": "module",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "import": "./src/index.ts"
+    },
+    "./client": {
+      "types": "./src/client.ts",
+      "import": "./src/client.ts"
+    }
+  },
   "scripts": {
     "dev": "node --watch --import tsx src/server.ts",
     "start": "node --import tsx src/server.ts",
@@ -11,11 +22,14 @@
     "test": "node --import tsx --test src/test/*.test.ts"
   },
   "dependencies": {
+    "@hono/zod-openapi": "^1.2.3",
     "@harness-docs/contracts": "workspace:*",
     "@harness-docs/db": "workspace:*",
     "@hono/node-server": "^1.19.11",
+    "@scalar/hono-api-reference": "^0.9.23",
     "dotenv": "^17.2.3",
-    "drizzle-orm": "^0.44.6"
+    "drizzle-orm": "^0.44.6",
+    "hono": "^4.12.9"
   },
   "devDependencies": {
     "@types/node": "^25.5.0",

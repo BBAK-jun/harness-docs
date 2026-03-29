@@ -1,10 +1,10 @@
 import {
-  unwrapApiResponse,
   type PublishPreflightEnvelopeDto,
   type PublishPreflightView,
 } from "@harness-docs/contracts";
 import type { PublishingService } from "../domain/publishing";
-import { harnessApiBaseUrl } from "../lib/rpc/client";
+import { harnessRpcClient } from "../lib/rpc/client";
+import { unwrapRpcResponse } from "../lib/rpc/response";
 
 interface CreateRpcPublishingServiceOptions {
   fallbackService: PublishingService;
@@ -23,18 +23,18 @@ export function createRpcPublishingService({
     ): Promise<PublishPreflightView | null> {
       try {
         const sessionToken = await getSessionToken?.();
-        const response = await fetch(
-          `${harnessApiBaseUrl}/api/workspaces/${workspaceId}/documents/${documentId}/publish-preflight`,
-          {
-            headers: sessionToken ? { authorization: `Bearer ${sessionToken}` } : undefined,
-          },
+        const response = await harnessRpcClient.api.workspaces[":workspaceId"].documents[
+          ":documentId"
+        ]["publish-preflight"].$get({
+          param: { workspaceId, documentId },
+        }, {
+          headers: sessionToken ? { authorization: `Bearer ${sessionToken}` } : undefined,
+        });
+
+        const payload = await unwrapRpcResponse<PublishPreflightEnvelopeDto>(
+          response,
+          "Publish preflight failed",
         );
-
-        if (!response.ok) {
-          throw new Error(`Publish preflight failed with ${response.status}`);
-        }
-
-        const payload = unwrapApiResponse<PublishPreflightEnvelopeDto>(await response.json());
         return payload.preflight;
       } catch {
         throw new Error("Publish preflight must be loaded from the API before publish can continue.");

@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
-import { unwrapApiResponse } from "@harness-docs/contracts";
-import { harnessApiBaseUrl } from "../lib/rpc/client";
+import { harnessApiBaseUrl, harnessRpcClient } from "../lib/rpc/client";
+import { unwrapRpcResponse } from "../lib/rpc/response";
 import { rpcQueryKeys } from "../queries/queryKeys";
 
 type ApiHealthState =
@@ -13,16 +13,12 @@ export function useApiHealth() {
   const healthQuery = useQuery({
     queryKey: rpcQueryKeys.health(harnessApiBaseUrl),
     queryFn: async () => {
-      const response = await fetch(`${harnessApiBaseUrl}/health`);
+      const response = await harnessRpcClient.health.$get();
 
-      if (!response.ok) {
-        throw new Error(`API responded with ${response.status}`);
-      }
-
-      return unwrapApiResponse<{
+      return unwrapRpcResponse<{
         service: string;
         transport: string;
-      }>(await response.json());
+      }>(response, "API health check failed");
     },
     retry: false,
     refetchInterval: 30_000,

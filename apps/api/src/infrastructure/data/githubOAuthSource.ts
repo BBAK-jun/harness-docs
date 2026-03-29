@@ -1,9 +1,8 @@
 import type {
-  ApiAuthDataSource,
   GitHubOAuthAttemptDto,
-  GitHubOAuthDataSource,
   GitHubOAuthStartDto,
 } from "@harness-docs/contracts";
+import type { ApiAuthDataSource, GitHubOAuthDataSource } from "../../application/ports.ts";
 
 interface GitHubAccessTokenResponse {
   access_token?: string;

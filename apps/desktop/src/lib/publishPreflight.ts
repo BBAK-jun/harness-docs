@@ -1,12 +1,12 @@
 import type {
-  ApprovalId,
   PublishAutomationMetadata,
   PublishPreflightFinding,
   PublishPreflightResult,
   PublishRecord,
   UnresolvedApprovalSnapshot,
   WorkspaceDocument,
-} from "../types";
+} from "../types/contracts";
+import type { ApprovalId } from "../types/domain-ui";
 
 type PublishRecordInput = Omit<PublishRecord, "publication"> & {
   publication: Omit<PublishAutomationMetadata, "preflight">;

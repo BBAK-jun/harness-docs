@@ -1,19 +1,9 @@
-import { useState } from "react";
-import { Menu } from "lucide-react";
 import { overlay } from "overlay-kit";
 import { useNavigate } from "@tanstack/react-router";
-import { AppLayout } from "@/components/AppLayout";
+import { AppShellFrame } from "@/components/AppShellFrame";
 import { AuthenticatedAppSidebar } from "@/components/AuthenticatedAppSidebar";
 import { SignOutConfirmOverlay } from "@/components/overlays/SignOutConfirmOverlay";
-import { Button } from "@/components/ui/button";
-import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-} from "@/components/ui/sheet";
-import type { WorkspaceSummary } from "../types";
+import type { WorkspaceSummary } from "../types/contracts";
 
 type OnboardingArea = "workspaces" | "workspace-create" | "invitation-acceptance";
 
@@ -56,7 +46,6 @@ export function AuthenticatedOnboardingShell({
   workspaces: WorkspaceSummary[];
 }) {
   const navigate = useNavigate();
-  const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const active = areaMeta[activeArea];
 
   const handleSignOutRequest = async () => {
@@ -79,6 +68,7 @@ export function AuthenticatedOnboardingShell({
   const sidebar = (
     <AuthenticatedAppSidebar
       activeArea={activeArea}
+      className="sticky top-0 hidden h-screen w-64 shrink-0 xl:flex"
       lastActiveWorkspaceId={lastActiveWorkspaceId}
       onOpenArea={onOpenArea}
       onOpenLastWorkspace={onOpenLastWorkspace}
@@ -89,38 +79,32 @@ export function AuthenticatedOnboardingShell({
   );
 
   return (
-    <AppLayout sidebar={sidebar}>
-      <main className="app-frame min-h-screen p-3 sm:p-4">
-        <div className="flex min-h-[calc(100vh-2rem)] w-full gap-4">
-          <Sheet onOpenChange={setMobileNavOpen} open={mobileNavOpen}>
-            <SheetContent side="left">
-              <SheetHeader>
-                <SheetTitle>앱 탐색</SheetTitle>
-                <SheetDescription>인증 이후에도 온보딩 액션을 전환할 수 있습니다.</SheetDescription>
-              </SheetHeader>
-              <div className="mt-4">{sidebar}</div>
-            </SheetContent>
-          </Sheet>
-
-          <section className="min-w-0 flex-1 rounded-[calc(var(--radius)+0.75rem)] border border-[var(--border)] bg-[rgba(255,255,255,0.55)] p-4 shadow-[0_30px_120px_-80px_rgba(15,23,42,0.45)] backdrop-blur-xl sm:p-5">
-            <header className="mb-4 flex items-center justify-between gap-3 xl:hidden">
-              <Button onClick={() => setMobileNavOpen(true)} size="sm" variant="outline">
-                <Menu data-icon="inline-start" />
-                메뉴
-              </Button>
-              <div className="min-w-0 text-right">
-                <p className="truncate font-medium text-[var(--foreground)]">워크스페이스 접근</p>
-                <p className="truncate text-xs uppercase tracking-[0.14em] text-[var(--muted-foreground)]">
-                  워크스페이스 &gt; {active.label}
-                </p>
-                <p className="truncate text-sm text-[var(--muted-foreground)]">{active.description}</p>
-              </div>
-            </header>
-
-            {children}
-          </section>
-        </div>
-      </main>
-    </AppLayout>
+    <AppShellFrame
+      mobileMeta={{
+        eyebrow: "워크스페이스 접근",
+        title: `워크스페이스 > ${active.label}`,
+        description: active.description,
+      }}
+      mobileNavigation={{
+        content: (
+          <AuthenticatedAppSidebar
+            activeArea={activeArea}
+            className="h-full w-full"
+            layout="drawer"
+            lastActiveWorkspaceId={lastActiveWorkspaceId}
+            onOpenArea={onOpenArea}
+            onOpenLastWorkspace={onOpenLastWorkspace}
+            onSignOutRequest={() => void handleSignOutRequest()}
+            user={user}
+            workspaces={workspaces}
+          />
+        ),
+        description: "로그인 이후에도 온보딩 단계와 다른 액션 사이를 이동할 수 있습니다.",
+        title: "앱 메뉴",
+      }}
+      sidebar={sidebar}
+    >
+      {children}
+    </AppShellFrame>
   );
 }

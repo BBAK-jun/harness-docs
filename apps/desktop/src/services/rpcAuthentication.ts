@@ -4,71 +4,52 @@ import type {
   GitHubOAuthAttemptDto,
   GitHubOAuthStartDto,
 } from "@harness-docs/contracts";
-import { unwrapApiResponse } from "@harness-docs/contracts";
-import { harnessApiBaseUrl } from "../lib/rpc/client";
-
-function buildHeaders(sessionToken?: string | null) {
-  return {
-    "content-type": "application/json",
-    ...(sessionToken ? { authorization: `Bearer ${sessionToken}` } : {}),
-  };
-}
+import { harnessRpcClient } from "../lib/rpc/client";
+import { unwrapRpcResponse } from "../lib/rpc/response";
 
 export async function exchangeApiSession(input: AuthSessionExchangeRequestDto) {
-  const response = await fetch(`${harnessApiBaseUrl}/api/auth/session/exchange`, {
-    method: "POST",
-    headers: buildHeaders(),
-    body: JSON.stringify(input),
+  const response = await harnessRpcClient.api.auth.sessions.$post({
+    json: input,
   });
 
-  if (!response.ok) {
-    throw new Error(`Authentication session exchange failed with ${response.status}`);
-  }
-
-  return unwrapApiResponse<ApiAuthenticationSessionDto>(await response.json());
+  return unwrapRpcResponse<ApiAuthenticationSessionDto>(
+    response,
+    "Authentication session exchange failed",
+  );
 }
 
 export async function getApiSession(sessionToken: string) {
-  const response = await fetch(`${harnessApiBaseUrl}/api/auth/session`, {
-    headers: buildHeaders(sessionToken),
+  const response = await harnessRpcClient.api.auth.session.$get({
+    header: sessionToken ? { authorization: `Bearer ${sessionToken}` } : undefined,
   });
 
-  if (!response.ok) {
-    throw new Error(`Authentication session restore failed with ${response.status}`);
-  }
-
-  return unwrapApiResponse<ApiAuthenticationSessionDto>(await response.json());
+  return unwrapRpcResponse<ApiAuthenticationSessionDto>(
+    response,
+    "Authentication session restore failed",
+  );
 }
 
 export async function revokeApiSession(sessionToken: string) {
-  const response = await fetch(`${harnessApiBaseUrl}/api/auth/sign-out`, {
-    method: "POST",
-    headers: buildHeaders(sessionToken),
+  const response = await harnessRpcClient.api.auth.session.$delete({
+    header: sessionToken ? { authorization: `Bearer ${sessionToken}` } : undefined,
   });
 
-  if (!response.ok) {
-    throw new Error(`Authentication sign-out failed with ${response.status}`);
-  }
-
-  return unwrapApiResponse<ApiAuthenticationSessionDto>(await response.json());
+  return unwrapRpcResponse<ApiAuthenticationSessionDto>(
+    response,
+    "Authentication sign-out failed",
+  );
 }
 
 export async function startGitHubOAuth() {
-  const response = await fetch(`${harnessApiBaseUrl}/api/auth/github/start`);
+  const response = await harnessRpcClient.api.auth.github.authorizations.$post({});
 
-  if (!response.ok) {
-    throw new Error(`GitHub OAuth start failed with ${response.status}`);
-  }
-
-  return unwrapApiResponse<GitHubOAuthStartDto>(await response.json());
+  return unwrapRpcResponse<GitHubOAuthStartDto>(response, "GitHub OAuth start failed");
 }
 
 export async function getGitHubOAuthAttempt(attemptId: string) {
-  const response = await fetch(`${harnessApiBaseUrl}/api/auth/github/attempts/${attemptId}`);
+  const response = await harnessRpcClient.api.auth.github.authorizations[":attemptId"].$get({
+    param: { attemptId },
+  });
 
-  if (!response.ok) {
-    throw new Error(`GitHub OAuth attempt lookup failed with ${response.status}`);
-  }
-
-  return unwrapApiResponse<GitHubOAuthAttemptDto>(await response.json());
+  return unwrapRpcResponse<GitHubOAuthAttemptDto>(response, "GitHub OAuth attempt lookup failed");
 }

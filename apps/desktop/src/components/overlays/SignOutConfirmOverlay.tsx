@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useClientActivityLog } from "@/components/ClientActivityLogProvider";
 import {
   AlertDialog,
   AlertDialogContent,
@@ -23,6 +24,7 @@ export function SignOutConfirmOverlay({
   onConfirm,
 }: SignOutConfirmOverlayProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const { logEvent } = useClientActivityLog();
 
   const handleCancel = () => {
     if (isSubmitting) {
@@ -57,10 +59,24 @@ export function SignOutConfirmOverlay({
           <AlertDialogDescription>현재 세션을 종료하고 로그인 페이지로 이동합니다.</AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <Button disabled={isSubmitting} onClick={handleCancel} type="button" variant="outline">
+          <Button
+            clientLog={{ action: "로그아웃 취소 CTA 클릭", source: "sign-out-confirm-overlay" }}
+            disabled={isSubmitting}
+            onClick={handleCancel}
+            type="button"
+            variant="outline"
+          >
             취소
           </Button>
-          <Button disabled={isSubmitting} onClick={() => void handleConfirm()} type="button">
+          <Button
+            clientLog={{ action: "로그아웃 확인 CTA 클릭", source: "sign-out-confirm-overlay" }}
+            disabled={isSubmitting}
+            onClick={() => {
+              logEvent({ action: "로그아웃 처리 시작", source: "sign-out-confirm-overlay" });
+              void handleConfirm();
+            }}
+            type="button"
+          >
             {isSubmitting ? "로그아웃 중..." : "로그아웃"}
           </Button>
         </AlertDialogFooter>

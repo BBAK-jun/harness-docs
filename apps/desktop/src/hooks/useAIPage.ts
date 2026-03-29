@@ -4,7 +4,7 @@ import type { AITaskExecutionResult } from "../domain/aiTasks";
 import { buildAITaskEntryPoints } from "../lib/aiTaskEntryPoints";
 import { buildAITaskExecutionInput } from "../lib/runtimePayloads";
 import { desktopMutationKeys } from "../queries/queryKeys";
-import type { AITaskEntryPoint } from "../types";
+import type { AITaskEntryPoint } from "../types/domain-ui";
 import type { WorkspaceShellModel } from "./useWorkspaceShell";
 
 type AsyncTaskState<TResult> = {

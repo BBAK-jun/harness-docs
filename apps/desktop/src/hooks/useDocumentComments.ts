@@ -1,13 +1,15 @@
 import { useEffect, useMemo, useState } from "react";
 import type {
-  CreateDocumentBlockCommentInput,
-  CreateDocumentCommentReplyInput,
   DocumentComment,
   DocumentCommentMention,
   DocumentCommentThread,
-  MembershipId,
   WorkspaceGraph,
-} from "../types";
+} from "../types/contracts";
+import type {
+  CreateDocumentBlockCommentInput,
+  CreateDocumentCommentReplyInput,
+  MembershipId,
+} from "../types/domain-ui";
 
 function buildCommentId(documentId: string, now: number) {
   return `cmt_${documentId}_${now}`;

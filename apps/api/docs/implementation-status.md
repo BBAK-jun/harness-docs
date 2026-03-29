@@ -15,6 +15,60 @@ Harness Docs는 현재 `데스크톱 앱 골격 + authoritative API + PostgreSQL
 - publish execute
 - publish governance preflight read
 
+## 사용자 흐름 체크리스트
+
+아래 체크리스트는 2026-03-29 기준으로 코드와 검증 결과를 함께 반영한 현재 상태입니다.
+
+### 지금 확인 가능한 흐름
+
+- [x] GitHub OAuth 시작 endpoint가 존재한다
+- [x] 앱 세션 exchange / restore / sign-out 흐름이 동작한다
+- [x] 인증된 세션으로 workspace bootstrap을 불러올 수 있다
+- [x] 인증된 세션으로 workspace를 생성할 수 있다
+- [x] workspace 생성 시 docs repository binding을 함께 저장할 수 있다
+- [x] document create / update write path가 API에 존재한다
+- [x] approval request / decision write path가 API에 존재한다
+- [x] publish record create write path가 API에 존재한다
+- [x] document publish preflight를 authoritative API에서 조회할 수 있다
+- [x] publish execute 호출 시 publish record와 document publish 메타데이터가 갱신된다
+- [x] OpenAPI JSON과 Scalar UI를 확인할 수 있다
+- [x] API integration test가 workspace -> document -> approval -> publish 흐름을 검증한다
+
+### 데스크톱에서 현재 확인 가능한 것
+
+- [x] TanStack Router 기반 file route 구조가 연결돼 있다
+- [x] sign-in 이후 bootstrap을 API에서 직접 읽는다
+- [x] workspace 목록 / workspace graph read는 RPC 기반이다
+- [x] publish 화면은 publish preflight를 API에서 직접 읽는다
+- [x] Tauri 런타임에서는 GitHub OAuth 브라우저 오픈 흐름이 연결돼 있다
+- [x] workspace create 화면은 API create endpoint를 호출한다
+
+### 아직 부분 구현인 흐름
+
+- [ ] approval 화면이 API write flow까지 완전히 연결돼 있지는 않다
+- [ ] comments는 authoritative API write가 아니라 desktop local state로 유지된다
+- [ ] document editing lock은 authoritative API write가 아니라 desktop local state로 유지된다
+- [ ] markdown 편집 draft는 서버 저장이 아니라 desktop local state에 머문다
+- [ ] publish execute는 실제 GitHub adapter가 아니라 mock commit / PR 결과를 사용한다
+- [ ] webhook delivery outbox는 아직 없다
+- [ ] comment write API는 아직 없다
+- [ ] document lock write API는 아직 없다
+- [ ] workspace / document / approval 권한 정책은 더 강화가 필요하다
+
+### 제품 점검용 수동 확인 체크리스트
+
+- [ ] `pnpm dev:api`로 API를 올린다
+- [ ] `pnpm dev:desktop` 또는 `pnpm --filter @harness-docs/desktop dev:tauri`로 desktop을 올린다
+- [ ] sign-in 화면에서 GitHub OAuth 시작이 되는지 확인한다
+- [ ] 로그인 후 workspace 목록이 bootstrap 데이터로 보이는지 확인한다
+- [ ] 새 workspace 생성 후 목록과 active workspace가 갱신되는지 확인한다
+- [ ] document 화면에서 문서 목록과 문서 상세가 보이는지 확인한다
+- [ ] publish 화면에서 preflight badge와 blocking / rationale 상태가 보이는지 확인한다
+- [ ] approval 화면에서 bootstrap된 approval 상태가 보이는지 확인한다
+- [ ] comment 추가 시 현재 세션 안에서는 스레드가 보이지만, authoritative 저장은 아니라는 점을 확인한다
+- [ ] edit lock 획득/해제도 현재 세션 로컬 상태 기반이라는 점을 확인한다
+- [ ] publish 실행 결과의 branch / commit / PR 정보가 실제 GitHub 반영이 아니라 mock 결과인지 확인한다
+
 ## 완료된 범위
 
 ### 모노레포 기반

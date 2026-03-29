@@ -1,60 +1,12 @@
 import type {
-  PublishGovernanceAdapter,
   PublishGovernanceDocumentSnapshot,
   PublishGovernancePublishRecordSnapshot,
+  PublishRecord,
+  WorkspaceDocument,
+  WorkspaceGraph,
 } from "@harness-docs/contracts";
+import type { PublishGovernanceAdapter } from "../application/ports.ts";
 import { projectPublishPreflightView } from "./publishGovernanceProjection.ts";
-
-interface ApiDocumentLike {
-  id: string;
-  workspaceId: string;
-  title: string;
-  type: "PRD" | "UX Flow" | "Technical Spec" | "Policy/Decision";
-  lifecycle: {
-    status: string;
-    updatedAt: string;
-    review: {
-      freshness: {
-        status: "current" | "stale";
-        evaluatedAt?: string | null;
-        rationaleRequired: boolean;
-        summary: string;
-      };
-    };
-  };
-  prePublication: {
-    summary: string;
-    staleRationaleRequired: boolean;
-    evaluatedAt: string;
-    blockingIssues: Array<{
-      kind: string;
-      severity: "warning" | "blocking";
-      summary: string;
-      requiredAction: string;
-    }>;
-  };
-}
-
-interface ApiPublishRecordLike {
-  id: string;
-  lifecycle: {
-    status: "draft" | "ready_for_publish" | "publishing" | "published";
-  };
-  publication: {
-    repository: {
-      branchName: string;
-    };
-    pullRequest: {
-      number?: number | null;
-      url?: string | null;
-    };
-  };
-  staleDocumentIds: string[];
-}
-
-interface ApiWorkspaceGraphLike {
-  publishRecords?: ApiPublishRecordLike[];
-}
 
 function toBlockingIssueCode(kind: string) {
   switch (kind) {
@@ -69,7 +21,7 @@ function toBlockingIssueCode(kind: string) {
   }
 }
 
-function toDocumentSnapshot(document: ApiDocumentLike): PublishGovernanceDocumentSnapshot {
+function toDocumentSnapshot(document: WorkspaceDocument): PublishGovernanceDocumentSnapshot {
   const staleReasons = [];
 
   if (document.lifecycle.review.freshness.status === "stale") {
@@ -125,9 +77,7 @@ function toDocumentSnapshot(document: ApiDocumentLike): PublishGovernanceDocumen
   };
 }
 
-function toPublishRecordSnapshot(
-  publishRecord: ApiPublishRecordLike | null,
-): PublishGovernancePublishRecordSnapshot | null {
+function toPublishRecordSnapshot(publishRecord: PublishRecord | null): PublishGovernancePublishRecordSnapshot | null {
   if (!publishRecord) {
     return null;
   }
@@ -155,18 +105,15 @@ function toPublishRecordSnapshot(
 export function createPublishGovernanceAdapter(): PublishGovernanceAdapter {
   return {
     projectDocumentPublishPreflight({ documentId, workspaceGraph, documents }) {
-      const typedDocuments = documents as ApiDocumentLike[];
-      const typedWorkspaceGraph = workspaceGraph as ApiWorkspaceGraphLike;
-      const document = typedDocuments.find((entry) => entry.id === documentId) ?? null;
+      const document = documents.find((entry) => entry.id === documentId) ?? null;
 
       if (!document) {
         return null;
       }
 
-      const publishRecord =
-        typedWorkspaceGraph.publishRecords?.find((record) =>
-          record.staleDocumentIds.includes(documentId),
-        ) ?? null;
+      const publishRecord = workspaceGraph.publishRecords.find((record) =>
+        record.staleDocumentIds.includes(documentId),
+      ) ?? null;
 
       return projectPublishPreflightView(
         toDocumentSnapshot(document),

@@ -1,6 +1,6 @@
 import type { DesktopKeyValueStore } from "../desktop/contracts";
 import type { AppearanceMode } from "../services/contracts";
-import type { AIProvider } from "../types";
+import type { AIProvider } from "../types/contracts";
 
 const APP_PREFERENCES_STORAGE_KEY = "harness-docs.app-preferences.v1";
 

@@ -27,6 +27,8 @@
 - `src/components`: 주요 화면 컴포넌트
 - `src/services`: 앱 서비스 계약과 구현
 - `src/domain`: 클라이언트 측 도메인 인터페이스
+- `src/types/contracts.ts`: `packages/contracts`에서 가져오는 공유 타입 경계
+- `src/types/domain-ui.ts`: desktop 전용 UI/입력 타입 경계
 - `src/data`: 목 데이터와 세션 샘플
 - `src/lib`: UI/도메인 보조 유틸리티
 - `src/desktop`: Tauri 런타임 연동
@@ -67,7 +69,7 @@ pnpm --filter @harness-docs/desktop check:rust
 
 브라우저와 데스크톱 모두 이 값을 기준으로 다음 흐름을 사용합니다.
 
-1. `/api/auth/github/start` 호출
+1. `POST /api/auth/github/authorizations` 호출
 2. GitHub authorize 페이지로 이동
 3. API callback 완료
 4. 앱 세션 토큰 저장
@@ -103,6 +105,17 @@ pnpm --filter @harness-docs/desktop check:rust
 - 이 패키지는 사용자 경험과 화면 상태를 담당합니다.
 - 승인 규칙, stale/current 판정, publish preflight 같은 정책 판단은 장기적으로 API에 둡니다.
 - 데스크톱은 API 결과를 표시하고 사용자 입력을 수집하는 역할에 집중합니다.
+
+## 타입 경계
+
+desktop 타입은 두 층으로 나눕니다.
+
+- `src/types/contracts.ts`
+  `packages/contracts`의 공유 계약을 그대로 다시 내보내는 경계입니다. `WorkspaceGraph`, `PublishRecord`, `NavigationArea` 같이 API와 같은 의미를 가져야 하는 타입은 여기서만 가져옵니다.
+- `src/types/domain-ui.ts`
+  desktop 안에서만 의미가 있는 타입입니다. `AITaskEntryPoint`, 댓글 입력 payload, 로컬 id alias처럼 UI 상호작용을 표현하는 타입은 여기에 둡니다.
+
+즉 공유 의미를 가지면 `contracts`, desktop 안에서만 쓰이면 `domain-ui`를 사용합니다.
 
 ## Query 경계 규칙
 

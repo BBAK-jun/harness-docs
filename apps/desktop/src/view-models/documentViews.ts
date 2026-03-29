@@ -1,4 +1,4 @@
-import type { WorkspaceDocument, WorkspaceGraph } from "../types";
+import type { WorkspaceDocument, WorkspaceGraph } from "../types/contracts";
 import { getMemberSummaryByMembershipId, type MemberSummaryView } from "./memberSummaries";
 
 export interface DocumentListItemView {

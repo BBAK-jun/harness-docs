@@ -3,7 +3,8 @@ import type {
   DocumentApprovalBundle,
   WorkspaceApprovalPolicy,
 } from "../domain/approvals";
-import type { WorkspaceGraph, WorkspaceId, DocumentId } from "../types";
+import type { WorkspaceGraph } from "../types/contracts";
+import type { DocumentId, WorkspaceId } from "../types/domain-ui";
 
 interface SessionBackedApprovalServiceOptions {
   getWorkspaceGraph: (

@@ -5,9 +5,10 @@ import {
   LogOut,
   PanelLeftOpen,
 } from "lucide-react";
+import { useClientActivityLog } from "@/components/ClientActivityLogProvider";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
-import type { WorkspaceSummary } from "../types";
+import type { WorkspaceSummary } from "../types/contracts";
 
 type OnboardingArea = "workspaces" | "workspace-create" | "invitation-acceptance";
 
@@ -39,6 +40,8 @@ const navItems = [
 
 export function AuthenticatedAppSidebar({
   activeArea,
+  className,
+  layout = "desktop",
   lastActiveWorkspaceId,
   onOpenArea,
   onOpenLastWorkspace,
@@ -47,6 +50,8 @@ export function AuthenticatedAppSidebar({
   workspaces,
 }: {
   activeArea: OnboardingArea;
+  className?: string;
+  layout?: "desktop" | "drawer";
   lastActiveWorkspaceId: string | null;
   onOpenArea: (area: OnboardingArea) => void;
   onOpenLastWorkspace: () => void;
@@ -58,10 +63,19 @@ export function AuthenticatedAppSidebar({
   } | null;
   workspaces: WorkspaceSummary[];
 }) {
+  const { logEvent } = useClientActivityLog();
   const hasWorkspaces = workspaces.length > 0;
 
   return (
-    <aside className="sticky top-0 hidden h-screen w-64 shrink-0 flex-col bg-[var(--sidebar-background)] text-[var(--sidebar-foreground)] xl:flex">
+    <aside
+      className={cn(
+        "flex flex-col bg-[var(--sidebar-background)] text-[var(--sidebar-foreground)]",
+        className ??
+          (layout === "desktop"
+            ? "sticky top-0 hidden h-screen w-64 shrink-0 xl:flex"
+            : "min-h-full w-full"),
+      )}
+    >
       <div className="flex h-14 items-center border-b border-[var(--sidebar-border)] px-5">
         <div className="flex items-center gap-2.5">
           <div className="flex h-7 w-7 items-center justify-center rounded bg-[var(--sidebar-primary)]">
@@ -99,6 +113,7 @@ export function AuthenticatedAppSidebar({
                 )}
                 key={item.area}
                 onClick={() => {
+                  logEvent({ action: `${item.title} 사이드바 CTA 클릭`, source: "authenticated-sidebar" });
                   if (item.area === "workspaces" && !hasWorkspaces) {
                     toast("아직 워크스페이스가 없습니다.", {
                       description: "먼저 워크스페이스를 만들거나 초대를 수락한 뒤 목록으로 돌아오세요.",
@@ -126,7 +141,10 @@ export function AuthenticatedAppSidebar({
         {hasWorkspaces ? (
           <button
             className="flex w-full items-center gap-2.5 rounded px-2.5 py-2 text-sm text-[var(--sidebar-foreground)] transition-colors hover:bg-[color:color-mix(in_srgb,var(--sidebar-accent)_50%,transparent)] hover:text-[var(--sidebar-accent-foreground)]"
-            onClick={onOpenLastWorkspace}
+            onClick={() => {
+              logEvent({ action: "최근 워크스페이스 열기 CTA 클릭", source: "authenticated-sidebar" });
+              onOpenLastWorkspace();
+            }}
             type="button"
           >
             <FolderKanban className="h-4 w-4 shrink-0" />
@@ -135,8 +153,18 @@ export function AuthenticatedAppSidebar({
         ) : null}
       </div>
 
-      <div className="mt-auto space-y-0.5 border-t border-[var(--sidebar-border)] px-3 py-3">
-        <div className="flex items-center gap-2.5 px-2.5 py-2">
+      <div
+        className={cn(
+          "space-y-0.5 border-t border-[var(--sidebar-border)] px-3 py-3",
+          layout === "desktop" ? "mt-auto" : "mt-6",
+        )}
+      >
+        <div
+          className={cn(
+            "flex items-center gap-2.5 px-2.5 py-2",
+            layout === "drawer" && "rounded border border-[var(--sidebar-border)] bg-[var(--sidebar-accent)]/50",
+          )}
+        >
           <div className="flex h-7 w-7 items-center justify-center rounded-full bg-[var(--sidebar-primary)] text-xs font-medium text-[var(--sidebar-primary-foreground)]">
             {user?.avatarInitials ?? "HD"}
           </div>
@@ -149,8 +177,15 @@ export function AuthenticatedAppSidebar({
         </div>
 
         <button
-          className="flex w-full items-center gap-2.5 rounded px-2.5 py-2 text-sm text-[var(--sidebar-foreground)] transition-colors hover:bg-[color:color-mix(in_srgb,var(--sidebar-accent)_50%,transparent)] hover:text-[var(--sidebar-accent-foreground)]"
-          onClick={onSignOutRequest}
+          className={cn(
+            "flex w-full items-center gap-2.5 rounded px-2.5 py-2 text-sm text-[var(--sidebar-foreground)] transition-colors hover:bg-[color:color-mix(in_srgb,var(--sidebar-accent)_50%,transparent)] hover:text-[var(--sidebar-accent-foreground)]",
+            layout === "drawer" &&
+              "mt-2 border border-transparent bg-[color:color-mix(in_srgb,var(--sidebar-accent)_28%,transparent)]",
+          )}
+          onClick={() => {
+            logEvent({ action: "로그아웃 CTA 클릭", source: "authenticated-sidebar" });
+            onSignOutRequest();
+          }}
           type="button"
         >
           <LogOut className="h-4 w-4 shrink-0" />

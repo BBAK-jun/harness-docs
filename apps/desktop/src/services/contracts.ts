@@ -8,13 +8,8 @@ import type { ApprovalService } from "../domain/approvals";
 import type { AITaskService } from "../domain/aiTasks";
 import type { PublishingService } from "../domain/publishing";
 import type { WorkspaceMembershipService } from "../domain/workspaceMembership";
-import type {
-  AIProvider,
-  SessionUser,
-  WorkspaceGraph,
-  WorkspaceId,
-  WorkspaceSummary,
-} from "../types";
+import type { AIProvider, SessionUser, WorkspaceGraph, WorkspaceSummary } from "../types/contracts";
+import type { WorkspaceId } from "../types/domain-ui";
 
 export type DesktopRuntime = "tauri" | "browser";
 export type VersionControlProvider = "github";

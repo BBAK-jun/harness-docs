@@ -18,29 +18,39 @@ import {
   workspaces,
 } from "@harness-docs/db";
 import type {
+  AIDraftSuggestionSection,
+  AuthoringContext,
   BootstrapSessionDto,
+  ContentStructureSection,
+  DocumentApproval,
+  PublishRecord,
   SessionUserDto,
+  WorkspaceDocument as WorkspaceDocumentDto,
+  WorkspaceGraph as WorkspaceGraphDto,
   WorkspaceCreateRequestDto,
   WorkspaceInvitationAcceptRequestDto,
   WorkspaceOnboardingEnvelopeDto,
-  WorkspaceSessionDataSource,
   WorkspaceSummaryDto,
 } from "@harness-docs/contracts";
 import { defaultWorkspaceCatalog } from "@harness-docs/contracts";
 import { and, desc, eq, inArray } from "drizzle-orm";
-import { buildDocumentMarkdown, deriveDocumentState } from "../domain/documentAggregate.ts";
+import type { UnresolvedApprovalSnapshot } from "../../domain/documentAggregate.ts";
+import { buildDocumentMarkdown, deriveDocumentState } from "../../domain/documentAggregate.ts";
 import type {
+  PublishDraftAggregate,
   PublishDocumentSnapshot,
   PublishPreflightStatus,
   PublishRecordStatus,
   PublishStageId,
-} from "../domain/publishAggregate.ts";
+  PublishStaleRationaleEntry,
+} from "../../domain/publishAggregate.ts";
 import {
   buildPublishPreflightResult,
   buildPublishStages,
   createPublishDraft,
-} from "../domain/publishAggregate.ts";
-import { buildId, isDefined, nowIso, slugify, toDate } from "../domain/shared.ts";
+} from "../../domain/publishAggregate.ts";
+import { buildId, isDefined, nowIso, slugify, toDate } from "../../domain/shared.ts";
+import type { WorkspaceSessionDataSource } from "../../application/ports.ts";
 
 const fallbackSessionUser: SessionUserDto = {
   id: "usr_demo",
@@ -55,6 +65,18 @@ const workspaceAreaMap = new Map(
   defaultWorkspaceCatalog.map((workspace) => [workspace.id, workspace.areas]),
 );
 
+const emptyAuthoringContext: AuthoringContext = {
+  workspaceId: "",
+  currentDocumentId: null,
+  templateId: null,
+  currentUserMembershipId: "",
+  activeArea: "editor",
+  intent: "create_document",
+  linkedDocumentIds: [],
+  invalidatedByDocumentIds: [],
+  referenceDocumentIds: [],
+};
+
 type UserRow = typeof users.$inferSelect;
 type WorkspaceRow = typeof workspaces.$inferSelect;
 type MembershipRow = typeof workspaceMemberships.$inferSelect;
@@ -68,6 +90,7 @@ type DraftRow = typeof aiDrafts.$inferSelect;
 type PublishRecordRow = typeof publishRecords.$inferSelect;
 type PublishArtifactRow = typeof publishRecordArtifacts.$inferSelect;
 type PublishNotificationRow = typeof publishNotifications.$inferSelect;
+type DbExecutor = Pick<HarnessDocsDatabase, "select" | "insert" | "update">;
 
 function asIso(value: Date | string | null | undefined) {
   if (value == null) {
@@ -162,33 +185,10 @@ function groupBy<T extends Record<string, unknown>, K extends keyof T>(items: T[
   return grouped;
 }
 
-function buildWorkspaceSummary(
-  graph: any,
-  membership: MembershipRow | undefined,
-): WorkspaceSummaryDto {
-  return {
-    id: graph.workspace.id,
-    name: graph.workspace.name,
-    repo: `github.com/${graph.workspace.docsRepository.owner}/${graph.workspace.docsRepository.name}`,
-    role: membership?.role ?? "Lead",
-    description: graph.workspace.description,
-    openReviews: graph.documents.filter(
-      (document: any) => document.lifecycle.review.status === "review_requested",
-    ).length,
-    pendingDrafts: graph.documents.filter((document: any) =>
-      ["draft", "in_review"].includes(document.lifecycle.status),
-    ).length,
-    staleDocuments: graph.documents.filter(
-      (document: any) => document.lifecycle.review.freshness.status === "stale",
-    ).length,
-    areas: getWorkspaceAreas(graph.workspace.id),
-  };
-}
-
 export function createPostgresWorkspaceSessionSource(
   db: HarnessDocsDatabase = createDatabase(),
 ): WorkspaceSessionDataSource {
-  async function buildWorkspaceGraph(workspaceId: string) {
+  async function buildWorkspaceGraph(workspaceId: string): Promise<WorkspaceGraphDto | null> {
     const [workspaceRow] = await db
       .select()
       .from(workspaces)
@@ -308,8 +308,11 @@ export function createPostgresWorkspaceSessionSource(
       source: template.source,
       version: template.version,
       createdByMembershipId: template.createdByMembershipId,
-      authoringContext: castJsonObject(template.authoringContext, {}),
-      sections: castJsonArray(template.sections),
+      authoringContext: castJsonObject<AuthoringContext>(
+        template.authoringContext,
+        emptyAuthoringContext,
+      ),
+      sections: castJsonArray<ContentStructureSection>(template.sections),
       lifecycle: {
         status: template.status,
         createdAt: asIso(template.createdAt),
@@ -404,8 +407,11 @@ export function createPostgresWorkspaceSessionSource(
         kind: draft.kind,
         summary: draft.summary,
         promptLabel: draft.promptLabel,
-        authoringContext: castJsonObject(draft.authoringContext, {}),
-        sections: castJsonArray(draft.sections),
+        authoringContext: castJsonObject<AuthoringContext>(
+          draft.authoringContext,
+          emptyAuthoringContext,
+        ),
+        sections: castJsonArray<AIDraftSuggestionSection>(draft.sections),
         suggestedLinkedDocumentIds: castJsonArray<string>(draft.suggestedLinkedDocumentIds),
         lifecycle: {
           status: draft.status,
@@ -421,9 +427,13 @@ export function createPostgresWorkspaceSessionSource(
 
     const mappedPublishRecords = publishRecordRows.map((record) => {
       const artifactsForRecord = artifactRowsByPublishRecordId.get(record.id) ?? [];
-      const unresolvedApprovals = castJsonArray<any>(record.unresolvedApprovalsSnapshot);
+      const unresolvedApprovals = castJsonArray<UnresolvedApprovalSnapshot>(
+        record.unresolvedApprovalsSnapshot,
+      );
       const invalidationIds = castJsonArray<string>(record.invalidationIdsSnapshot);
-      const staleRationaleEntries = castJsonArray<any>(record.staleRationaleEntries);
+      const staleRationaleEntries = castJsonArray<PublishStaleRationaleEntry>(
+        record.staleRationaleEntries,
+      );
       const artifactApprovalsById = new Map(
         unresolvedApprovals.map((entry) => [
           entry.approvalId ?? `${entry.documentId}:${entry.label}`,
@@ -714,6 +724,35 @@ export function createPostgresWorkspaceSessionSource(
       templates: mappedTemplates,
       aiDraftSuggestions: mappedDrafts,
       publishRecords: mappedPublishRecords,
+    } as WorkspaceGraphDto;
+  }
+
+  type WorkspaceGraph = NonNullable<Awaited<ReturnType<typeof buildWorkspaceGraph>>>;
+  type WorkspaceDocument = WorkspaceDocumentDto;
+  type WorkspaceApproval = DocumentApproval;
+  type WorkspacePublishRecord = PublishRecord;
+  type WorkspacePublishArtifact = WorkspacePublishRecord["artifacts"][number];
+
+  function buildWorkspaceSummary(
+    graph: WorkspaceGraph,
+    membership: MembershipRow | undefined,
+  ): WorkspaceSummaryDto {
+    return {
+      id: graph.workspace.id,
+      name: graph.workspace.name,
+      repo: `github.com/${graph.workspace.docsRepository.owner}/${graph.workspace.docsRepository.name}`,
+      role: membership?.role ?? "Lead",
+      description: graph.workspace.description,
+      openReviews: graph.documents.filter(
+        (document) => document.lifecycle.review.status === "review_requested",
+      ).length,
+      pendingDrafts: graph.documents.filter((document) =>
+        ["draft", "in_review"].includes(document.lifecycle.status),
+      ).length,
+      staleDocuments: graph.documents.filter(
+        (document) => document.lifecycle.review.freshness.status === "stale",
+      ).length,
+      areas: getWorkspaceAreas(graph.workspace.id),
     };
   }
 
@@ -825,7 +864,7 @@ export function createPostgresWorkspaceSessionSource(
       return null;
     }
 
-    const document = graph.documents.find((entry: any) => entry.id === documentId);
+    const document = graph.documents.find((entry) => entry.id === documentId);
 
     if (!document) {
       return null;
@@ -844,7 +883,7 @@ export function createPostgresWorkspaceSessionSource(
       return null;
     }
 
-    const approval = graph.approvals.find((entry: any) => entry.id === approvalId);
+    const approval = graph.approvals.find((entry) => entry.id === approvalId);
 
     if (!approval) {
       return null;
@@ -863,7 +902,7 @@ export function createPostgresWorkspaceSessionSource(
       return null;
     }
 
-    const publishRecord = graph.publishRecords.find((entry: any) => entry.id === publishRecordId);
+    const publishRecord = graph.publishRecords.find((entry) => entry.id === publishRecordId);
 
     if (!publishRecord) {
       return null;
@@ -875,10 +914,13 @@ export function createPostgresWorkspaceSessionSource(
     };
   }
 
-  function buildCommittedFilesFromGraph(publishRecord: any, graph: any) {
-    return publishRecord.artifacts.flatMap((artifact: any) => {
+  function buildCommittedFilesFromGraph(
+    publishRecord: WorkspacePublishRecord,
+    graph: WorkspaceGraph,
+  ) {
+    return publishRecord.artifacts.flatMap((artifact: WorkspacePublishArtifact) => {
       if (artifact.kind === "document") {
-        const document = graph.documents.find((entry: any) => entry.id === artifact.targetId);
+        const document = graph.documents.find((entry) => entry.id === artifact.targetId);
         return document ? [`documents/${document.slug}.md`] : [];
       }
 
@@ -907,7 +949,7 @@ export function createPostgresWorkspaceSessionSource(
       return null;
     }
 
-    const publishRecord = graph.publishRecords.find((entry: any) => entry.id === publishRecordId);
+    const publishRecord = graph.publishRecords.find((entry) => entry.id === publishRecordId);
 
     if (!publishRecord) {
       return null;
@@ -921,7 +963,7 @@ export function createPostgresWorkspaceSessionSource(
   }
 
   async function allocateDocumentSlug(
-    executor: any,
+    executor: DbExecutor,
     workspaceId: string,
     title: string,
     excludeDocumentId?: string,
@@ -951,7 +993,7 @@ export function createPostgresWorkspaceSessionSource(
   }
 
   async function normalizeLinkedDocumentIds(
-    executor: any,
+    executor: DbExecutor,
     workspaceId: string,
     linkedDocumentIds: string[] | undefined,
     excludeDocumentId?: string,
@@ -978,7 +1020,7 @@ export function createPostgresWorkspaceSessionSource(
   }
 
   async function appendDocumentVersion(
-    executor: any,
+    executor: DbExecutor,
     documentId: string,
     changedByMembershipId: string,
     markdownSource: string,
@@ -1006,7 +1048,7 @@ export function createPostgresWorkspaceSessionSource(
   }
 
   async function syncDocumentProjection(
-    executor: any,
+    executor: DbExecutor,
     documentId: string,
     actorMembershipId: string | null,
     timestamp: string,
@@ -1084,7 +1126,7 @@ export function createPostgresWorkspaceSessionSource(
   }
 
   async function loadPublishDocumentSnapshots(
-    executor: any,
+    executor: DbExecutor,
     workspaceId: string,
     documentIds: string[],
   ): Promise<PublishDocumentSnapshot[]> {
@@ -1169,7 +1211,7 @@ export function createPostgresWorkspaceSessionSource(
   }
 
   async function recalculatePublishRecordPreflight(
-    executor: any,
+    executor: DbExecutor,
     publishRecordId: string,
     staleRationaleOverride?: string,
   ) {
@@ -1195,7 +1237,9 @@ export function createPostgresWorkspaceSessionSource(
       recordRow.workspaceId,
       targetedDocumentIds,
     );
-    const staleRationaleEntries = castJsonArray<any>(recordRow.staleRationaleEntries);
+    const staleRationaleEntries = castJsonArray<PublishStaleRationaleEntry>(
+      recordRow.staleRationaleEntries,
+    );
     const unresolvedApprovals = documentSnapshots.flatMap(
       (document) => document.unresolvedApprovals,
     );
@@ -1927,7 +1971,9 @@ export function createPostgresWorkspaceSessionSource(
           input.staleRationale != null &&
           input.staleRationale.trim().length > 0 &&
           preflightSnapshot.recordRow.preflightStatus === "blocked" &&
-          castJsonArray<any>(preflightSnapshot.recordRow.staleRationaleEntries).length === 0
+          castJsonArray<PublishStaleRationaleEntry>(
+            preflightSnapshot.recordRow.staleRationaleEntries,
+          ).length === 0
             ? preflightSnapshot.documentSnapshots
                 .filter((document) => document.freshnessStatus === "stale")
                 .map((document) => ({
@@ -1944,7 +1990,9 @@ export function createPostgresWorkspaceSessionSource(
                   supersededByDocumentId: null,
                   supersededReason: null,
                 }))
-            : castJsonArray<any>(preflightSnapshot.recordRow.staleRationaleEntries);
+            : castJsonArray<PublishStaleRationaleEntry>(
+                preflightSnapshot.recordRow.staleRationaleEntries,
+              );
 
         await tx
           .update(publishRecords)
@@ -2032,7 +2080,7 @@ export function createPostgresWorkspaceSessionSource(
         return null;
       }
 
-      const publishRecord = graph.publishRecords.find((entry: any) => entry.id === publishRecordId);
+      const publishRecord = graph.publishRecords.find((entry) => entry.id === publishRecordId);
 
       if (!publishRecord) {
         return null;

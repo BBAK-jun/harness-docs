@@ -1,8 +1,10 @@
 import type {
   SessionUserDto,
+} from "@harness-docs/contracts";
+import type {
   WorkspaceRepositoryValidationResult,
   WorkspaceRepositoryValidator,
-} from "@harness-docs/contracts";
+} from "../../application/ports.ts";
 
 interface GitHubRepositoryResponse {
   default_branch?: string;

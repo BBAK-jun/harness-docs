@@ -270,6 +270,7 @@ export function buildPublishStages(
 
     return {
       ...stage,
+      guidance: [...stage.guidance],
       status,
     };
   });

@@ -1,5 +1,6 @@
 import { toPublishPreflightView } from "../lib/publishGovernanceView";
-import type { WorkspaceGraph, WorkspaceId } from "../types";
+import type { WorkspaceGraph } from "../types/contracts";
+import type { WorkspaceId } from "../types/domain-ui";
 import type {
   PublishAutomationContract,
   PublishExecutionInput,

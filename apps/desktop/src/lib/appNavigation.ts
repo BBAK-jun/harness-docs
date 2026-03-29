@@ -3,7 +3,7 @@ import type {
   WorkspaceShellNavigation,
   WorkspaceShellRouteState,
 } from "../hooks/useWorkspaceShell";
-import type { NavigationArea } from "../types";
+import type { NavigationArea } from "../types/contracts";
 
 function workspaceAreaPath(area: NavigationArea, documentId: string | null) {
   if (area === "dashboard") {

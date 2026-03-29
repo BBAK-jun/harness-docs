@@ -47,6 +47,7 @@ function SignOutRouteErrorBoundary({
       }}
       secondaryAction={
         <Button
+          clientLog="로그인 화면"
           onClick={() => {
             reset();
             void router.navigate({ to: "/sign-in" });

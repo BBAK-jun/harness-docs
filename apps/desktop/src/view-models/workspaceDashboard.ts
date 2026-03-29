@@ -1,4 +1,5 @@
-import type { AITaskEntryPoint, WorkspaceGraph, WorkspaceSummary } from "../types";
+import type { WorkspaceGraph, WorkspaceSummary } from "../types/contracts";
+import type { AITaskEntryPoint } from "../types/domain-ui";
 import { getMemberSummaryByMembershipId, listWorkspaceMembers, type MemberSummaryView } from "./memberSummaries";
 
 export interface DashboardStatCard {

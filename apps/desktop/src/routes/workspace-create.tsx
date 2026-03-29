@@ -91,11 +91,6 @@ function WorkspaceCreateRoute() {
             },
           });
         }}
-        onSignOut={() => {
-          void app.handleSignOut().finally(() => {
-            void router.navigate({ to: "/sign-in" });
-          });
-        }}
         withinShell
       />
     </AuthenticatedOnboardingShell>
@@ -121,6 +116,7 @@ function WorkspaceCreateErrorBoundary({
       }}
       secondaryAction={
         <Button
+          clientLog="워크스페이스 목록"
           onClick={() => {
             reset();
             void router.navigate({ to: "/workspaces" });

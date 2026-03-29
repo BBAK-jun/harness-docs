@@ -2,7 +2,6 @@ import { Navigate, createFileRoute, useRouter } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
 import { AuthenticatedOnboardingShell } from "../pages/AuthenticatedOnboardingShell";
 import { useAppBootstrap } from "../hooks/useAppBootstrap";
-import { buildHarnessDocsNavigation } from "../lib/appNavigation";
 import { RouteErrorStateCard } from "../pages/pageUtils";
 import { WorkspaceSelectionPage } from "../pages/WorkspaceSelectionPage";
 
@@ -14,29 +13,13 @@ export const Route = createFileRoute("/workspaces")({
 function WorkspacesRoute() {
   const bootstrap = useAppBootstrap();
   const router = useRouter();
-  const routeState = {
-    activeArea: "dashboard" as const,
-    activeWorkspaceId: null,
-    selectedDocumentId: null,
-  };
-  const navigation = buildHarnessDocsNavigation(Route.useNavigate(), routeState);
   const app = {
     ...bootstrap,
     workspaces: bootstrap.session?.workspaces ?? [],
-    handleWorkspaceEnter: navigation.onWorkspaceEnter,
   };
 
   if (bootstrap.authentication?.status !== "authenticated") {
     return <Navigate to="/sign-in" />;
-  }
-
-  const preferredWorkspaceId =
-    bootstrap.session?.lastActiveWorkspaceId ??
-    app.workspaces[0]?.id ??
-    null;
-
-  if (preferredWorkspaceId) {
-    return <Navigate params={{ workspaceId: preferredWorkspaceId }} to="/$workspaceId/dashboard" />;
   }
 
   if (app.workspaces.length === 0) {
@@ -86,6 +69,12 @@ function WorkspacesRoute() {
         onOpenWorkspaceCreate={() => {
           void router.navigate({ to: "/workspace-create" });
         }}
+        onOpenWorkspace={(workspaceId) => {
+          void router.navigate({
+            to: "/$workspaceId/dashboard",
+            params: { workspaceId },
+          });
+        }}
         withinShell
       />
     </AuthenticatedOnboardingShell>
@@ -111,6 +100,7 @@ function WorkspacesRouteErrorBoundary({
       }}
       secondaryAction={
         <Button
+          clientLog="로그인 화면"
           onClick={() => {
             reset();
             void router.navigate({ to: "/sign-in" });

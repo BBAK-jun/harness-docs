@@ -1,6 +1,6 @@
-import { unwrapApiResponse, type BootstrapSessionDto } from "@harness-docs/contracts";
-import { harnessApiBaseUrl } from "../lib/rpc/client";
-import type { SessionUser, WorkspaceGraph, WorkspaceSummary } from "../types";
+import type { BootstrapSessionDto } from "@harness-docs/contracts";
+import { harnessRpcClient } from "../lib/rpc/client";
+import { unwrapRpcResponse } from "../lib/rpc/response";
 import type {
   AuthenticatedSessionSnapshot,
   WorkspaceSessionService,
@@ -16,9 +16,9 @@ function mapBootstrapSession(
   payload: BootstrapSessionDto,
 ): WorkspaceSessionSnapshot {
   return {
-    user: session.user as SessionUser,
-    workspaces: payload.workspaces as WorkspaceSummary[],
-    workspaceGraphs: payload.workspaceGraphs as WorkspaceGraph[],
+    user: session.user,
+    workspaces: payload.workspaces,
+    workspaceGraphs: payload.workspaceGraphs,
     lastActiveWorkspaceId: payload.lastActiveWorkspaceId,
   };
 }
@@ -34,15 +34,14 @@ export function createRpcWorkspaceSessionService({
 
       try {
         const sessionToken = await getSessionToken?.();
-        const response = await fetch(`${harnessApiBaseUrl}/api/session/bootstrap`, {
-          headers: sessionToken ? { authorization: `Bearer ${sessionToken}` } : undefined,
+        const response = await harnessRpcClient.api.session.bootstrap.$get({
+          header: sessionToken ? { authorization: `Bearer ${sessionToken}` } : undefined,
         });
 
-        if (!response.ok) {
-          throw new Error(`Workspace bootstrap failed with ${response.status}`);
-        }
-
-        const payload = unwrapApiResponse<BootstrapSessionDto>(await response.json());
+        const payload = await unwrapRpcResponse<BootstrapSessionDto>(
+          response,
+          "Workspace bootstrap failed",
+        );
         return mapBootstrapSession(session, payload);
       } catch {
         throw new Error("Workspace bootstrap must be loaded from the API.");

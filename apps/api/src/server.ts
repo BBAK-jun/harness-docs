@@ -1,11 +1,11 @@
 import "dotenv/config";
 import { serve } from "@hono/node-server";
-import { createApiApp } from "@harness-docs/contracts";
-import { createGitHubOAuthDataSource } from "./data/githubOAuthSource.ts";
-import { createGitHubWorkspaceRepositoryValidator } from "./data/githubWorkspaceRepositoryValidator.ts";
-import { createPostgresAuthSessionSource } from "./data/postgresAuthSessionSource.ts";
-import { createPostgresWorkspaceSessionSource } from "./data/postgresWorkspaceSessionSource.ts";
+import { createGitHubOAuthDataSource } from "./infrastructure/data/githubOAuthSource.ts";
+import { createGitHubWorkspaceRepositoryValidator } from "./infrastructure/data/githubWorkspaceRepositoryValidator.ts";
+import { createPostgresAuthSessionSource } from "./infrastructure/data/postgresAuthSessionSource.ts";
+import { createPostgresWorkspaceSessionSource } from "./infrastructure/data/postgresWorkspaceSessionSource.ts";
 import { createPublishGovernanceAdapter } from "./domain/publishGovernanceAdapter.ts";
+import { createApiApp } from "./app.ts";
 
 const port = Number(process.env.PORT ?? 4020);
 const hostname = process.env.HOST ?? "127.0.0.1";

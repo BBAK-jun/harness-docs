@@ -1,5 +1,17 @@
 import { useState } from "react";
 import { Eye, FilePenLine, GitBranch, Link2, Lock, MessageSquareMore, ShieldCheck, Sparkles } from "lucide-react";
+import { useClientActivityLog } from "@/components/ClientActivityLogProvider";
+import {
+  CompactPrimaryPageAction,
+  CompactSecondaryPageAction,
+} from "@/components/pageActions";
+import {
+  InsetPanel,
+  PanelCard,
+  PanelCardHeader,
+  PanelEmptyState,
+  SignalPanel,
+} from "@/components/pagePanels";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -15,6 +27,7 @@ import {
 type EditorTab = "preview" | "edit" | "links" | "comments";
 
 export function EditorPage({ app }: AppPageProps) {
+  const { logEvent } = useClientActivityLog();
   const [activeTab, setActiveTab] = useState<EditorTab>("preview");
   const document = app.activeDocument;
   const graph = app.activeWorkspaceGraph;
@@ -26,12 +39,12 @@ export function EditorPage({ app }: AppPageProps) {
         title="선택된 문서 없음"
         actions={
           <div className="flex flex-wrap gap-2">
-            <Button onClick={() => app.handleAreaChange("documents")} size="sm">
+            <CompactPrimaryPageAction clientLog="문서 목록으로 이동" onClick={() => app.handleAreaChange("documents")}>
               문서 목록으로 이동
-            </Button>
-            <Button onClick={() => app.handleAreaChange("dashboard")} size="sm" variant="outline">
+            </CompactPrimaryPageAction>
+            <CompactSecondaryPageAction clientLog="대시보드로 이동" onClick={() => app.handleAreaChange("dashboard")}>
               대시보드로 이동
-            </Button>
+            </CompactSecondaryPageAction>
           </div>
         }
       />
@@ -52,8 +65,8 @@ export function EditorPage({ app }: AppPageProps) {
   ];
 
   return (
-    <section className="overflow-hidden rounded-[calc(var(--radius)+0.35rem)] border border-[var(--border)] bg-[var(--card)]">
-      <div className="border-b border-[var(--border)] px-5 py-5">
+    <PanelCard>
+      <PanelCardHeader className="px-5 py-5">
         <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
           <div className="min-w-0">
             <div className="flex flex-wrap items-center gap-2">
@@ -73,29 +86,29 @@ export function EditorPage({ app }: AppPageProps) {
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
-            <Button onClick={() => app.handleAreaChange("ai")} size="sm" variant="outline">
+            <CompactSecondaryPageAction clientLog="AI 지원 이동" onClick={() => app.handleAreaChange("ai")}>
               <Sparkles />
               AI 지원
-            </Button>
-            <Button onClick={() => app.handleAreaChange("publish")} size="sm" variant="outline">
+            </CompactSecondaryPageAction>
+            <CompactSecondaryPageAction clientLog="발행 이동" onClick={() => app.handleAreaChange("publish")}>
               <GitBranch />
               발행
-            </Button>
+            </CompactSecondaryPageAction>
             {isLockedByActiveMember ? (
-              <Button onClick={() => app.handleReleaseEditing(document)} variant="outline">
+              <CompactSecondaryPageAction clientLog="편집 잠금 해제" onClick={() => app.handleReleaseEditing(document)}>
                 잠금 해제
-              </Button>
+              </CompactSecondaryPageAction>
             ) : (
-              <Button onClick={() => app.handleStartEditing(document)}>
+              <CompactPrimaryPageAction clientLog="편집 시작" onClick={() => app.handleStartEditing(document)}>
                 <FilePenLine />
                 편집 시작
-              </Button>
+              </CompactPrimaryPageAction>
             )}
           </div>
         </div>
-      </div>
+      </PanelCardHeader>
 
-      <div className="border-b border-[var(--border)] bg-[var(--surface)] px-5 py-3">
+      <InsetPanel className="rounded-none border-x-0 border-t-0 px-5 py-3" padding="none">
         <div className="flex flex-wrap items-center gap-4 text-sm text-[var(--muted-foreground)]">
           <div className="flex items-center gap-2">
             <Lock className="size-4" />
@@ -110,7 +123,7 @@ export function EditorPage({ app }: AppPageProps) {
           <span>승인 항목 {approvals.length}개</span>
           <span>최종 업데이트 {formatDateTime(document.lifecycle.updatedAt)}</span>
         </div>
-      </div>
+      </InsetPanel>
 
       <div className="border-b border-[var(--border)] px-5">
         <div className="flex flex-wrap gap-1">
@@ -122,7 +135,10 @@ export function EditorPage({ app }: AppPageProps) {
                   : "inline-flex items-center gap-2 border-b-2 border-transparent px-4 py-3 text-sm text-[var(--muted-foreground)] transition-colors hover:text-[var(--foreground)]"
               }
               key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
+              onClick={() => {
+                logEvent({ action: "에디터 탭 CTA 클릭", description: tab.label, source: "editor-page" });
+                setActiveTab(tab.id);
+              }}
               type="button"
             >
               <tab.icon className="size-4" />
@@ -164,7 +180,7 @@ export function EditorPage({ app }: AppPageProps) {
 
       {activeTab === "preview" ? (
         <div className="grid gap-5 p-5 xl:grid-cols-[1.2fr_0.8fr]">
-          <div className="rounded-[var(--radius)] border border-[var(--border)] bg-[var(--surface)] p-5">
+          <InsetPanel>
             <div className="flex items-center gap-2 text-sm font-medium text-[var(--foreground)]">
               <Eye className="size-4" />
               마크다운 미리보기
@@ -174,7 +190,7 @@ export function EditorPage({ app }: AppPageProps) {
                 {app.activeDocumentSource}
               </pre>
             </div>
-          </div>
+          </InsetPanel>
           <div className="flex flex-col gap-4">
             <SnapshotCard
               title="최신성"
@@ -197,13 +213,13 @@ export function EditorPage({ app }: AppPageProps) {
 
       {activeTab === "links" ? (
         <div className="p-5">
-          <div className="rounded-[var(--radius)] border border-[var(--border)] bg-[var(--surface)]">
+          <InsetPanel padding="none">
             <div className="border-b border-[var(--border)] px-5 py-4">
               <h3 className="text-lg font-semibold text-[var(--foreground)]">문서 관계</h3>
             </div>
             <div className="divide-y divide-[var(--border)]">
               {linkedDocuments.length === 0 ? (
-                <InlineEmptyState
+                <PanelEmptyState
                   title="연결 문서 없음"
                   description="PRD, UX 흐름, 기술 명세, 정책/의사결정 간 관계를 연결하면 이 탭이 문서 영향도 지도로 바뀝니다."
                 />
@@ -212,7 +228,10 @@ export function EditorPage({ app }: AppPageProps) {
                   <button
                     className="block w-full px-5 py-4 text-left transition-colors hover:bg-[var(--secondary)]/55"
                     key={entry.id}
-                    onClick={() => app.handleDocumentSelect(entry.id)}
+                    onClick={() => {
+                      logEvent({ action: "연결 문서 CTA 클릭", description: entry.title, source: "editor-page" });
+                      app.handleDocumentSelect(entry.id);
+                    }}
                     type="button"
                   >
                     <div className="flex flex-wrap items-center gap-2">
@@ -229,19 +248,19 @@ export function EditorPage({ app }: AppPageProps) {
                 ))
               )}
             </div>
-          </div>
+          </InsetPanel>
         </div>
       ) : null}
 
       {activeTab === "comments" ? (
         <div className="grid gap-5 p-5 xl:grid-cols-[1.1fr_0.9fr]">
-          <div className="rounded-[var(--radius)] border border-[var(--border)] bg-[var(--surface)]">
+          <InsetPanel padding="none">
             <div className="border-b border-[var(--border)] px-5 py-4">
               <h3 className="text-lg font-semibold text-[var(--foreground)]">대화</h3>
             </div>
             <div className="divide-y divide-[var(--border)]">
               {commentThreads.length === 0 ? (
-                <InlineEmptyState
+                <PanelEmptyState
                   title="댓글 스레드 없음"
                   description="리뷰 대화가 아직 없습니다. 블록 댓글을 추가하면 리뷰 페이지와 이 탭이 함께 업데이트됩니다."
                 />
@@ -263,15 +282,15 @@ export function EditorPage({ app }: AppPageProps) {
                 ))
               )}
             </div>
-          </div>
+          </InsetPanel>
 
-          <div className="rounded-[var(--radius)] border border-[var(--border)] bg-[var(--surface)]">
+          <InsetPanel padding="none">
             <div className="border-b border-[var(--border)] px-5 py-4">
               <h3 className="text-lg font-semibold text-[var(--foreground)]">승인 스냅샷</h3>
             </div>
             <div className="divide-y divide-[var(--border)]">
               {approvals.length === 0 ? (
-                <InlineEmptyState
+                <PanelEmptyState
                   title="승인 항목 없음"
                   description="이 문서에 연결된 승인 요청이 아직 없습니다."
                 />
@@ -292,10 +311,10 @@ export function EditorPage({ app }: AppPageProps) {
                 ))
               )}
             </div>
-          </div>
+          </InsetPanel>
         </div>
       ) : null}
-    </section>
+    </PanelCard>
   );
 }
 
@@ -308,26 +327,5 @@ function SnapshotCard({
   description: string;
   meta: string;
 }) {
-  return (
-    <div className="rounded-[var(--radius)] border border-[var(--border)] bg-[var(--surface)] p-4">
-      <p className="text-xs uppercase tracking-[0.18em] text-[var(--muted-foreground)]">{title}</p>
-      <p className="mt-3 text-sm leading-6 text-[var(--foreground)]">{description}</p>
-      <p className="mt-3 text-sm font-medium text-[var(--muted-foreground)]">{meta}</p>
-    </div>
-  );
-}
-
-function InlineEmptyState({
-  title,
-  description,
-}: {
-  title: string;
-  description: string;
-}) {
-  return (
-    <div className="px-5 py-6">
-      <p className="font-medium text-[var(--foreground)]">{title}</p>
-      <p className="mt-2 text-sm leading-6 text-[var(--muted-foreground)]">{description}</p>
-    </div>
-  );
+  return <SignalPanel description={description} label={title} value={<p className="text-sm font-medium text-[var(--muted-foreground)]">{meta}</p>} />;
 }

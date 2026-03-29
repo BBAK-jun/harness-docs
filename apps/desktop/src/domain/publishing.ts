@@ -1,12 +1,10 @@
 import type { PublishPreflightView, StalePublishRationaleDto } from "@harness-docs/contracts";
 import type {
-  MembershipId,
   PublishRecord,
-  PublishRecordId,
   WorkspaceDocument,
-  WorkspaceId,
   WorkspaceRepositoryBinding,
-} from "../types";
+} from "../types/contracts";
+import type { MembershipId, PublishRecordId, WorkspaceId } from "../types/domain-ui";
 
 export interface PublishAutomationContract {
   sourceOfTruth: "app";

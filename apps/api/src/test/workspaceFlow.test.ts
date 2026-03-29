@@ -1,10 +1,10 @@
 import assert from "node:assert/strict";
 import { after, before, beforeEach, describe, test } from "node:test";
 import { createDatabaseContext } from "@harness-docs/db";
-import { createApiApp } from "@harness-docs/contracts";
-import { createPostgresAuthSessionSource } from "../data/postgresAuthSessionSource.ts";
-import { createPostgresWorkspaceSessionSource } from "../data/postgresWorkspaceSessionSource.ts";
+import { createPostgresAuthSessionSource } from "../infrastructure/data/postgresAuthSessionSource.ts";
+import { createPostgresWorkspaceSessionSource } from "../infrastructure/data/postgresWorkspaceSessionSource.ts";
 import { createPublishGovernanceAdapter } from "../domain/publishGovernanceAdapter.ts";
+import { createApiApp } from "../app.ts";
 import {
   demoWorkspaceFixture,
   resetHarnessDocsDatabase,
@@ -154,9 +154,15 @@ describe("workspace flow integration", () => {
     assert.equal(openApiPayload.info?.title, "Harness Docs API");
     assert.ok(typeof openApiPayload.openapi === "string");
     assert.ok(openApiPayload.paths?.["/api/session/bootstrap"]);
+    assert.ok(openApiPayload.paths?.["/api/auth/sessions"]);
     assert.ok(
       openApiPayload.paths?.[
         "/api/workspaces/{workspaceId}/documents/{documentId}/publish-preflight"
+      ],
+    );
+    assert.ok(
+      openApiPayload.paths?.[
+        "/api/workspaces/{workspaceId}/publish-records/{publishRecordId}/executions"
       ],
     );
 
@@ -168,12 +174,14 @@ describe("workspace flow integration", () => {
     assert.match(scalarHtml, /Harness Docs API Reference/);
     assert.ok(scalarHtml.includes("/doc"));
 
-    const oauthStartResponse = await oauthApp.request("/api/auth/github/start");
+    const oauthStartResponse = await oauthApp.request("/api/auth/github/authorizations", {
+      method: "POST",
+    });
     assert.equal(oauthStartResponse.status, 200);
     assert.match(await oauthStartResponse.text(), /gha_test_attempt/);
 
     const oauthAttemptResponse = await oauthApp.request(
-      "/api/auth/github/attempts/gha_test_attempt",
+      "/api/auth/github/authorizations/gha_test_attempt",
     );
     assert.equal(oauthAttemptResponse.status, 200);
     assert.match(await oauthAttemptResponse.text(), /pending/);
@@ -188,7 +196,7 @@ describe("workspace flow integration", () => {
   test("requires an app session for bootstrap and supports exchange + sign-out", async () => {
     await assert.rejects(() => requestJson("/api/session/bootstrap"));
 
-    const exchanged = (await requestJson("/api/auth/session/exchange", {
+    const exchanged = (await requestJson("/api/auth/sessions", {
       method: "POST",
       body: {
         provider: "github_oauth",
@@ -217,8 +225,8 @@ describe("workspace flow integration", () => {
     assert.equal(restored.status, "authenticated");
     assert.equal(restored.user?.id, demoWorkspaceFixture.users.lead);
 
-    await requestJson("/api/auth/sign-out", {
-      method: "POST",
+    await requestJson("/api/auth/session", {
+      method: "DELETE",
       sessionToken: exchanged.sessionToken,
     });
 
@@ -254,7 +262,7 @@ describe("workspace flow integration", () => {
   });
 
   test("creates a workspace with explicit repo binding and refreshes bootstrap", async () => {
-    const exchanged = (await requestJson("/api/auth/session/exchange", {
+    const exchanged = (await requestJson("/api/auth/sessions", {
       method: "POST",
       body: {
         provider: "github_oauth",
@@ -329,7 +337,7 @@ describe("workspace flow integration", () => {
   });
 
   test("defaults workspace repo binding from the authenticated viewer", async () => {
-    const exchanged = (await requestJson("/api/auth/session/exchange", {
+    const exchanged = (await requestJson("/api/auth/sessions", {
       method: "POST",
       body: {
         provider: "github_oauth",
@@ -389,7 +397,7 @@ describe("workspace flow integration", () => {
       },
     );
 
-    const exchanged = (await requestJson("/api/auth/session/exchange", {
+    const exchanged = (await requestJson("/api/auth/sessions", {
       method: "POST",
       body: {
         provider: "github_oauth",
@@ -433,7 +441,7 @@ describe("workspace flow integration", () => {
   });
 
   test("returns contracts-driven publish preflight for a document", async () => {
-    const exchanged = (await requestJson("/api/auth/session/exchange", {
+    const exchanged = (await requestJson("/api/auth/sessions", {
       method: "POST",
       body: {
         provider: "github_oauth",
@@ -483,7 +491,7 @@ describe("workspace flow integration", () => {
   });
 
   test("bootstraps the workspace and executes document -> approval -> publish flow", async () => {
-    const exchanged = (await requestJson("/api/auth/session/exchange", {
+    const exchanged = (await requestJson("/api/auth/sessions", {
       method: "POST",
       body: {
         provider: "github_oauth",
@@ -543,7 +551,7 @@ describe("workspace flow integration", () => {
     ]);
 
     const requestApprovalResult = (await requestJson(
-      `/api/workspaces/${demoWorkspaceFixture.workspace.id}/documents/${documentId}/approvals/request`,
+      `/api/workspaces/${demoWorkspaceFixture.workspace.id}/documents/${documentId}/approvals`,
       {
         method: "POST",
         sessionToken: exchanged.sessionToken,
@@ -578,9 +586,9 @@ describe("workspace flow integration", () => {
     );
 
     const decideApprovalResult = (await requestJson(
-      `/api/workspaces/${demoWorkspaceFixture.workspace.id}/approvals/${approvalId}/decision`,
+      `/api/workspaces/${demoWorkspaceFixture.workspace.id}/approvals/${approvalId}`,
       {
-        method: "POST",
+        method: "PATCH",
         sessionToken: exchanged.sessionToken,
         body: {
           decision: "approved",
@@ -638,7 +646,7 @@ describe("workspace flow integration", () => {
     assert.equal(createPublishRecordResult.publishRecord.publication.preflight.status, "ready");
 
     const executePublishResult = (await requestJson(
-      `/api/workspaces/${demoWorkspaceFixture.workspace.id}/publish-records/${publishRecordId}/execute`,
+      `/api/workspaces/${demoWorkspaceFixture.workspace.id}/publish-records/${publishRecordId}/executions`,
       {
         method: "POST",
         sessionToken: exchanged.sessionToken,

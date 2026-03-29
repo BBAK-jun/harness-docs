@@ -2,11 +2,11 @@ import { useEffect, useMemo, useState } from "react";
 import type {
   DocumentEditingLock,
   DocumentEditingReleaseReason,
-  MembershipId,
   NavigationArea,
   WorkspaceDocument,
   WorkspaceGraph,
-} from "../types";
+} from "../types/contracts";
+import type { MembershipId } from "../types/domain-ui";
 
 const DEFAULT_INACTIVITY_TIMEOUT_MINUTES = 30;
 const LOCK_CLEANUP_INTERVAL_MS = 15_000;

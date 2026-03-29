@@ -4,10 +4,10 @@ import { useDocumentEditingLocks } from "./useDocumentEditingLocks";
 import type {
   CommentBlockKind,
   ContentSectionKind,
-  DocumentBlockCommentAnchor,
   WorkspaceDocument,
   WorkspaceGraph,
-} from "../types";
+} from "../types/contracts";
+import type { DocumentBlockCommentAnchor } from "../types/domain-ui";
 
 function mapSectionKindToBlockKind(kind: ContentSectionKind | undefined): CommentBlockKind {
   switch (kind) {

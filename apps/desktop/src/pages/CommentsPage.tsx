@@ -1,6 +1,8 @@
 import { ArrowRight, CheckCircle2, Clock3, MessageSquareMore } from "lucide-react";
+import { useClientActivityLog } from "@/components/ClientActivityLogProvider";
+import { CompactPrimaryPageAction, CompactSecondaryPageAction } from "@/components/pageActions";
+import { PanelCard, PanelCardHeader, PanelEmptyState, SignalPanel } from "@/components/pagePanels";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import type { WorkspaceShellModel } from "../hooks/useWorkspaceShell";
 import { getMemberSummaryByMembershipId } from "../view-models/memberSummaries";
 import {
@@ -22,6 +24,7 @@ export function CommentsPage({
   onGoToDocuments: () => void;
   onGoToApprovals: () => void;
 }) {
+  const { logEvent } = useClientActivityLog();
   const graph = app.activeWorkspaceGraph;
   const documents = graph?.documents ?? [];
   const reviewQueue = documents
@@ -67,12 +70,12 @@ export function CommentsPage({
         title="아직 리뷰할 문서가 없음"
         actions={
           <div className="flex flex-wrap gap-2">
-            <Button onClick={onGoToDocuments} size="sm">
+            <CompactPrimaryPageAction clientLog="문서 라이브러리 열기" onClick={onGoToDocuments}>
               문서 라이브러리 열기
-            </Button>
-            <Button onClick={() => app.handleAreaChange("dashboard")} size="sm" variant="outline">
+            </CompactPrimaryPageAction>
+            <CompactSecondaryPageAction clientLog="대시보드로 이동" onClick={() => app.handleAreaChange("dashboard")}>
               대시보드로 이동
-            </Button>
+            </CompactSecondaryPageAction>
           </div>
         }
       />
@@ -82,17 +85,17 @@ export function CommentsPage({
   return (
     <div className="flex flex-col gap-5">
       <section className="grid gap-3 lg:grid-cols-3">
-        <SignalCard
+        <SignalPanel
           description="검토 요청 또는 수정 요청 상태의 문서 수입니다."
           label="검토 대기"
           value={reviewQueue.length}
         />
-        <SignalCard
+        <SignalPanel
           description="워크스페이스에서 아직 해결되지 않은 댓글 스레드 수입니다."
           label="열린 스레드"
           value={openThreadCount}
         />
-        <SignalCard
+        <SignalPanel
           description={selectedDocument ? selectedDocument.title : "문서를 선택하면 해당 문서의 대화 맥락을 함께 봅니다."}
           label="집중 문서"
           value={selectedDocument ? 1 : 0}
@@ -100,21 +103,21 @@ export function CommentsPage({
       </section>
 
       <div className="grid gap-5 xl:grid-cols-[1.15fr_0.85fr]">
-        <section className="rounded-[calc(var(--radius)+0.35rem)] border border-[var(--border)] bg-[var(--card)]">
-          <div className="flex flex-col gap-3 border-b border-[var(--border)] px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
+        <PanelCard>
+          <PanelCardHeader className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <h2 className="text-lg font-semibold text-[var(--foreground)]">검토 대기</h2>
               <p className="mt-1 text-sm text-[var(--muted-foreground)]">
                 러버블 기준으로 리뷰 페이지는 현재 문서가 아니라 워크스페이스 리뷰 큐를 먼저 보여줍니다.
               </p>
             </div>
-            <Button onClick={onGoToApprovals} size="sm" variant="outline">
+            <CompactSecondaryPageAction clientLog="승인 큐 보기" onClick={onGoToApprovals}>
               승인 큐 보기
-            </Button>
-          </div>
+            </CompactSecondaryPageAction>
+          </PanelCardHeader>
           <div className="divide-y divide-[var(--border)]">
             {reviewQueue.length === 0 ? (
-              <InlineEmptyState
+              <PanelEmptyState
                 title="리뷰 대기 항목 없음"
                 description="아직 검토 요청된 문서가 없습니다. 문서 개요에서 리뷰 요청을 만들면 이 목록이 우선순위 큐 역할을 합니다."
               />
@@ -123,7 +126,10 @@ export function CommentsPage({
                 <button
                   className="flex w-full items-start gap-4 px-5 py-4 text-left transition-colors hover:bg-[var(--secondary)]/55"
                   key={document.id}
-                  onClick={() => app.handleDocumentSelect(document.id)}
+                  onClick={() => {
+                    logEvent({ action: "검토 대기 문서 CTA 클릭", description: document.title, source: "comments-page" });
+                    app.handleDocumentSelect(document.id);
+                  }}
                   type="button"
                 >
                   <div className="min-w-0 flex-1">
@@ -147,19 +153,19 @@ export function CommentsPage({
               ))
             )}
           </div>
-        </section>
+        </PanelCard>
 
         <div className="flex flex-col gap-5">
-          <section className="rounded-[calc(var(--radius)+0.35rem)] border border-[var(--border)] bg-[var(--card)]">
-            <div className="border-b border-[var(--border)] px-5 py-4">
+          <PanelCard>
+            <PanelCardHeader>
               <h2 className="flex items-center gap-2 text-lg font-semibold text-[var(--foreground)]">
                 <CheckCircle2 className="size-4" />
                 최근 승인됨
               </h2>
-            </div>
+            </PanelCardHeader>
             <div className="divide-y divide-[var(--border)]">
               {recentlyApproved.length === 0 ? (
-                <InlineEmptyState
+                <PanelEmptyState
                   title="최근 승인 문서 없음"
                   description="승인 완료된 문서가 생기면 리뷰 완료 흐름을 여기서 다시 추적합니다."
                 />
@@ -168,7 +174,10 @@ export function CommentsPage({
                   <button
                     className="block w-full px-5 py-4 text-left transition-colors hover:bg-[var(--secondary)]/55"
                     key={document.id}
-                    onClick={() => app.handleDocumentSelect(document.id)}
+                    onClick={() => {
+                      logEvent({ action: "최근 승인 문서 CTA 클릭", description: document.title, source: "comments-page" });
+                      app.handleDocumentSelect(document.id);
+                    }}
                     type="button"
                   >
                     <div className="flex flex-wrap items-center gap-2">
@@ -185,42 +194,42 @@ export function CommentsPage({
                 ))
               )}
             </div>
-          </section>
+          </PanelCard>
 
-          <section className="rounded-[calc(var(--radius)+0.35rem)] border border-[var(--border)] bg-[var(--card)]">
-            <div className="border-b border-[var(--border)] px-5 py-4">
+          <PanelCard>
+            <PanelCardHeader>
               <h2 className="flex items-center gap-2 text-lg font-semibold text-[var(--foreground)]">
                 <MessageSquareMore className="size-4" />
                 집중 대화
               </h2>
-            </div>
+            </PanelCardHeader>
             <div className="divide-y divide-[var(--border)]">
               {!selectedDocument ? (
-                <InlineEmptyState
+                <PanelEmptyState
                   title="선택된 문서 없음"
                   description="왼쪽 리뷰 큐에서 문서를 고르면 해당 문서의 열린 스레드를 이 패널에서 바로 이어서 확인할 수 있습니다."
                 />
               ) : threads.length === 0 ? (
-                <InlineEmptyState
+                <PanelEmptyState
                   title="열린 스레드 없음"
                   description="현재 문서에는 열린 리뷰 스레드가 없습니다. 승인 상태를 확인하거나 샘플 스레드를 추가해 흐름을 시작할 수 있습니다."
                   actions={
-                    <div className="flex flex-wrap gap-2">
-                      <Button
+                    <>
+                      <CompactPrimaryPageAction
+                        clientLog="샘플 스레드 추가"
                         onClick={() =>
                           app.handleCreateBlockComment(
                             selectedDocument,
                             "@reviewers 이 발행 배치에 이 오래됨 사유만으로 충분한지 확인해 주세요.",
                           )
                         }
-                        size="sm"
                       >
                         샘플 스레드 추가
-                      </Button>
-                      <Button onClick={onGoToApprovals} size="sm" variant="outline">
+                      </CompactPrimaryPageAction>
+                      <CompactSecondaryPageAction clientLog="승인 상태 보기" onClick={onGoToApprovals}>
                         승인 상태 보기
-                      </Button>
-                    </div>
+                      </CompactSecondaryPageAction>
+                    </>
                   }
                 />
               ) : (
@@ -246,48 +255,9 @@ export function CommentsPage({
                 ))
               )}
             </div>
-          </section>
+          </PanelCard>
         </div>
       </div>
-    </div>
-  );
-}
-
-function SignalCard({
-  label,
-  value,
-  description,
-}: {
-  label: string;
-  value: number;
-  description: string;
-}) {
-  return (
-    <div className="rounded-[calc(var(--radius)+0.25rem)] border border-[var(--border)] bg-[var(--card)] p-5">
-      <div className="flex items-center justify-between gap-3">
-        <p className="text-xs uppercase tracking-[0.18em] text-[var(--muted-foreground)]">{label}</p>
-        <Clock3 className="size-4 text-[var(--muted-foreground)]" />
-      </div>
-      <p className="mt-4 text-3xl font-semibold tracking-tight text-[var(--foreground)]">{value}</p>
-      <p className="mt-2 text-sm leading-6 text-[var(--muted-foreground)]">{description}</p>
-    </div>
-  );
-}
-
-function InlineEmptyState({
-  title,
-  description,
-  actions,
-}: {
-  title: string;
-  description: string;
-  actions?: React.ReactNode;
-}) {
-  return (
-    <div className="px-5 py-6">
-      <p className="font-medium text-[var(--foreground)]">{title}</p>
-      <p className="mt-2 text-sm leading-6 text-[var(--muted-foreground)]">{description}</p>
-      {actions ? <div className="mt-4">{actions}</div> : null}
     </div>
   );
 }

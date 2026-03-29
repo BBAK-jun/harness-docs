@@ -8,12 +8,24 @@ import {
   RefreshCw,
   MessageSquareMore,
 } from "lucide-react";
+import { CompactPrimaryPageAction } from "@/components/pageActions";
+import {
+  HintPanel,
+  NoticePanel,
+  PanelCard,
+  PanelCardContent,
+  PanelCardHeader,
+  SignalPanel,
+} from "@/components/pagePanels";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { CardDescription, CardTitle } from "@/components/ui/card";
 import { showErrorToast } from "../lib/errorToast";
 import type { WorkspaceShellModel } from "../hooks/useWorkspaceShell";
-import type { NavigationArea, PublishPreflightFinding, WorkspaceDocument } from "../types";
+import type {
+  NavigationArea,
+  PublishPreflightFinding,
+  WorkspaceDocument,
+} from "../types/contracts";
 
 export const areaMeta: Record<
   NavigationArea,
@@ -312,13 +324,7 @@ export function SignalTile({
   value: number;
   description: string;
 }) {
-  return (
-    <div className="rounded-[var(--radius)] border border-[var(--border)] bg-[var(--surface)] p-4">
-      <p className="text-xs uppercase tracking-[0.18em] text-[var(--muted-foreground)]">{label}</p>
-      <p className="mt-3 text-3xl font-semibold tracking-tight text-[var(--foreground)]">{value}</p>
-      <p className="mt-2 text-sm leading-6 text-[var(--muted-foreground)]">{description}</p>
-    </div>
-  );
+  return <SignalPanel description={description} label={label} value={value} />;
 }
 
 export function MetricTile({
@@ -341,20 +347,20 @@ export function EmptyStateCard({
   actions?: React.ReactNode;
 }) {
   return (
-    <Card className="overflow-hidden">
-      <CardHeader className="border-b border-[var(--border)]">
+    <PanelCard>
+      <PanelCardHeader>
         <Badge className="w-fit" variant="outline">
           상태
         </Badge>
         <CardTitle className="mt-2 text-2xl">{title}</CardTitle>
         <CardDescription className="max-w-2xl text-base">{description}</CardDescription>
-      </CardHeader>
+      </PanelCardHeader>
       {actions ? (
-        <div className="px-6 py-5">
+        <PanelCardContent className="pt-5">
           <div className="flex flex-wrap gap-2">{actions}</div>
-        </div>
+        </PanelCardContent>
       ) : null}
-    </Card>
+    </PanelCard>
   );
 }
 
@@ -381,24 +387,24 @@ export function RouteErrorStateCard({
   return (
     <main className="app-frame min-h-screen p-4 sm:p-6">
       <div className="mx-auto max-w-4xl">
-        <Card className="overflow-hidden">
-          <CardHeader className="border-b border-[var(--border)]">
+        <PanelCard>
+          <PanelCardHeader>
             <Badge className="w-fit" variant="destructive">
               오류
             </Badge>
             <CardTitle className="mt-2 text-3xl">{title}</CardTitle>
             <CardDescription className="max-w-2xl text-base">{description}</CardDescription>
-          </CardHeader>
-          <div className="px-6 py-6">
-            <div className="rounded-[var(--radius)] border border-[var(--destructive)]/20 bg-[color:color-mix(in_srgb,var(--destructive)_8%,transparent)] p-4 text-sm leading-6 text-[var(--muted-foreground)]">
-              {errorMessage}
-            </div>
+          </PanelCardHeader>
+          <PanelCardContent className="pt-6">
+            <NoticePanel description={errorMessage} title="오류 상세" tone="danger" />
             <div className="flex flex-wrap gap-2 pt-2">
-              <Button onClick={onRetry}>다시 시도</Button>
+              <CompactPrimaryPageAction clientLog="다시 시도" onClick={onRetry}>
+                다시 시도
+              </CompactPrimaryPageAction>
               {secondaryAction}
             </div>
-          </div>
-        </Card>
+          </PanelCardContent>
+        </PanelCard>
       </div>
     </main>
   );
@@ -410,18 +416,20 @@ export function PreflightFindingCard({
   finding: PublishPreflightFinding;
 }) {
   return (
-    <div className="rounded-[calc(var(--radius)+0.25rem)] border border-[var(--border)] bg-[var(--surface)] p-4">
-      <div className="flex flex-wrap items-center gap-2">
-        <Badge variant={statusBadgeVariant(finding.severity)}>{finding.severity}</Badge>
-        <Badge variant="outline">{finding.kind}</Badge>
-      </div>
-      <p className="mt-3 font-medium text-[var(--foreground)]">{finding.label}</p>
-      <p className="mt-2 text-sm leading-6 text-[var(--muted-foreground)]">{finding.summary}</p>
-      <div className="mt-3 flex items-start gap-2 rounded-[var(--radius)] border border-dashed border-[var(--border)] p-3 text-sm text-[var(--muted-foreground)]">
-        <RefreshCw className="mt-0.5 size-4 shrink-0" />
-        <span>{finding.requiredAction}</span>
-      </div>
-    </div>
+    <PanelCard>
+      <PanelCardContent>
+        <div className="flex flex-wrap items-center gap-2">
+          <Badge variant={statusBadgeVariant(finding.severity)}>{finding.severity}</Badge>
+          <Badge variant="outline">{finding.kind}</Badge>
+        </div>
+        <p className="mt-3 font-medium text-[var(--foreground)]">{finding.label}</p>
+        <p className="mt-2 text-sm leading-6 text-[var(--muted-foreground)]">{finding.summary}</p>
+        <HintPanel className="mt-3 flex items-start gap-2 text-sm">
+          <RefreshCw className="mt-0.5 size-4 shrink-0" />
+          <span>{finding.requiredAction}</span>
+        </HintPanel>
+      </PanelCardContent>
+    </PanelCard>
   );
 }
 

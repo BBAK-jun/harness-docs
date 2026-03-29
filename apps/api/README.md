@@ -18,12 +18,14 @@
 현재는 아래 기반이 잡혀 있습니다.
 
 - Node 어댑터 위의 Hono 서버
-- `@harness-docs/contracts`에서 공유하는 typed API surface
+- `@harness-docs/contracts` schema를 바탕으로 `@harness-docs/api`가 소유하는 typed API surface
 - Postgres 기반 authoritative 데이터 소스
 - 데스크톱 클라이언트 연결용 기본 엔드포인트
 
 ## 주요 파일
 
+- `src/app.ts`: API app boundary와 공개 typed app surface
+- `src/client.ts`: 데스크톱이 직접 참조하는 RPC client factory
 - `src/server.ts`: API 서버 진입점
 - `src/data/*`: 워크스페이스 세션 데이터 소스 구현
 
@@ -104,7 +106,7 @@ GitHub OAuth App 등록 시 확인할 값:
 4. API 런타임에 GitHub client id/secret 주입
 5. `HARNESS_DOCS_API_BASE_URL` 설정
 6. `pnpm db:migrate` 실행
-7. `/api/auth/github/start`부터 callback까지 end-to-end 검증
+7. `POST /api/auth/github/authorizations`부터 callback까지 end-to-end 검증
 
 주의:
 
@@ -159,4 +161,5 @@ GitHub OAuth App 등록 시 확인할 값:
 
 - 정책 판단은 가능한 한 이 패키지에서 수행합니다.
 - 데스크톱은 표현과 상호작용을 담당하고, API는 authoritative state를 담당합니다.
-- desktop과 API 사이 계약은 `@harness-docs/contracts`를 통해 고정합니다.
+- desktop은 `@harness-docs/api`의 typed client boundary를 직접 참조할 수 있습니다.
+- `@harness-docs/contracts`는 DTO, schema, 상태 전이 같은 계약 자체를 담당합니다.

@@ -1,4 +1,4 @@
-import type { WorkspaceGraph, WorkspaceMembership, WorkspaceSummary } from "../types";
+import type { WorkspaceGraph, WorkspaceMembership, WorkspaceSummary } from "../types/contracts";
 
 export interface MemberSummaryView {
   id: string;

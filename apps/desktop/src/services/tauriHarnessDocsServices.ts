@@ -6,7 +6,7 @@ import type {
   PublishExecutionResult,
   PublishingService,
 } from "../domain/publishing";
-import type { WorkspaceGraph } from "../types";
+import type { WorkspaceGraph } from "../types/contracts";
 import type {
   AppSessionSnapshot,
   AppPreferences,

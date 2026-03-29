@@ -1,5 +1,5 @@
 import { useEffect, useMemo } from "react";
-import type { NavigationArea } from "../types";
+import type { NavigationArea } from "../types/contracts";
 import { useAppBootstrap } from "./useAppBootstrap";
 import { useWorkspaceLocalState } from "./useWorkspaceLocalState";
 

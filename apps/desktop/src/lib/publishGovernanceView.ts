@@ -12,7 +12,7 @@ import {
   type PublishPreflightView,
   publishFlowTransitionMap,
 } from "@harness-docs/contracts";
-import type { PublishRecord, WorkspaceDocument, WorkspaceGraph } from "../types";
+import type { PublishRecord, WorkspaceDocument, WorkspaceGraph } from "../types/contracts";
 
 const STALE_THRESHOLD_DAYS = 7;
 

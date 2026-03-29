@@ -1,9 +1,12 @@
 import { FileText, GitPullRequest, Search, Sparkles } from "lucide-react";
+import { useClientActivityLog } from "@/components/ClientActivityLogProvider";
+import { CompactPrimaryPageAction, CompactSecondaryPageAction } from "@/components/pageActions";
+import { PanelCard, PanelCardHeader, SignalPanel } from "@/components/pagePanels";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
-import type { AITaskEntryPoint, WorkspaceDocument } from "../types";
+import type { WorkspaceDocument } from "../types/contracts";
+import type { AITaskEntryPoint } from "../types/domain-ui";
 import type { WorkspaceShellModel } from "../hooks/useWorkspaceShell";
 import {
   EmptyStateCard,
@@ -26,6 +29,7 @@ export function DocumentsPage({
   onOpenWorkspaces: () => void;
   onGoToAI: () => void;
 }) {
+  const { logEvent } = useClientActivityLog();
   const publishRecord = app.activeWorkspaceGraph?.publishRecords[0] ?? null;
   const documents = app.activeWorkspaceGraph?.documents ?? [];
 
@@ -36,15 +40,15 @@ export function DocumentsPage({
         title="빈 문서 라이브러리"
         actions={
           <div className="flex flex-wrap gap-2">
-            <Button onClick={onGoToDashboard} size="sm">
+            <CompactPrimaryPageAction clientLog="대시보드로 이동" onClick={onGoToDashboard}>
               대시보드로 이동
-            </Button>
-            <Button onClick={onOpenWorkspaces} size="sm" variant="secondary">
+            </CompactPrimaryPageAction>
+            <CompactSecondaryPageAction clientLog="워크스페이스 다시 선택" onClick={onOpenWorkspaces}>
               워크스페이스 다시 선택
-            </Button>
-            <Button onClick={onGoToAI} size="sm" variant="outline">
+            </CompactSecondaryPageAction>
+            <CompactSecondaryPageAction clientLog="AI 화면 보기" onClick={onGoToAI}>
               AI 화면 보기
-            </Button>
+            </CompactSecondaryPageAction>
           </div>
         }
       />
@@ -54,28 +58,28 @@ export function DocumentsPage({
   return (
     <div className="flex flex-col gap-5">
       <section className="grid gap-3 lg:grid-cols-3">
-        <SignalCard
+        <SignalPanel
           description="지금 GitHub 발행 배치에 포함된 아티팩트 수입니다."
-          icon={GitPullRequest}
+          icon={<GitPullRequest className="size-4 text-[var(--muted-foreground)]" />}
           label="발행 배치"
           value={publishRecord?.artifacts.length ?? 0}
         />
-        <SignalCard
+        <SignalPanel
           description="워크스페이스 상태 기준으로 바로 실행할 수 있는 AI 작업 수입니다."
-          icon={Sparkles}
+          icon={<Sparkles className="size-4 text-[var(--muted-foreground)]" />}
           label="AI 진입점"
           value={aiEntryPoints.length}
         />
-        <SignalCard
+        <SignalPanel
           description={app.activeDocument?.title ?? "상세를 보려면 문서를 선택하세요."}
-          icon={FileText}
+          icon={<FileText className="size-4 text-[var(--muted-foreground)]" />}
           label="선택된 문서"
           value={app.activeDocument ? 1 : 0}
         />
       </section>
 
-      <section className="rounded-[calc(var(--radius)+0.35rem)] border border-[var(--border)] bg-[var(--card)]">
-        <div className="flex flex-col gap-4 border-b border-[var(--border)] px-5 py-5 lg:flex-row lg:items-center lg:justify-between">
+      <PanelCard>
+        <PanelCardHeader className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
           <div>
             <h2 className="text-xl font-semibold text-[var(--foreground)]">문서</h2>
             <p className="mt-1 text-sm text-[var(--muted-foreground)]">
@@ -83,14 +87,14 @@ export function DocumentsPage({
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
-            <Button onClick={onGoToAI} size="sm">
+            <CompactPrimaryPageAction clientLog="AI 화면 보기" onClick={onGoToAI}>
               AI 화면 보기
-            </Button>
-            <Button onClick={onOpenWorkspaces} size="sm" variant="outline">
+            </CompactPrimaryPageAction>
+            <CompactSecondaryPageAction clientLog="워크스페이스 변경" onClick={onOpenWorkspaces}>
               워크스페이스 변경
-            </Button>
+            </CompactSecondaryPageAction>
           </div>
-        </div>
+        </PanelCardHeader>
 
         <div className="border-b border-[var(--border)] px-5 py-4">
           <div className="relative max-w-md">
@@ -104,32 +108,7 @@ export function DocumentsPage({
             <DocumentRow app={app} document={document} key={document.id} />
           ))}
         </div>
-      </section>
-    </div>
-  );
-}
-
-function SignalCard({
-  label,
-  value,
-  description,
-  icon: Icon,
-}: {
-  label: string;
-  value: number;
-  description: string;
-  icon: typeof FileText;
-}) {
-  return (
-    <div className="rounded-[calc(var(--radius)+0.25rem)] border border-[var(--border)] bg-[var(--card)] p-5 shadow-[0_24px_90px_-60px_rgba(15,23,42,0.22)]">
-      <div className="flex items-center justify-between">
-        <p className="text-xs font-medium uppercase tracking-[0.18em] text-[var(--muted-foreground)]">
-          {label}
-        </p>
-        <Icon className="size-4 text-[var(--muted-foreground)]" />
-      </div>
-      <p className="mt-4 text-3xl font-semibold tracking-tight text-[var(--foreground)]">{value}</p>
-      <p className="mt-2 text-sm leading-6 text-[var(--muted-foreground)]">{description}</p>
+      </PanelCard>
     </div>
   );
 }
@@ -141,6 +120,7 @@ function DocumentRow({
   app: WorkspaceShellModel;
   document: WorkspaceDocument;
 }) {
+  const { logEvent } = useClientActivityLog();
   return (
     <button
       className={cn(
@@ -149,7 +129,10 @@ function DocumentRow({
           ? "bg-[color:color-mix(in_srgb,var(--accent)_38%,white)]"
           : "bg-transparent hover:bg-[var(--secondary)]/55",
       )}
-      onClick={() => app.handleDocumentSelect(document.id)}
+      onClick={() => {
+        logEvent({ action: "문서 행 CTA 클릭", description: document.title, source: "documents-page" });
+        app.handleDocumentSelect(document.id);
+      }}
       type="button"
     >
       <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">

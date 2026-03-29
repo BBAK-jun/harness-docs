@@ -1,3 +1,4 @@
+import { ClientActivityLogProvider } from "./components/ClientActivityLogProvider";
 import React from "react";
 import ReactDOM from "react-dom/client";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -19,8 +20,10 @@ ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
       <OverlayProvider>
         <HarnessDocsServicesProvider services={services}>
           <QueryClientProvider client={queryClient}>
-            <RouterProvider router={router} />
-            <Toaster />
+            <ClientActivityLogProvider>
+              <RouterProvider router={router} />
+              <Toaster />
+            </ClientActivityLogProvider>
           </QueryClientProvider>
         </HarnessDocsServicesProvider>
       </OverlayProvider>

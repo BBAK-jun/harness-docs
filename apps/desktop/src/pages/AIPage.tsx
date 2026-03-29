@@ -1,8 +1,10 @@
 import { ArrowRight } from "lucide-react";
+import { useClientActivityLog } from "@/components/ClientActivityLogProvider";
+import { CompactSecondaryPageAction } from "@/components/pageActions";
+import { PanelCard, PanelCardContent, PanelCardHeader } from "@/components/pagePanels";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import type { AITaskEntryPoint } from "../types";
+import { CardDescription, CardTitle } from "@/components/ui/card";
+import type { AITaskEntryPoint } from "../types/domain-ui";
 import { EmptyStateCard, translateLabel } from "./pageUtils";
 
 export function AIPage({
@@ -16,6 +18,7 @@ export function AIPage({
   onGoToDocuments: () => void;
   onGoToEditor: () => void;
 }) {
+  const { logEvent } = useClientActivityLog();
   if (aiEntryPoints.length === 0) {
     return (
       <EmptyStateCard
@@ -23,12 +26,12 @@ export function AIPage({
         title="사용 가능한 AI 액션이 없음"
         actions={
           <div className="flex flex-wrap gap-2">
-            <Button onClick={onGoToDocuments} size="sm" variant="secondary">
+            <CompactSecondaryPageAction clientLog="문서 목록 열기" onClick={onGoToDocuments}>
               문서 목록 열기
-            </Button>
-            <Button onClick={onGoToEditor} size="sm" variant="outline">
+            </CompactSecondaryPageAction>
+            <CompactSecondaryPageAction clientLog="편집 화면으로 이동" onClick={onGoToEditor}>
               편집 화면으로 이동
-            </Button>
+            </CompactSecondaryPageAction>
           </div>
         }
       />
@@ -36,19 +39,22 @@ export function AIPage({
   }
 
   return (
-    <Card className="overflow-hidden">
-      <CardHeader className="border-b border-[var(--border)]">
+    <PanelCard>
+      <PanelCardHeader>
         <CardTitle>AI 어시스턴트</CardTitle>
         <CardDescription>
           초안 생성, 링크 제안, 발행 메모 준비 같은 명확한 작업 단위만 노출합니다.
         </CardDescription>
-      </CardHeader>
-      <CardContent className="grid gap-0 p-0">
+      </PanelCardHeader>
+      <PanelCardContent className="grid gap-0 p-0">
         {aiEntryPoints.map((entry) => (
           <button
             className="flex w-full flex-col gap-3 border-b border-[var(--border)] px-5 py-4 text-left transition-colors last:border-b-0 hover:bg-[var(--secondary)]/55"
             key={entry.id}
-            onClick={() => void onLaunch(entry)}
+            onClick={() => {
+              logEvent({ action: "AI 액션 CTA 클릭", description: entry.title, source: "ai-page" });
+              void onLaunch(entry);
+            }}
             type="button"
           >
             <div className="flex flex-wrap items-center gap-2">
@@ -69,7 +75,7 @@ export function AIPage({
             </div>
           </button>
         ))}
-      </CardContent>
-    </Card>
+      </PanelCardContent>
+    </PanelCard>
   );
 }

@@ -2,13 +2,11 @@ import type {
   ApprovalCandidateSource,
   DocumentApproval,
   DocumentApprovalAuthority,
-  DocumentId,
   DocumentInvalidation,
   DocumentReviewState,
-  MembershipId,
   UnresolvedApprovalSnapshot,
-  WorkspaceId,
-} from "../types";
+} from "../types/contracts";
+import type { DocumentId, MembershipId, WorkspaceId } from "../types/domain-ui";
 
 export interface ApprovalAuthorityRestorationPolicy {
   restoredBy: DocumentApprovalAuthority;

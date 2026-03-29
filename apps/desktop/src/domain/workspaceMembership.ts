@@ -1,10 +1,9 @@
 import type {
-  UserId,
-  WorkspaceId,
   WorkspaceMembership,
   WorkspaceRepositoryBinding,
   WorkspaceRole,
-} from "../types";
+} from "../types/contracts";
+import type { UserId, WorkspaceId } from "../types/domain-ui";
 
 export interface WorkspaceMembershipCapabilities {
   canEditDocuments: boolean;

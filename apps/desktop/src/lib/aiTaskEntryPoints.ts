@@ -2,13 +2,12 @@ import type {
   AIDraftSuggestion,
   AIDraftSuggestionKind,
   AIProvider,
-  AITaskEntryPoint,
-  AITaskEntryPointContext,
   AuthoringIntent,
   PublishRecord,
   WorkspaceDocument,
   WorkspaceGraph,
-} from "../types";
+} from "../types/contracts";
+import type { AITaskEntryPoint, AITaskEntryPointContext } from "../types/domain-ui";
 
 interface BuildAITaskEntryPointsOptions {
   workspaceGraph: WorkspaceGraph;
