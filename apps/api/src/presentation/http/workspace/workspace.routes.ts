@@ -3,7 +3,9 @@ import {
   workspaceCatalogEnvelopeSchema,
   workspaceCreateRequestSchema,
   workspaceGraphEnvelopeSchema,
+  workspaceInvitationCreateRequestSchema,
   workspaceInvitationAcceptRequestSchema,
+  workspaceInvitationEnvelopeSchema,
   workspaceMutationEnvelopeSchema,
   workspaceOnboardingEnvelopeSchema,
   workspaceUpdateRequestSchema,
@@ -53,6 +55,29 @@ export const createWorkspace = createRoute({
     },
     422: {
       description: "Workspace creation failed.",
+      content: jsonContent(errorEnvelope),
+    },
+  },
+});
+
+export const createWorkspaceInvitation = createRoute({
+  method: "post",
+  path: "/workspaces/{workspaceId}/invitations",
+  tags: onboardingTags,
+  request: {
+    params: workspaceParamSchema,
+    body: {
+      required: true,
+      content: jsonContent(workspaceInvitationCreateRequestSchema),
+    },
+  },
+  responses: {
+    200: {
+      description: "Workspace invitation created.",
+      content: jsonContent(createSuccessEnvelopeSchema(workspaceInvitationEnvelopeSchema)),
+    },
+    422: {
+      description: "Workspace invitation creation failed.",
       content: jsonContent(errorEnvelope),
     },
   },

@@ -15,6 +15,7 @@ import {
   templates,
   type HarnessDocsDatabase,
   users,
+  workspaceInvitations,
   workspaceMemberships,
   workspaces,
 } from "@harness-docs/db";
@@ -42,6 +43,12 @@ export const demoWorkspaceFixture = {
     lead: "wsm_harness_lead",
     pm: "wsm_harness_pm",
     reviewer: "wsm_harness_reviewer",
+  },
+  invitations: {
+    editor: "winv_harness_editor",
+  },
+  invitationCodes: {
+    editor: "invite-harness-docs",
   },
   templates: {
     prd: "tpl_prd_system",
@@ -237,6 +244,7 @@ export async function resetHarnessDocsDatabase(db: HarnessDocsDatabase) {
     await tx.delete(aiDrafts);
     await tx.delete(documents);
     await tx.delete(templates);
+    await tx.delete(workspaceInvitations);
     await tx.delete(workspaceMemberships);
     await tx.delete(workspaces);
     await tx.delete(users);
@@ -352,6 +360,21 @@ export async function seedDemoWorkspace(db: HarnessDocsDatabase) {
         updatedAt: toDate(seedTimestamps.workspaceOpenedAt),
       },
     ]);
+
+    await tx.insert(workspaceInvitations).values({
+      id: demoWorkspaceFixture.invitations.editor,
+      workspaceId: demoWorkspaceFixture.workspace.id,
+      invitationCode: demoWorkspaceFixture.invitationCodes.editor,
+      role: "Editor",
+      status: "pending",
+      invitedByUserId: demoWorkspaceFixture.users.lead,
+      acceptedByUserId: null,
+      expiresAt: toDate("2026-12-31T00:00:00.000Z"),
+      acceptedAt: null,
+      revokedAt: null,
+      createdAt: toDate(seedTimestamps.provisionedAt),
+      updatedAt: toDate(seedTimestamps.provisionedAt),
+    });
 
     await tx.insert(templates).values([
       {

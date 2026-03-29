@@ -1,11 +1,7 @@
 import { fail } from "./result";
 
 export function authenticationRequiredFailure() {
-  return fail(
-    422,
-    "authentication_required",
-    "A valid app session is required for this endpoint.",
-  );
+  return fail(422, "authentication_required", "A valid app session is required for this endpoint.");
 }
 
 export function workspaceNotFoundFailure(workspaceId: string) {

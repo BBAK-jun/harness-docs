@@ -14,6 +14,7 @@ import {
   publishRecords,
   templates,
   users,
+  workspaceInvitations,
   workspaceMemberships,
   workspaces,
 } from "@harness-docs/db";
@@ -28,11 +29,14 @@ import type {
   WorkspaceDocument as WorkspaceDocumentDto,
   WorkspaceGraph as WorkspaceGraphDto,
   WorkspaceCreateRequestDto,
+  WorkspaceInvitationCreateRequestDto,
   WorkspaceInvitationAcceptRequestDto,
+  WorkspaceInvitationEnvelopeDto,
+  WorkspaceInvitationDto,
   WorkspaceOnboardingEnvelopeDto,
   WorkspaceSummaryDto,
 } from "@harness-docs/contracts";
-import { defaultWorkspaceCatalog } from "@harness-docs/contracts";
+import { defaultWorkspaceCatalog, workspaceInvitationRoleSchema } from "@harness-docs/contracts";
 import { and, desc, eq, inArray } from "drizzle-orm";
 import type { UnresolvedApprovalSnapshot } from "../../domain/documentAggregate.ts";
 import { buildDocumentMarkdown, deriveDocumentState } from "../../domain/documentAggregate.ts";
@@ -82,6 +86,7 @@ type WorkspaceRow = typeof workspaces.$inferSelect;
 type MembershipRow = typeof workspaceMemberships.$inferSelect;
 type TemplateRow = typeof templates.$inferSelect;
 type DocumentRow = typeof documents.$inferSelect;
+type WorkspaceInvitationRow = typeof workspaceInvitations.$inferSelect;
 type LinkRow = typeof documentLinks.$inferSelect;
 type InvalidationRow = typeof documentInvalidations.$inferSelect;
 type ApprovalRow = typeof approvalRequests.$inferSelect;
@@ -165,6 +170,33 @@ function getWorkspaceAreas(workspaceId: string) {
       },
     }
   );
+}
+
+function buildInvitationCode() {
+  return `invite_${crypto.randomUUID().replace(/-/g, "").slice(0, 12)}`;
+}
+
+function mapWorkspaceInvitation(invitation: WorkspaceInvitationRow): WorkspaceInvitationDto {
+  const roleResult = workspaceInvitationRoleSchema.safeParse(invitation.role);
+
+  if (!roleResult.success) {
+    throw new Error(`Unsupported workspace invitation role '${invitation.role}'.`);
+  }
+
+  return {
+    id: invitation.id,
+    workspaceId: invitation.workspaceId,
+    invitationCode: invitation.invitationCode,
+    role: roleResult.data,
+    status: invitation.status,
+    invitedByUserId: invitation.invitedByUserId,
+    acceptedByUserId: invitation.acceptedByUserId,
+    expiresAt: asIso(invitation.expiresAt),
+    acceptedAt: asIso(invitation.acceptedAt),
+    revokedAt: asIso(invitation.revokedAt),
+    createdAt: asIso(invitation.createdAt) ?? nowIso(),
+    updatedAt: asIso(invitation.updatedAt) ?? nowIso(),
+  };
 }
 
 function groupBy<T extends Record<string, unknown>, K extends keyof T>(items: T[], key: K) {
@@ -2093,7 +2125,12 @@ export function createPostgresWorkspaceSessionSource(
     },
     async createWorkspace(input: WorkspaceCreateRequestDto, viewerUserId?: string) {
       const viewer = viewerUserId
-        ? await db.select().from(users).where(eq(users.id, viewerUserId)).limit(1).then((rows) => rows[0] ?? null)
+        ? await db
+            .select()
+            .from(users)
+            .where(eq(users.id, viewerUserId))
+            .limit(1)
+            .then((rows) => rows[0] ?? null)
         : null;
 
       if (!viewer) {
@@ -2168,10 +2205,107 @@ export function createPostgresWorkspaceSessionSource(
 
       return buildWorkspaceOnboardingEnvelope(workspaceId, viewer.id);
     },
-    async acceptWorkspaceInvitation(input: WorkspaceInvitationAcceptRequestDto) {
-      const viewer = await db.select().from(users).orderBy(users.createdAt).limit(1).then((rows) => rows[0] ?? null);
+    async createWorkspaceInvitation(
+      workspaceId: string,
+      input: WorkspaceInvitationCreateRequestDto,
+      viewerUserId?: string,
+    ): Promise<WorkspaceInvitationEnvelopeDto | null> {
+      const [viewer] = viewerUserId
+        ? await db.select().from(users).where(eq(users.id, viewerUserId)).limit(1)
+        : [];
 
       if (!viewer) {
+        return null;
+      }
+
+      const inviterMembership = await db
+        .select()
+        .from(workspaceMemberships)
+        .where(
+          and(
+            eq(workspaceMemberships.workspaceId, workspaceId),
+            eq(workspaceMemberships.userId, viewer.id),
+            eq(workspaceMemberships.status, "active"),
+          ),
+        )
+        .limit(1)
+        .then((rows) => rows[0] ?? null);
+
+      if (!inviterMembership || !["Lead", "Editor"].includes(inviterMembership.role)) {
+        return null;
+      }
+
+      const timestamp = nowIso();
+      const invitationId = buildId("winv");
+      let invitationCode = buildInvitationCode();
+
+      while (true) {
+        const existingInvitation = await db
+          .select({ id: workspaceInvitations.id })
+          .from(workspaceInvitations)
+          .where(eq(workspaceInvitations.invitationCode, invitationCode))
+          .limit(1);
+
+        if (existingInvitation.length === 0) {
+          break;
+        }
+
+        invitationCode = buildInvitationCode();
+      }
+
+      const expiresAt = new Date(
+        Date.now() + input.expiresInDays * 24 * 60 * 60 * 1000,
+      ).toISOString();
+
+      await db.insert(workspaceInvitations).values({
+        id: invitationId,
+        workspaceId,
+        invitationCode,
+        role: input.role,
+        status: "pending",
+        invitedByUserId: viewer.id,
+        acceptedByUserId: null,
+        expiresAt: toDate(expiresAt),
+        acceptedAt: null,
+        revokedAt: null,
+        createdAt: toDate(timestamp),
+        updatedAt: toDate(timestamp),
+      });
+
+      const [invitation] = await db
+        .select()
+        .from(workspaceInvitations)
+        .where(eq(workspaceInvitations.id, invitationId))
+        .limit(1);
+
+      if (!invitation) {
+        return null;
+      }
+
+      return {
+        invitation: mapWorkspaceInvitation(invitation),
+      };
+    },
+    async acceptWorkspaceInvitation(
+      input: WorkspaceInvitationAcceptRequestDto,
+      viewerUserId?: string,
+    ) {
+      const [viewer] = viewerUserId
+        ? await db.select().from(users).where(eq(users.id, viewerUserId)).limit(1)
+        : [];
+
+      if (!viewer) {
+        return null;
+      }
+
+      const invitation = await db
+        .select()
+        .from(workspaceInvitations)
+        .where(eq(workspaceInvitations.invitationCode, input.invitationCode))
+        .limit(1)
+        .then((rows) => rows[0] ?? null);
+
+      if (!invitation) {
         return null;
       }
 
@@ -2179,11 +2313,37 @@ export function createPostgresWorkspaceSessionSource(
       const workspaceExists = await db
         .select({ id: workspaces.id })
         .from(workspaces)
-        .where(eq(workspaces.id, input.workspaceId))
+        .where(eq(workspaces.id, invitation.workspaceId))
         .limit(1)
         .then((rows) => rows[0] ?? null);
 
-      if (!workspaceExists) {
+      if (!workspaceExists || invitation.status === "revoked") {
+        return null;
+      }
+
+      if (invitation.status === "accepted") {
+        if (invitation.acceptedByUserId === viewer.id) {
+          return buildWorkspaceOnboardingEnvelope(invitation.workspaceId, viewer.id);
+        }
+
+        return null;
+      }
+
+      if (invitation.expiresAt != null && invitation.expiresAt.getTime() <= Date.now()) {
+        if (
+          invitation.status === "pending" &&
+          invitation.expiresAt != null &&
+          invitation.expiresAt.getTime() <= Date.now()
+        ) {
+          await db
+            .update(workspaceInvitations)
+            .set({
+              status: "expired",
+              updatedAt: toDate(timestamp),
+            })
+            .where(eq(workspaceInvitations.id, invitation.id));
+        }
+
         return null;
       }
 
@@ -2193,7 +2353,7 @@ export function createPostgresWorkspaceSessionSource(
           .from(workspaceMemberships)
           .where(
             and(
-              eq(workspaceMemberships.workspaceId, input.workspaceId),
+              eq(workspaceMemberships.workspaceId, invitation.workspaceId),
               eq(workspaceMemberships.userId, viewer.id),
             ),
           )
@@ -2204,6 +2364,7 @@ export function createPostgresWorkspaceSessionSource(
           await tx
             .update(workspaceMemberships)
             .set({
+              role: invitation.role,
               status: "active",
               joinedAt: membership.joinedAt ?? toDate(timestamp),
               lastActiveAt: toDate(timestamp),
@@ -2214,11 +2375,11 @@ export function createPostgresWorkspaceSessionSource(
         } else {
           await tx.insert(workspaceMemberships).values({
             id: buildId("mbr"),
-            workspaceId: input.workspaceId,
+            workspaceId: invitation.workspaceId,
             userId: viewer.id,
-            role: "Editor",
+            role: invitation.role,
             status: "active",
-            invitedByUserId: viewer.id,
+            invitedByUserId: invitation.invitedByUserId,
             notificationWebhookUrl: null,
             invitedAt: toDate(timestamp),
             joinedAt: toDate(timestamp),
@@ -2230,15 +2391,25 @@ export function createPostgresWorkspaceSessionSource(
         }
 
         await tx
+          .update(workspaceInvitations)
+          .set({
+            status: "accepted",
+            acceptedByUserId: viewer.id,
+            acceptedAt: toDate(timestamp),
+            updatedAt: toDate(timestamp),
+          })
+          .where(eq(workspaceInvitations.id, invitation.id));
+
+        await tx
           .update(workspaces)
           .set({
             lastOpenedAt: toDate(timestamp),
             updatedAt: toDate(timestamp),
           })
-          .where(eq(workspaces.id, input.workspaceId));
+          .where(eq(workspaces.id, invitation.workspaceId));
       });
 
-      return buildWorkspaceOnboardingEnvelope(input.workspaceId, viewer.id);
+      return buildWorkspaceOnboardingEnvelope(invitation.workspaceId, viewer.id);
     },
   };
 }

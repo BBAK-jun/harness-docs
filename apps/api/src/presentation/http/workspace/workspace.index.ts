@@ -13,6 +13,7 @@ export function createWorkspaceRouter(
   const router = createRouter()
     .openapi(routes.listWorkspaces, handlers.listWorkspaces as never)
     .openapi(routes.createWorkspace, handlers.createWorkspace as never)
+    .openapi(routes.createWorkspaceInvitation, handlers.createWorkspaceInvitation as never)
     .openapi(routes.acceptWorkspaceInvitation, handlers.acceptWorkspaceInvitation as never)
     .openapi(routes.getWorkspaceGraph, handlers.getWorkspaceGraph as never)
     .openapi(routes.updateWorkspace, handlers.updateWorkspace as never);

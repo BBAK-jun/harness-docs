@@ -1,5 +1,6 @@
 import {
   workspaceCreateRequestSchema,
+  workspaceInvitationCreateRequestSchema,
   workspaceInvitationAcceptRequestSchema,
   workspaceUpdateRequestSchema,
 } from "@harness-docs/contracts";
@@ -46,6 +47,28 @@ export function createWorkspaceHandlers({
         await useCases.createWorkspace(payloadResult.data, readBearerToken(c)),
       );
     },
+    async createWorkspaceInvitation(c: ApiContext) {
+      const paramsResult = parseParams(c, workspaceParamSchema);
+
+      if (!paramsResult.ok) {
+        return paramsResult.response;
+      }
+
+      const payloadResult = await parseJsonBody(c, workspaceInvitationCreateRequestSchema);
+
+      if (!payloadResult.ok) {
+        return payloadResult.response;
+      }
+
+      return respondWithApplicationResult(
+        c,
+        await useCases.createWorkspaceInvitation(
+          paramsResult.data.workspaceId,
+          payloadResult.data,
+          readBearerToken(c),
+        ),
+      );
+    },
     async acceptWorkspaceInvitation(c: ApiContext) {
       const payloadResult = await parseJsonBody(c, workspaceInvitationAcceptRequestSchema);
 
@@ -55,7 +78,7 @@ export function createWorkspaceHandlers({
 
       return respondWithApplicationResult(
         c,
-        await useCases.acceptWorkspaceInvitation(payloadResult.data),
+        await useCases.acceptWorkspaceInvitation(payloadResult.data, readBearerToken(c)),
       );
     },
     async getWorkspaceGraph(c: ApiContext) {

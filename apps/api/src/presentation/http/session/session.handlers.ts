@@ -5,10 +5,7 @@ import { readBearerToken, respondWithApplicationResult } from "../shared";
 
 type SessionHandlerDependencies = Pick<ApiRouteDependencies, "dataSource" | "authDataSource">;
 
-export function createSessionHandlers({
-  dataSource,
-  authDataSource,
-}: SessionHandlerDependencies) {
+export function createSessionHandlers({ dataSource, authDataSource }: SessionHandlerDependencies) {
   const useCases = createSessionUseCases({
     dataSource,
     authDataSource,

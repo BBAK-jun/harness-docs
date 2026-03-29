@@ -1,10 +1,6 @@
 import { bootstrapSessionSchema } from "@harness-docs/contracts";
 import { createRoute } from "../../../infrastructure/lib/router";
-import {
-  createErrorEnvelopeSchema,
-  createSuccessEnvelopeSchema,
-  jsonContent,
-} from "../shared";
+import { createErrorEnvelopeSchema, createSuccessEnvelopeSchema, jsonContent } from "../shared";
 
 const tags = ["session"];
 const errorEnvelope = createErrorEnvelopeSchema();

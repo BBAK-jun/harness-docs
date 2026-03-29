@@ -1,6 +1,4 @@
-import type {
-  SessionUserDto,
-} from "@harness-docs/contracts";
+import type { SessionUserDto } from "@harness-docs/contracts";
 import type {
   WorkspaceRepositoryValidationResult,
   WorkspaceRepositoryValidator,
@@ -38,9 +36,12 @@ export function createGitHubWorkspaceRepositoryValidator(options?: {
     repositoryName: string,
     defaultBranch: string,
   ) {
-    return fetch(`${apiBaseUrl}/repos/${repositoryOwner}/${repositoryName}/branches/${defaultBranch}`, {
-      headers: buildHeaders(),
-    });
+    return fetch(
+      `${apiBaseUrl}/repos/${repositoryOwner}/${repositoryName}/branches/${defaultBranch}`,
+      {
+        headers: buildHeaders(),
+      },
+    );
   }
 
   return {
@@ -120,10 +121,7 @@ export function createGitHubWorkspaceRepositoryValidator(options?: {
         return {
           ok: false,
           code: "github_repository_validation_failed",
-          message:
-            error instanceof Error
-              ? error.message
-              : "GitHub repository validation failed.",
+          message: error instanceof Error ? error.message : "GitHub repository validation failed.",
         };
       }
     },

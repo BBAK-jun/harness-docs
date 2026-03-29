@@ -91,16 +91,23 @@ export function createApiApp(options: CreateApiAppOptions = {}) {
     });
   }
 
-  app.notFound((c: Context) =>
-    errorResponse(c, 404, "route_not_found", `Route '${c.req.path}' is not registered.`) as unknown as Response,
+  app.notFound(
+    (c: Context) =>
+      errorResponse(
+        c,
+        404,
+        "route_not_found",
+        `Route '${c.req.path}' is not registered.`,
+      ) as unknown as Response,
   );
-  app.onError((error: unknown, c: Context) =>
-    errorResponse(
-      c,
-      500,
-      "internal_server_error",
-      error instanceof Error ? error.message : "Unexpected error while handling request.",
-    ) as unknown as Response,
+  app.onError(
+    (error: unknown, c: Context) =>
+      errorResponse(
+        c,
+        500,
+        "internal_server_error",
+        error instanceof Error ? error.message : "Unexpected error while handling request.",
+      ) as unknown as Response,
   );
 
   return app

@@ -87,11 +87,7 @@ export function createDocumentUseCases({
 
       return succeed<DocumentMutationEnvelopeDto>(mutation);
     },
-    async updateDocument(
-      workspaceId: string,
-      documentId: string,
-      input: DocumentUpdateRequestDto,
-    ) {
+    async updateDocument(workspaceId: string, documentId: string, input: DocumentUpdateRequestDto) {
       const documents = await dataSource.getWorkspaceDocuments(workspaceId);
 
       if (!documents) {

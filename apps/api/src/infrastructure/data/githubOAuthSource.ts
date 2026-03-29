@@ -1,7 +1,4 @@
-import type {
-  GitHubOAuthAttemptDto,
-  GitHubOAuthStartDto,
-} from "@harness-docs/contracts";
+import type { GitHubOAuthAttemptDto, GitHubOAuthStartDto } from "@harness-docs/contracts";
 import type { ApiAuthDataSource, GitHubOAuthDataSource } from "../../application/ports.ts";
 
 interface GitHubAccessTokenResponse {
@@ -147,7 +144,8 @@ export function createGitHubOAuthDataSource(
 
   function buildRedirectUri(requestOrigin: string) {
     const configuredBaseUrl = process.env.HARNESS_DOCS_API_BASE_URL?.trim();
-    const origin = configuredBaseUrl && configuredBaseUrl.length > 0 ? configuredBaseUrl : requestOrigin;
+    const origin =
+      configuredBaseUrl && configuredBaseUrl.length > 0 ? configuredBaseUrl : requestOrigin;
 
     return new URL("/api/auth/github/callback", origin).toString();
   }
@@ -174,7 +172,9 @@ export function createGitHubOAuthDataSource(
     const payload = (await response.json()) as GitHubAccessTokenResponse;
 
     if (!payload.access_token) {
-      throw new Error(payload.error_description ?? payload.error ?? "GitHub access token is missing.");
+      throw new Error(
+        payload.error_description ?? payload.error ?? "GitHub access token is missing.",
+      );
     }
 
     return payload.access_token;
@@ -196,7 +196,9 @@ export function createGitHubOAuthDataSource(
     }
 
     const user = (await userResponse.json()) as GitHubUserResponse;
-    const emails = emailsResponse.ok ? ((await emailsResponse.json()) as GitHubEmailResponse[]) : [];
+    const emails = emailsResponse.ok
+      ? ((await emailsResponse.json()) as GitHubEmailResponse[])
+      : [];
     const primaryEmail =
       emails.find((entry) => entry.primary && entry.verified)?.email ??
       emails.find((entry) => entry.verified)?.email ??
@@ -254,13 +256,7 @@ export function createGitHubOAuthDataSource(
       const attempt = attempts.get(attemptId);
       return attempt ? mapAttempt(attempt) : null;
     },
-    async completeAuthorization({
-      requestOrigin,
-      code,
-      state,
-      error,
-      errorDescription,
-    }) {
+    async completeAuthorization({ requestOrigin, code, state, error, errorDescription }) {
       try {
         assertConfigured();
       } catch (configError) {
@@ -278,7 +274,10 @@ export function createGitHubOAuthDataSource(
       if (!state) {
         return {
           statusCode: 400 as const,
-          html: buildCallbackHtml("GitHub OAuth Failed", "The callback is missing the OAuth state."),
+          html: buildCallbackHtml(
+            "GitHub OAuth Failed",
+            "The callback is missing the OAuth state.",
+          ),
         };
       }
 

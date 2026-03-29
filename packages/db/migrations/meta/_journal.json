@@ -15,6 +15,13 @@
       "when": 1774575703177,
       "tag": "0001_quiet_session_auth",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1774773346867,
+      "tag": "0002_steady_jasper_sitwell",
+      "breakpoints": true
     }
   ]
 }

@@ -18,6 +18,19 @@ export const membershipStatusValues = ["active", "invited", "suspended", "remove
 export const membershipStatusSchema = z.enum(membershipStatusValues);
 export type MembershipStatus = (typeof membershipStatusValues)[number];
 
+export const workspaceInvitationRoleValues = ["Editor", "Reviewer"] as const;
+export const workspaceInvitationRoleSchema = z.enum(workspaceInvitationRoleValues);
+export type WorkspaceInvitationRole = (typeof workspaceInvitationRoleValues)[number];
+
+export const workspaceInvitationStatusValues = [
+  "pending",
+  "accepted",
+  "revoked",
+  "expired",
+] as const;
+export const workspaceInvitationStatusSchema = z.enum(workspaceInvitationStatusValues);
+export type WorkspaceInvitationStatus = (typeof workspaceInvitationStatusValues)[number];
+
 export const documentTypeValues = ["PRD", "UX Flow", "Technical Spec", "Policy/Decision"] as const;
 export const documentTypeSchema = z.enum(documentTypeValues);
 export type DocumentType = (typeof documentTypeValues)[number];
@@ -56,11 +69,7 @@ export const documentMetadataStatusValues = ["not_checked", "current", "outdated
 export const documentMetadataStatusSchema = z.enum(documentMetadataStatusValues);
 export type DocumentMetadataStatus = (typeof documentMetadataStatusValues)[number];
 
-export const publishEligibilityStatusValues = [
-  "allowed",
-  "requires_rationale",
-  "blocked",
-] as const;
+export const publishEligibilityStatusValues = ["allowed", "requires_rationale", "blocked"] as const;
 export const publishEligibilityStatusSchema = z.enum(publishEligibilityStatusValues);
 export type PublishEligibilityStatus = (typeof publishEligibilityStatusValues)[number];
 
@@ -74,11 +83,7 @@ export const publishBlockingIssueCodeValues = [
 export const publishBlockingIssueCodeSchema = z.enum(publishBlockingIssueCodeValues);
 export type PublishBlockingIssueCode = (typeof publishBlockingIssueCodeValues)[number];
 
-export const approvalAuthorityValues = [
-  "lead",
-  "required_reviewer",
-  "optional_reviewer",
-] as const;
+export const approvalAuthorityValues = ["lead", "required_reviewer", "optional_reviewer"] as const;
 export const approvalAuthoritySchema = z.enum(approvalAuthorityValues);
 export type ApprovalAuthority = (typeof approvalAuthorityValues)[number];
 

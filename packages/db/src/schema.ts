@@ -6,6 +6,7 @@ import {
   authProviderValues,
   documentTypeValues,
   membershipStatusValues,
+  workspaceInvitationStatusValues,
   workspaceRoleValues,
 } from "@harness-docs/contracts";
 import {
@@ -34,6 +35,10 @@ export const workspaceStatusEnum = pgEnum("workspace_status", [
   "archived",
 ]);
 export const membershipStatusEnum = pgEnum("membership_status", membershipStatusValues);
+export const workspaceInvitationStatusEnum = pgEnum(
+  "workspace_invitation_status",
+  workspaceInvitationStatusValues,
+);
 export const documentTypeEnum = pgEnum("document_type", documentTypeValues);
 export const documentStatusEnum = pgEnum("document_status", [
   "draft",
@@ -138,7 +143,10 @@ export const authAccounts = pgTable(
       table.provider,
       table.providerAccountId,
     ),
-    userProviderIdx: uniqueIndex("auth_accounts_user_provider_idx").on(table.userId, table.provider),
+    userProviderIdx: uniqueIndex("auth_accounts_user_provider_idx").on(
+      table.userId,
+      table.provider,
+    ),
   }),
 );
 
@@ -218,6 +226,34 @@ export const workspaceMemberships = pgTable(
     workspaceRoleIdx: index("workspace_memberships_workspace_role_idx").on(
       table.workspaceId,
       table.role,
+    ),
+  }),
+);
+
+export const workspaceInvitations = pgTable(
+  "workspace_invitations",
+  {
+    id: text("id").primaryKey(),
+    workspaceId: text("workspace_id")
+      .notNull()
+      .references(() => workspaces.id, { onDelete: "cascade" }),
+    invitationCode: text("invitation_code").notNull(),
+    role: workspaceRoleEnum("role").notNull(),
+    status: workspaceInvitationStatusEnum("status").notNull().default("pending"),
+    invitedByUserId: text("invited_by_user_id")
+      .notNull()
+      .references(() => users.id),
+    acceptedByUserId: text("accepted_by_user_id").references(() => users.id),
+    expiresAt: timestamp("expires_at", { withTimezone: true }),
+    acceptedAt: timestamp("accepted_at", { withTimezone: true }),
+    revokedAt: timestamp("revoked_at", { withTimezone: true }),
+    ...timestamps,
+  },
+  (table) => ({
+    invitationCodeIdx: uniqueIndex("workspace_invitations_code_idx").on(table.invitationCode),
+    workspaceStatusIdx: index("workspace_invitations_workspace_status_idx").on(
+      table.workspaceId,
+      table.status,
     ),
   }),
 );

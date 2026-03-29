@@ -147,9 +147,7 @@ export const documentPrePublicationReadinessValues = [
 ] as const;
 export type DocumentPrePublicationReadiness =
   (typeof documentPrePublicationReadinessValues)[number];
-export const documentPrePublicationReadinessSchema = z.enum(
-  documentPrePublicationReadinessValues,
-);
+export const documentPrePublicationReadinessSchema = z.enum(documentPrePublicationReadinessValues);
 
 export const documentPrePublicationIssueSeverityValues = ["warning", "blocking"] as const;
 export type DocumentPrePublicationIssueSeverity =
@@ -171,9 +169,7 @@ export const documentPrePublicationIssueKindValues = [
 ] as const;
 export type DocumentPrePublicationIssueKind =
   (typeof documentPrePublicationIssueKindValues)[number];
-export const documentPrePublicationIssueKindSchema = z.enum(
-  documentPrePublicationIssueKindValues,
-);
+export const documentPrePublicationIssueKindSchema = z.enum(documentPrePublicationIssueKindValues);
 
 export const unresolvedApprovalStatusValues = ["missing", "pending", "rejected"] as const;
 export type UnresolvedApprovalStatus = (typeof unresolvedApprovalStatusValues)[number];
@@ -184,11 +180,8 @@ export const gitHubPublishEligibilityStatusValues = [
   "eligible_with_warnings",
   "not_eligible",
 ] as const;
-export type GitHubPublishEligibilityStatus =
-  (typeof gitHubPublishEligibilityStatusValues)[number];
-export const gitHubPublishEligibilityStatusSchema = z.enum(
-  gitHubPublishEligibilityStatusValues,
-);
+export type GitHubPublishEligibilityStatus = (typeof gitHubPublishEligibilityStatusValues)[number];
+export const gitHubPublishEligibilityStatusSchema = z.enum(gitHubPublishEligibilityStatusValues);
 
 export const publishFlowStageIdValues = [
   "scope",
@@ -200,12 +193,7 @@ export const publishFlowStageIdValues = [
 export type PublishFlowStageId = (typeof publishFlowStageIdValues)[number];
 export const publishFlowStageIdSchema = z.enum(publishFlowStageIdValues);
 
-export const publishFlowStageStatusValues = [
-  "pending",
-  "ready",
-  "attention",
-  "complete",
-] as const;
+export const publishFlowStageStatusValues = ["pending", "ready", "attention", "complete"] as const;
 export type PublishFlowStageStatus = (typeof publishFlowStageStatusValues)[number];
 export const publishFlowStageStatusSchema = z.enum(publishFlowStageStatusValues);
 
@@ -241,11 +229,7 @@ export const publishStaleRationaleEntryStatusSchema = z.enum(
   publishStaleRationaleEntryStatusValues,
 );
 
-export const publishPreflightStatusValues = [
-  "ready",
-  "ready_with_warnings",
-  "blocked",
-] as const;
+export const publishPreflightStatusValues = ["ready", "ready_with_warnings", "blocked"] as const;
 export type PublishPreflightStatus = (typeof publishPreflightStatusValues)[number];
 export const publishPreflightStatusSchema = z.enum(publishPreflightStatusValues);
 
@@ -254,9 +238,7 @@ export const publishPreflightFindingKindValues = [
   "unresolved_approval",
 ] as const;
 export type PublishPreflightFindingKind = (typeof publishPreflightFindingKindValues)[number];
-export const publishPreflightFindingKindSchema = z.enum(
-  publishPreflightFindingKindValues,
-);
+export const publishPreflightFindingKindSchema = z.enum(publishPreflightFindingKindValues);
 
 export interface LifecycleMetadata {
   createdAt: string;
@@ -1230,11 +1212,7 @@ export interface AIDraftSuggestionLifecycleMetadata extends LifecycleMetadata {
   rejectedAt?: string | null;
 }
 
-export type AIDraftSuggestionStatus =
-  | "proposed"
-  | "reviewed"
-  | "accepted"
-  | "rejected";
+export type AIDraftSuggestionStatus = "proposed" | "reviewed" | "accepted" | "rejected";
 
 export const aiDraftSuggestionLifecycleStatusSchema = z.enum([
   "proposed",

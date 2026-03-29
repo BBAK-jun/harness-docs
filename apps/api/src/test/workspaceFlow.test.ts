@@ -17,10 +17,7 @@ const workspaceRepositoryValidationCalls: Array<{
   defaultBranch: string;
   viewerGithubLogin: string;
 }> = [];
-const workspaceRepositoryValidationFailures = new Map<
-  string,
-  { code: string; message: string }
->();
+const workspaceRepositoryValidationFailures = new Map<string, { code: string; message: string }>();
 
 const { db, pool } = createDatabaseContext();
 const app = createApiApp({
@@ -155,6 +152,7 @@ describe("workspace flow integration", () => {
     assert.ok(typeof openApiPayload.openapi === "string");
     assert.ok(openApiPayload.paths?.["/api/session/bootstrap"]);
     assert.ok(openApiPayload.paths?.["/api/auth/sessions"]);
+    assert.ok(openApiPayload.paths?.["/api/workspaces/{workspaceId}/invitations"]);
     assert.ok(
       openApiPayload.paths?.[
         "/api/workspaces/{workspaceId}/documents/{documentId}/publish-preflight"
@@ -261,6 +259,164 @@ describe("workspace flow integration", () => {
     assert.equal(payload.error?.code, "authentication_required");
   });
 
+  test("accepts a workspace invitation for the authenticated viewer and refreshes bootstrap", async () => {
+    const leadSession = (await requestJson("/api/auth/sessions", {
+      method: "POST",
+      body: {
+        provider: "github_oauth",
+        identity: {
+          login: "dana-lead",
+          name: "Dana Lead",
+          email: "dana@example.com",
+        },
+      },
+    })) as {
+      status: string;
+      sessionToken: string;
+      user: { id: string };
+    };
+
+    const invitation = (await requestJson(
+      `/api/workspaces/${demoWorkspaceFixture.workspace.id}/invitations`,
+      {
+        method: "POST",
+        sessionToken: leadSession.sessionToken,
+        body: {
+          role: "Editor",
+          expiresInDays: 7,
+        },
+      },
+    )) as {
+      invitation: {
+        invitationCode: string;
+        workspaceId: string;
+        role: string;
+        status: string;
+      };
+    };
+
+    assert.equal(invitation.invitation.workspaceId, demoWorkspaceFixture.workspace.id);
+    assert.equal(invitation.invitation.role, "Editor");
+    assert.equal(invitation.invitation.status, "pending");
+
+    const exchanged = (await requestJson("/api/auth/sessions", {
+      method: "POST",
+      body: {
+        provider: "github_oauth",
+        identity: {
+          login: "bbak-jun",
+          name: "박준형",
+          email: "wnsguddl789@gmail.com",
+        },
+      },
+    })) as {
+      status: string;
+      sessionToken: string;
+      user: { id: string };
+    };
+
+    const initialBootstrap = (await requestJson("/api/session/bootstrap", {
+      sessionToken: exchanged.sessionToken,
+    })) as {
+      workspaces: Array<{ id: string }>;
+      workspaceGraphs: Array<{
+        memberships: Array<{ userId: string; lifecycle: { status: string } }>;
+      }>;
+      lastActiveWorkspaceId: string | null;
+    };
+
+    assert.equal(initialBootstrap.workspaces.length, 0);
+    assert.equal(initialBootstrap.workspaceGraphs.length, 0);
+    assert.equal(initialBootstrap.lastActiveWorkspaceId, null);
+
+    const accepted = (await requestJson("/api/workspace-invitations/acceptances", {
+      method: "POST",
+      sessionToken: exchanged.sessionToken,
+      body: {
+        invitationCode: invitation.invitation.invitationCode,
+      },
+    })) as {
+      workspace: { id: string };
+      bootstrap: {
+        workspaces: Array<{ id: string }>;
+        workspaceGraphs: Array<{
+          workspace: { id: string };
+          memberships: Array<{ userId: string; lifecycle: { status: string } }>;
+        }>;
+        lastActiveWorkspaceId: string | null;
+      };
+      lastActiveWorkspaceId: string | null;
+    };
+
+    assert.equal(accepted.workspace.id, demoWorkspaceFixture.workspace.id);
+    assert.equal(accepted.lastActiveWorkspaceId, demoWorkspaceFixture.workspace.id);
+    assert.equal(accepted.bootstrap.lastActiveWorkspaceId, demoWorkspaceFixture.workspace.id);
+    assert.ok(
+      accepted.bootstrap.workspaces.some(
+        (workspace) => workspace.id === demoWorkspaceFixture.workspace.id,
+      ),
+    );
+
+    const acceptedAgain = (await requestJson("/api/workspace-invitations/acceptances", {
+      method: "POST",
+      sessionToken: exchanged.sessionToken,
+      body: {
+        invitationCode: invitation.invitation.invitationCode,
+      },
+    })) as {
+      workspace: { id: string };
+      bootstrap: {
+        workspaces: Array<{ id: string }>;
+        lastActiveWorkspaceId: string | null;
+      };
+      lastActiveWorkspaceId: string | null;
+    };
+
+    assert.equal(acceptedAgain.workspace.id, demoWorkspaceFixture.workspace.id);
+    assert.equal(acceptedAgain.lastActiveWorkspaceId, demoWorkspaceFixture.workspace.id);
+    assert.equal(acceptedAgain.bootstrap.lastActiveWorkspaceId, demoWorkspaceFixture.workspace.id);
+    assert.ok(
+      acceptedAgain.bootstrap.workspaces.some(
+        (workspace) => workspace.id === demoWorkspaceFixture.workspace.id,
+      ),
+    );
+
+    const acceptedGraph = accepted.bootstrap.workspaceGraphs.find(
+      (graph) => graph.workspace.id === demoWorkspaceFixture.workspace.id,
+    );
+    assert.ok(acceptedGraph);
+    assert.ok(
+      acceptedGraph?.memberships.some(
+        (membership) =>
+          membership.userId === exchanged.user.id && membership.lifecycle.status === "active",
+      ),
+    );
+
+    const refreshedBootstrap = (await requestJson("/api/session/bootstrap", {
+      sessionToken: exchanged.sessionToken,
+    })) as {
+      workspaces: Array<{ id: string }>;
+      workspaceGraphs: Array<{
+        workspace: { id: string };
+        memberships: Array<{ userId: string; lifecycle: { status: string } }>;
+      }>;
+      lastActiveWorkspaceId: string | null;
+    };
+
+    assert.equal(refreshedBootstrap.lastActiveWorkspaceId, demoWorkspaceFixture.workspace.id);
+    assert.ok(
+      refreshedBootstrap.workspaces.some(
+        (workspace) => workspace.id === demoWorkspaceFixture.workspace.id,
+      ),
+    );
+    assert.ok(
+      refreshedBootstrap.workspaceGraphs[0]?.memberships.some(
+        (membership) =>
+          membership.userId === exchanged.user.id && membership.lifecycle.status === "active",
+      ),
+    );
+  });
+
   test("creates a workspace with explicit repo binding and refreshes bootstrap", async () => {
     const exchanged = (await requestJson("/api/auth/sessions", {
       method: "POST",
@@ -315,7 +471,9 @@ describe("workspace flow integration", () => {
     assert.equal(created.bootstrap.user.id, exchanged.user.id);
     assert.equal(created.lastActiveWorkspaceId, created.workspace.id);
     assert.equal(created.bootstrap.lastActiveWorkspaceId, created.workspace.id);
-    assert.ok(created.bootstrap.workspaces.some((workspace) => workspace.id === created.workspace.id));
+    assert.ok(
+      created.bootstrap.workspaces.some((workspace) => workspace.id === created.workspace.id),
+    );
 
     const createdGraph = created.bootstrap.workspaceGraphs.find(
       (graph) => graph.workspace.id === created.workspace.id,
@@ -389,13 +547,10 @@ describe("workspace flow integration", () => {
   });
 
   test("rejects explicit repo binding when GitHub repository validation fails", async () => {
-    workspaceRepositoryValidationFailures.set(
-      "acme-org/missing-docs#main",
-      {
-        code: "github_repository_not_found",
-        message: "GitHub repository 'acme-org/missing-docs' was not found.",
-      },
-    );
+    workspaceRepositoryValidationFailures.set("acme-org/missing-docs#main", {
+      code: "github_repository_not_found",
+      message: "GitHub repository 'acme-org/missing-docs' was not found.",
+    });
 
     const exchanged = (await requestJson("/api/auth/sessions", {
       method: "POST",

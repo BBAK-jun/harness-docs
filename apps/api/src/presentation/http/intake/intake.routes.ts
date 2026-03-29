@@ -1,10 +1,6 @@
 import { intakePreviewRequestSchema, intakePreviewSchema } from "@harness-docs/contracts";
 import { createRoute } from "../../../infrastructure/lib/router";
-import {
-  createErrorEnvelopeSchema,
-  createSuccessEnvelopeSchema,
-  jsonContent,
-} from "../shared";
+import { createErrorEnvelopeSchema, createSuccessEnvelopeSchema, jsonContent } from "../shared";
 
 const tags = ["intake"];
 const errorEnvelope = createErrorEnvelopeSchema();

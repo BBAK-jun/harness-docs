@@ -9,10 +9,7 @@ type SessionUseCaseDependencies = {
   authDataSource?: ApiAuthDataSource;
 };
 
-export function createSessionUseCases({
-  dataSource,
-  authDataSource,
-}: SessionUseCaseDependencies) {
+export function createSessionUseCases({ dataSource, authDataSource }: SessionUseCaseDependencies) {
   return {
     async getBootstrapSession(sessionToken: string | null) {
       const sessionResult = await resolveSession({

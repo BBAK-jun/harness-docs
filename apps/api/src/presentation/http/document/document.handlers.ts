@@ -1,7 +1,4 @@
-import {
-  documentCreateRequestSchema,
-  documentUpdateRequestSchema,
-} from "@harness-docs/contracts";
+import { documentCreateRequestSchema, documentUpdateRequestSchema } from "@harness-docs/contracts";
 import { createDocumentUseCases } from "../../../application/document/useCases";
 import type { ApiRouteDependencies } from "../../../application/ports";
 import type { ApiContext } from "../../../infrastructure/lib/router";

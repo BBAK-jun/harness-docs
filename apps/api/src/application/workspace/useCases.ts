@@ -2,7 +2,9 @@ import type {
   WorkspaceCatalogEnvelopeDto,
   WorkspaceCreateRequestDto,
   WorkspaceGraphEnvelopeDto,
+  WorkspaceInvitationCreateRequestDto,
   WorkspaceInvitationAcceptRequestDto,
+  WorkspaceInvitationEnvelopeDto,
   WorkspaceMutationEnvelopeDto,
   WorkspaceOnboardingEnvelopeDto,
   WorkspaceUpdateRequestDto,
@@ -100,8 +102,61 @@ export function createWorkspaceUseCases({
 
       return succeed<WorkspaceOnboardingEnvelopeDto>(mutation);
     },
-    async acceptWorkspaceInvitation(input: WorkspaceInvitationAcceptRequestDto) {
-      const mutation = await dataSource.acceptWorkspaceInvitation(input);
+    async createWorkspaceInvitation(
+      workspaceId: string,
+      input: WorkspaceInvitationCreateRequestDto,
+      sessionToken: string | null,
+    ) {
+      const sessionResult = await resolveSession({
+        authDataSource,
+        sessionToken,
+      });
+
+      if (!sessionResult.ok) {
+        return sessionResult;
+      }
+
+      const viewer = sessionResult.data?.user;
+
+      if (!viewer) {
+        return authenticationRequiredFailure();
+      }
+
+      const invitation = await dataSource.createWorkspaceInvitation(workspaceId, input, viewer.id);
+
+      if (!invitation) {
+        return {
+          ok: false as const,
+          error: {
+            status: 422 as const,
+            code: "workspace_invitation_create_failed",
+            message: "Workspace invitation could not be created.",
+          },
+        };
+      }
+
+      return succeed<WorkspaceInvitationEnvelopeDto>(invitation);
+    },
+    async acceptWorkspaceInvitation(
+      input: WorkspaceInvitationAcceptRequestDto,
+      sessionToken: string | null,
+    ) {
+      const sessionResult = await resolveSession({
+        authDataSource,
+        sessionToken,
+      });
+
+      if (!sessionResult.ok) {
+        return sessionResult;
+      }
+
+      const viewer = sessionResult.data?.user;
+
+      if (!viewer) {
+        return authenticationRequiredFailure();
+      }
+
+      const mutation = await dataSource.acceptWorkspaceInvitation(input, viewer.id);
 
       if (!mutation) {
         return {

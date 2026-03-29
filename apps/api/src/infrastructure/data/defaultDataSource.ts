@@ -57,6 +57,9 @@ export function createDefaultDataSource(): WorkspaceSessionDataSource {
     async createWorkspace() {
       return null;
     },
+    async createWorkspaceInvitation() {
+      return null;
+    },
     async acceptWorkspaceInvitation() {
       return null;
     },

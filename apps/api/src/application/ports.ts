@@ -21,7 +21,9 @@ import type {
   WorkspaceDocument,
   WorkspaceGraph,
   WorkspaceCreateRequestDto,
+  WorkspaceInvitationCreateRequestDto,
   WorkspaceInvitationAcceptRequestDto,
+  WorkspaceInvitationEnvelopeDto,
   WorkspaceMutationEnvelopeDto,
   WorkspaceOnboardingEnvelopeDto,
   WorkspaceUpdateRequestDto,
@@ -69,8 +71,14 @@ export interface WorkspaceSessionDataSource {
     input: WorkspaceCreateRequestDto,
     viewerUserId?: string,
   ) => Promise<WorkspaceOnboardingEnvelopeDto | null>;
+  createWorkspaceInvitation: (
+    workspaceId: string,
+    input: WorkspaceInvitationCreateRequestDto,
+    viewerUserId?: string,
+  ) => Promise<WorkspaceInvitationEnvelopeDto | null>;
   acceptWorkspaceInvitation: (
     input: WorkspaceInvitationAcceptRequestDto,
+    viewerUserId?: string,
   ) => Promise<WorkspaceOnboardingEnvelopeDto | null>;
 }
 

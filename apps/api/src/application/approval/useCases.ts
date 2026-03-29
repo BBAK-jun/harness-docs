@@ -28,11 +28,7 @@ export function createApprovalUseCases({ dataSource }: ApprovalUseCaseDependenci
 
       return succeed<WorkspaceApprovalsEnvelopeDto>({ approvals });
     },
-    async requestApproval(
-      workspaceId: string,
-      documentId: string,
-      input: ApprovalRequestDto,
-    ) {
+    async requestApproval(workspaceId: string, documentId: string, input: ApprovalRequestDto) {
       const documents = await dataSource.getWorkspaceDocuments(workspaceId);
 
       if (!documents) {
@@ -55,11 +51,7 @@ export function createApprovalUseCases({ dataSource }: ApprovalUseCaseDependenci
 
       return succeed<ApprovalMutationEnvelopeDto>(mutation);
     },
-    async decideApproval(
-      workspaceId: string,
-      approvalId: string,
-      input: ApprovalDecisionDto,
-    ) {
+    async decideApproval(workspaceId: string, approvalId: string, input: ApprovalDecisionDto) {
       const approvals = await dataSource.getWorkspaceApprovals(workspaceId);
 
       if (!approvals) {

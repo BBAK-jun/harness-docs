@@ -6,10 +6,14 @@ import {
   approvalDecisionSchema as approvalDecisionValueSchema,
   authProviderSchema,
   documentTypeSchema,
+  workspaceInvitationRoleSchema,
+  workspaceInvitationStatusSchema,
   publishRecordSourceKindSchema,
   workspaceRoleSchema,
   type AuthProvider,
   type NavigationAreaKey,
+  type WorkspaceInvitationRole,
+  type WorkspaceInvitationStatus,
   type WorkspaceRole,
 } from "./enums";
 import {
@@ -199,6 +203,25 @@ export interface WorkspaceOnboardingEnvelopeDto {
   lastActiveWorkspaceId: string | null;
 }
 
+export interface WorkspaceInvitationDto {
+  id: string;
+  workspaceId: string;
+  invitationCode: string;
+  role: WorkspaceInvitationRole;
+  status: WorkspaceInvitationStatus;
+  invitedByUserId: string;
+  acceptedByUserId: string | null;
+  expiresAt: string | null;
+  acceptedAt: string | null;
+  revokedAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface WorkspaceInvitationEnvelopeDto {
+  invitation: WorkspaceInvitationDto;
+}
+
 export interface DocumentMutationEnvelopeDto {
   document: WorkspaceDocument;
   workspaceGraph: WorkspaceGraph;
@@ -321,6 +344,25 @@ export const workspaceOnboardingEnvelopeSchema = z.object({
   lastActiveWorkspaceId: z.string().nullable(),
 });
 
+export const workspaceInvitationSchema = z.object({
+  id: z.string(),
+  workspaceId: z.string(),
+  invitationCode: z.string(),
+  role: workspaceInvitationRoleSchema,
+  status: workspaceInvitationStatusSchema,
+  invitedByUserId: z.string(),
+  acceptedByUserId: z.string().nullable(),
+  expiresAt: z.string().nullable(),
+  acceptedAt: z.string().nullable(),
+  revokedAt: z.string().nullable(),
+  createdAt: z.string(),
+  updatedAt: z.string(),
+});
+
+export const workspaceInvitationEnvelopeSchema = z.object({
+  invitation: workspaceInvitationSchema,
+});
+
 export const documentMutationEnvelopeSchema = z.object({
   document: workspaceDocumentSchema,
   workspaceGraph: workspaceGraphSchema,
@@ -367,7 +409,6 @@ export const apiErrorDescriptorSchema = z.object({
   message: z.string(),
   details: z.unknown().optional(),
 });
-
 
 export const authenticationProviderSchema = z.object({
   id: z.literal("github_oauth"),
@@ -469,8 +510,17 @@ export const workspaceCreateRequestSchema = z.object({
 
 export type WorkspaceCreateRequestDto = z.infer<typeof workspaceCreateRequestSchema>;
 
+export const workspaceInvitationCreateRequestSchema = z.object({
+  role: workspaceInvitationRoleSchema.default("Editor"),
+  expiresInDays: z.number().int().min(1).max(30).default(7),
+});
+
+export type WorkspaceInvitationCreateRequestDto = z.infer<
+  typeof workspaceInvitationCreateRequestSchema
+>;
+
 export const workspaceInvitationAcceptRequestSchema = z.object({
-  workspaceId: z.string().min(1),
+  invitationCode: z.string().min(1),
 });
 
 export type WorkspaceInvitationAcceptRequestDto = z.infer<

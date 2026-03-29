@@ -6,10 +6,7 @@ import type {
   WorkspacePublishRecordsEnvelopeDto,
 } from "@harness-docs/contracts";
 import type { WorkspaceSessionDataSource } from "../ports";
-import {
-  publishRecordNotFoundFailure,
-  workspaceNotFoundFailure,
-} from "../shared/failures";
+import { publishRecordNotFoundFailure, workspaceNotFoundFailure } from "../shared/failures";
 import { hasEntityWithId } from "../shared/entities";
 import { fail, succeed } from "../shared/result";
 
@@ -62,11 +59,7 @@ export function createPublishUseCases({ dataSource }: PublishUseCaseDependencies
         return publishRecordNotFoundFailure(publishRecordId);
       }
 
-      const mutation = await dataSource.executePublishRecord(
-        workspaceId,
-        publishRecordId,
-        input,
-      );
+      const mutation = await dataSource.executePublishRecord(workspaceId, publishRecordId, input);
 
       if (!mutation) {
         return fail(

@@ -77,7 +77,9 @@ function toDocumentSnapshot(document: WorkspaceDocument): PublishGovernanceDocum
   };
 }
 
-function toPublishRecordSnapshot(publishRecord: PublishRecord | null): PublishGovernancePublishRecordSnapshot | null {
+function toPublishRecordSnapshot(
+  publishRecord: PublishRecord | null,
+): PublishGovernancePublishRecordSnapshot | null {
   if (!publishRecord) {
     return null;
   }
@@ -111,9 +113,10 @@ export function createPublishGovernanceAdapter(): PublishGovernanceAdapter {
         return null;
       }
 
-      const publishRecord = workspaceGraph.publishRecords.find((record) =>
-        record.staleDocumentIds.includes(documentId),
-      ) ?? null;
+      const publishRecord =
+        workspaceGraph.publishRecords.find((record) =>
+          record.staleDocumentIds.includes(documentId),
+        ) ?? null;
 
       return projectPublishPreflightView(
         toDocumentSnapshot(document),

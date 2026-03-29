@@ -369,9 +369,7 @@ export const publishRationaleRequiredResultSchema = z.object({
   kind: z.literal("rationale_required"),
   transition: publishFlowTransitionSchema,
   staleReasons: z.array(documentStaleReasonSchema),
-  requiredRationaleFields: z.array(
-    z.enum(["summary", "details", "acknowledgedReasonCodes"]),
-  ),
+  requiredRationaleFields: z.array(z.enum(["summary", "details", "acknowledgedReasonCodes"])),
 });
 
 export interface PublishBlockedResult {
