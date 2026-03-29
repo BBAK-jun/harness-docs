@@ -1,11 +1,7 @@
 import type { StalePublishRationaleDto } from "@harness-docs/contracts";
 import type { AITaskExecutionInput } from "../domain/aiTasks";
 import type { PublishExecutionInput, PublishRepositoryFile } from "../domain/publishing";
-import type {
-  DocumentTemplate,
-  WorkspaceDocument,
-  WorkspaceGraph,
-} from "../types/contracts";
+import type { DocumentTemplate, WorkspaceDocument, WorkspaceGraph } from "../types/contracts";
 import type { AITaskEntryPoint } from "../types/domain-ui";
 
 function getDocumentSource(document: WorkspaceDocument, documentDrafts: Record<string, string>) {

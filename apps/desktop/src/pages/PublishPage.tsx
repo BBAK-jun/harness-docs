@@ -1,10 +1,11 @@
-import type { PublishAttemptResult, PublishPreflightView, StaleReasonCode } from "@harness-docs/contracts";
+import type {
+  PublishAttemptResult,
+  PublishPreflightView,
+  StaleReasonCode,
+} from "@harness-docs/contracts";
 import { AlertTriangle, CheckCircle2, GitBranch, ShieldCheck } from "lucide-react";
 import { useClientActivityLog } from "@/components/ClientActivityLogProvider";
-import {
-  CompactPrimaryPageAction,
-  CompactSecondaryPageAction,
-} from "@/components/pageActions";
+import { CompactPrimaryPageAction, CompactSecondaryPageAction } from "@/components/pageActions";
 import {
   ElevatedPanel,
   InsetPanel,
@@ -30,7 +31,9 @@ import {
   translateReasonCode,
 } from "./pageUtils";
 
-function getEligibilityBadgeVariant(status: PublishPreflightView["document"]["publishEligibility"]["status"]) {
+function getEligibilityBadgeVariant(
+  status: PublishPreflightView["document"]["publishEligibility"]["status"],
+) {
   switch (status) {
     case "allowed":
       return "success";
@@ -114,7 +117,8 @@ export function PublishPage({
   const { logEvent } = useClientActivityLog();
   const documents = app.activeWorkspaceGraph?.documents ?? [];
   const readyToPublish = documents.filter(
-    (document) => document.lifecycle.status === "approved" || document.lifecycle.status === "published",
+    (document) =>
+      document.lifecycle.status === "approved" || document.lifecycle.status === "published",
   );
   const staleDocs = documents.filter(
     (document) => document.lifecycle.review.freshness.status === "stale",
@@ -146,7 +150,10 @@ export function PublishPage({
               label: document.title,
               badges: [
                 { label: translateDocumentType(document.type), variant: "outline" as const },
-                { label: translateLabel(document.lifecycle.status), variant: statusBadgeVariant(document.lifecycle.status) },
+                {
+                  label: translateLabel(document.lifecycle.status),
+                  variant: statusBadgeVariant(document.lifecycle.status),
+                },
               ],
             }))}
             emptyDescription="아직 승인 완료된 문서가 없습니다. 문서가 승인되면 이 패널이 바로 발행 후보 큐가 됩니다."
@@ -182,7 +189,10 @@ export function PublishPage({
         title="발행 전검증 없음"
         actions={
           <div className="flex flex-wrap gap-2">
-            <CompactSecondaryPageAction clientLog="전검증 다시 시도" onClick={() => void onRetryPreflight()}>
+            <CompactSecondaryPageAction
+              clientLog="전검증 다시 시도"
+              onClick={() => void onRetryPreflight()}
+            >
               전검증 다시 시도
             </CompactSecondaryPageAction>
             <CompactPrimaryPageAction clientLog="문서 열기" onClick={onGoToDocuments}>
@@ -195,7 +205,7 @@ export function PublishPage({
   }
 
   return (
-      <div className="flex flex-col gap-5">
+    <div className="flex flex-col gap-5">
       {staleDocs.length > 0 ? (
         <NoticePanel
           description="러버블 발행 화면은 먼저 경고를 요약하고, 그 다음에 발행 구성과 사유 입력을 이어서 보여줍니다."
@@ -205,7 +215,11 @@ export function PublishPage({
       ) : null}
 
       <section className="grid gap-3 md:grid-cols-4">
-        <SummaryCard icon={<GitBranch className="size-4 text-[var(--muted-foreground)]" />} label="대표 문서" value={preflight.document.title} />
+        <SummaryCard
+          icon={<GitBranch className="size-4 text-[var(--muted-foreground)]" />}
+          label="대표 문서"
+          value={preflight.document.title}
+        />
         <SummaryCard
           badge={<Badge variant="info">{translateLabel(preflight.currentState)}</Badge>}
           icon={<ShieldCheck className="size-4 text-[var(--muted-foreground)]" />}
@@ -214,7 +228,9 @@ export function PublishPage({
         />
         <SummaryCard
           badge={
-            <Badge variant={getEligibilityBadgeVariant(preflight.document.publishEligibility.status)}>
+            <Badge
+              variant={getEligibilityBadgeVariant(preflight.document.publishEligibility.status)}
+            >
               {translateLabel(preflight.document.publishEligibility.status)}
             </Badge>
           }
@@ -243,7 +259,10 @@ export function PublishPage({
               label: document.title,
               badges: [
                 { label: translateDocumentType(document.type), variant: "outline" as const },
-                { label: translateLabel(document.lifecycle.status), variant: statusBadgeVariant(document.lifecycle.status) },
+                {
+                  label: translateLabel(document.lifecycle.status),
+                  variant: statusBadgeVariant(document.lifecycle.status),
+                },
               ],
             }))}
             emptyDescription="발행 가능한 문서가 아직 없습니다."
@@ -260,7 +279,9 @@ export function PublishPage({
                 <InsetPanel className="bg-[var(--card)]" key={stage.id}>
                   <div className="flex items-center justify-between gap-3">
                     <p className="font-medium text-[var(--foreground)]">{stage.title}</p>
-                    <Badge variant={statusBadgeVariant(stage.status)}>{translateLabel(stage.status)}</Badge>
+                    <Badge variant={statusBadgeVariant(stage.status)}>
+                      {translateLabel(stage.status)}
+                    </Badge>
                   </div>
                   <p className="mt-2 text-sm leading-6 text-[var(--muted-foreground)]">
                     {stage.description}
@@ -290,7 +311,11 @@ export function PublishPage({
                   API 전검증 결과, 오래됨 사유, 실행 제한 이유를 한 화면에 모읍니다.
                 </CardDescription>
               </div>
-              <Button clientLog="발행 실행" disabled={executeDisabledReason !== null} onClick={() => void onExecute()}>
+              <Button
+                clientLog="발행 실행"
+                disabled={executeDisabledReason !== null}
+                onClick={() => void onExecute()}
+              >
                 {publishState.status === "running" ? "발행 중..." : "발행 실행"}
               </Button>
             </div>
@@ -329,7 +354,11 @@ export function PublishPage({
                   badgeVariant: "destructive" as const,
                 }))}
                 primaryAction={
-                  <CompactPrimaryPageAction clientLog="발행 실행" disabled={executeDisabledReason !== null} onClick={() => void onExecute()}>
+                  <CompactPrimaryPageAction
+                    clientLog="발행 실행"
+                    disabled={executeDisabledReason !== null}
+                    onClick={() => void onExecute()}
+                  >
                     발행 실행
                   </CompactPrimaryPageAction>
                 }
@@ -347,8 +376,7 @@ export function PublishPage({
                 description="이 문서는 발행할 수 있지만, 사용자가 이 PR에서 오래된 상태를 왜 허용하는지 먼저 기록해야 합니다."
                 title="오래됨 사유"
                 tone="warning"
-              >
-              </NoticePanel>
+              ></NoticePanel>
             ) : null}
 
             {isRationaleRequired ? (
@@ -375,11 +403,17 @@ export function PublishPage({
                     <p className="text-sm font-medium text-[var(--foreground)]">사유 확인</p>
                     <div className="flex flex-wrap gap-2">
                       {preflight.document.staleReasons.map((reason) => {
-                        const selected = rationaleDraft.acknowledgedReasonCodes.includes(reason.code);
+                        const selected = rationaleDraft.acknowledgedReasonCodes.includes(
+                          reason.code,
+                        );
 
                         return (
                           <Button
-                            clientLog={{ action: "오래됨 사유 확인 토글", description: translateReasonCode(reason.code), source: "publish-page" }}
+                            clientLog={{
+                              action: "오래됨 사유 확인 토글",
+                              description: translateReasonCode(reason.code),
+                              source: "publish-page",
+                            }}
                             key={reason.code}
                             onClick={() => onReasonCodeToggle(reason.code)}
                             size="sm"
@@ -412,11 +446,7 @@ export function PublishPage({
             ) : null}
 
             {executeDisabledReason ? (
-              <NoticePanel
-                tone="warning"
-                title="실행 제한됨"
-                description={executeDisabledReason}
-              />
+              <NoticePanel tone="warning" title="실행 제한됨" description={executeDisabledReason} />
             ) : null}
 
             {publishState.status === "failed" && publishState.error ? (
@@ -448,7 +478,14 @@ function SummaryCard({
   icon: React.ReactNode;
   badge?: React.ReactNode;
 }) {
-  return <SignalPanel badge={badge} icon={Icon} label={label} value={<p className="line-clamp-2 font-medium text-[var(--foreground)]">{value}</p>} />;
+  return (
+    <SignalPanel
+      badge={badge}
+      icon={Icon}
+      label={label}
+      value={<p className="line-clamp-2 font-medium text-[var(--foreground)]">{value}</p>}
+    />
+  );
 }
 
 function QueueCard({
@@ -461,7 +498,10 @@ function QueueCard({
   items: Array<{
     id: string;
     label: string;
-    badges: Array<{ label: string; variant: "outline" | "secondary" | "success" | "warning" | "destructive" }>;
+    badges: Array<{
+      label: string;
+      variant: "outline" | "secondary" | "success" | "warning" | "destructive";
+    }>;
   }>;
   emptyDescription: string;
   onSelect?: (id: string) => void;
@@ -482,7 +522,11 @@ function QueueCard({
                 className="block w-full px-5 py-4 text-left transition-colors hover:bg-[var(--secondary)]/55"
                 key={item.id}
                 onClick={() => {
-                  logEvent({ action: `${title} 항목 CTA 클릭`, description: item.label, source: "publish-page" });
+                  logEvent({
+                    action: `${title} 항목 CTA 클릭`,
+                    description: item.label,
+                    source: "publish-page",
+                  });
                   onSelect(item.id);
                 }}
                 type="button"
@@ -546,7 +590,9 @@ function InfoPanel({
                 <p className="font-medium text-[var(--foreground)]">{item.title}</p>
                 <Badge variant={item.badgeVariant}>{item.badgeLabel}</Badge>
               </div>
-              <p className="mt-2 text-sm leading-6 text-[var(--muted-foreground)]">{item.summary}</p>
+              <p className="mt-2 text-sm leading-6 text-[var(--muted-foreground)]">
+                {item.summary}
+              </p>
             </InsetPanel>
           ))}
         </div>

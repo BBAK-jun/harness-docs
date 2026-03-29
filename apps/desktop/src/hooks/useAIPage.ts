@@ -26,7 +26,9 @@ export function useAIPage(shell: WorkspaceShellModel) {
       workspaceGraph: NonNullable<WorkspaceShellModel["activeWorkspaceGraph"]>;
       drafts: Record<string, string>;
     }) =>
-      shell.services.aiTasks.runEntryPoint(buildAITaskExecutionInput(entry, workspaceGraph, drafts)),
+      shell.services.aiTasks.runEntryPoint(
+        buildAITaskExecutionInput(entry, workspaceGraph, drafts),
+      ),
   });
 
   const aiEntryPoints = useMemo(

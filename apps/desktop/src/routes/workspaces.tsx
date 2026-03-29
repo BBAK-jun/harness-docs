@@ -1,9 +1,11 @@
 import { Navigate, createFileRoute, useRouter } from "@tanstack/react-router";
+import { useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { AuthenticatedOnboardingShell } from "../pages/AuthenticatedOnboardingShell";
 import { useAppBootstrap } from "../hooks/useAppBootstrap";
 import { RouteErrorStateCard } from "../pages/pageUtils";
 import { WorkspaceSelectionPage } from "../pages/WorkspaceSelectionPage";
+import { desktopQueryKeys } from "../queries/queryKeys";
 
 export const Route = createFileRoute("/workspaces")({
   component: WorkspacesRoute,
@@ -13,6 +15,7 @@ export const Route = createFileRoute("/workspaces")({
 function WorkspacesRoute() {
   const bootstrap = useAppBootstrap();
   const router = useRouter();
+  const queryClient = useQueryClient();
   const app = {
     ...bootstrap,
     workspaces: bootstrap.session?.workspaces ?? [],
@@ -20,10 +23,6 @@ function WorkspacesRoute() {
 
   if (bootstrap.authentication?.status !== "authenticated") {
     return <Navigate to="/sign-in" />;
-  }
-
-  if (app.workspaces.length === 0) {
-    return <Navigate to="/workspace-create" />;
   }
 
   return (
@@ -41,7 +40,7 @@ function WorkspacesRoute() {
           return;
         }
 
-        void router.navigate({ to: "/invitation-acceptance" });
+        void router.navigate({ to: "/invitation-acceptance", search: { code: "" } });
       }}
       onOpenLastWorkspace={() => {
         const workspaceId = bootstrap.session?.lastActiveWorkspaceId;
@@ -59,7 +58,12 @@ function WorkspacesRoute() {
       <WorkspaceSelectionPage
         app={app}
         onOpenInvitationAcceptance={() => {
-          void router.navigate({ to: "/invitation-acceptance" });
+          void router.navigate({ to: "/invitation-acceptance", search: { code: "" } });
+        }}
+        onRefreshWorkspaces={() => {
+          void queryClient.invalidateQueries({
+            queryKey: desktopQueryKeys.bootstrap(),
+          });
         }}
         onOpenSignOut={() => {
           void bootstrap.handleSignOut().finally(() => {

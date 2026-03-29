@@ -35,7 +35,10 @@ import {
   revokeApiSession,
   startGitHubOAuth,
 } from "./rpcAuthentication";
-import { createWorkspace as createRpcWorkspace } from "./rpcWorkspaceOnboarding";
+import {
+  acceptWorkspaceInvitation as acceptRpcWorkspaceInvitationOnboarding,
+  createWorkspace as createRpcWorkspace,
+} from "./rpcWorkspaceOnboarding";
 import { createRpcWorkspaceSessionService } from "./rpcWorkspaceSession";
 
 const githubAuthProvider: AuthenticationProviderDescriptor = {
@@ -307,6 +310,10 @@ export function createTauriHarnessDocsServices(
     workspaceOnboarding: {
       createWorkspace: (input) =>
         createRpcWorkspace(input, {
+          getSessionToken: () => readAppSessionToken(desktopInfrastructure.storage),
+        }),
+      acceptWorkspaceInvitation: (input) =>
+        acceptRpcWorkspaceInvitationOnboarding(input, {
           getSessionToken: () => readAppSessionToken(desktopInfrastructure.storage),
         }),
     },

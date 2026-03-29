@@ -1,10 +1,16 @@
 import { useState } from "react";
-import { Eye, FilePenLine, GitBranch, Link2, Lock, MessageSquareMore, ShieldCheck, Sparkles } from "lucide-react";
-import { useClientActivityLog } from "@/components/ClientActivityLogProvider";
 import {
-  CompactPrimaryPageAction,
-  CompactSecondaryPageAction,
-} from "@/components/pageActions";
+  Eye,
+  FilePenLine,
+  GitBranch,
+  Link2,
+  Lock,
+  MessageSquareMore,
+  ShieldCheck,
+  Sparkles,
+} from "lucide-react";
+import { useClientActivityLog } from "@/components/ClientActivityLogProvider";
+import { CompactPrimaryPageAction, CompactSecondaryPageAction } from "@/components/pageActions";
 import {
   InsetPanel,
   PanelCard,
@@ -39,10 +45,16 @@ export function EditorPage({ app }: AppPageProps) {
         title="선택된 문서 없음"
         actions={
           <div className="flex flex-wrap gap-2">
-            <CompactPrimaryPageAction clientLog="문서 목록으로 이동" onClick={() => app.handleAreaChange("documents")}>
+            <CompactPrimaryPageAction
+              clientLog="문서 목록으로 이동"
+              onClick={() => app.handleAreaChange("documents")}
+            >
               문서 목록으로 이동
             </CompactPrimaryPageAction>
-            <CompactSecondaryPageAction clientLog="대시보드로 이동" onClick={() => app.handleAreaChange("dashboard")}>
+            <CompactSecondaryPageAction
+              clientLog="대시보드로 이동"
+              onClick={() => app.handleAreaChange("dashboard")}
+            >
               대시보드로 이동
             </CompactSecondaryPageAction>
           </div>
@@ -54,7 +66,9 @@ export function EditorPage({ app }: AppPageProps) {
   const isLockedByActiveMember =
     app.activeDocumentLock?.lifecycle.status === "active" &&
     app.activeDocumentLock.lockedByMembershipId === app.activeMembershipId;
-  const linkedDocuments = graph.documents.filter((entry) => document.linkedDocumentIds.includes(entry.id));
+  const linkedDocuments = graph.documents.filter((entry) =>
+    document.linkedDocumentIds.includes(entry.id),
+  );
   const commentThreads = graph.commentThreads.filter((thread) => thread.documentId === document.id);
   const approvals = graph.approvals.filter((approval) => approval.documentId === document.id);
   const tabs: Array<{ id: EditorTab; label: string; icon: typeof Eye }> = [
@@ -79,27 +93,41 @@ export function EditorPage({ app }: AppPageProps) {
                 {isLockedByActiveMember ? "편집 잠금 보유 중" : "잠금 필요"}
               </Badge>
             </div>
-            <h2 className="mt-3 text-2xl font-semibold text-[var(--foreground)]">{document.title}</h2>
+            <h2 className="mt-3 text-2xl font-semibold text-[var(--foreground)]">
+              {document.title}
+            </h2>
             <p className="mt-2 max-w-3xl text-sm leading-6 text-[var(--muted-foreground)]">
-              문서 작업 공간은 편집기, 링크, 댓글, 승인 스냅샷을 한 셸에서 다룹니다. 기존 편집 화면이 아니라
-              러버블 문서 작업 공간을 기준으로 재구성한 상태입니다.
+              문서 작업 공간은 편집기, 링크, 댓글, 승인 스냅샷을 한 셸에서 다룹니다. 기존 편집
+              화면이 아니라 러버블 문서 작업 공간을 기준으로 재구성한 상태입니다.
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
-            <CompactSecondaryPageAction clientLog="AI 지원 이동" onClick={() => app.handleAreaChange("ai")}>
+            <CompactSecondaryPageAction
+              clientLog="AI 지원 이동"
+              onClick={() => app.handleAreaChange("ai")}
+            >
               <Sparkles />
               AI 지원
             </CompactSecondaryPageAction>
-            <CompactSecondaryPageAction clientLog="발행 이동" onClick={() => app.handleAreaChange("publish")}>
+            <CompactSecondaryPageAction
+              clientLog="발행 이동"
+              onClick={() => app.handleAreaChange("publish")}
+            >
               <GitBranch />
               발행
             </CompactSecondaryPageAction>
             {isLockedByActiveMember ? (
-              <CompactSecondaryPageAction clientLog="편집 잠금 해제" onClick={() => app.handleReleaseEditing(document)}>
+              <CompactSecondaryPageAction
+                clientLog="편집 잠금 해제"
+                onClick={() => app.handleReleaseEditing(document)}
+              >
                 잠금 해제
               </CompactSecondaryPageAction>
             ) : (
-              <CompactPrimaryPageAction clientLog="편집 시작" onClick={() => app.handleStartEditing(document)}>
+              <CompactPrimaryPageAction
+                clientLog="편집 시작"
+                onClick={() => app.handleStartEditing(document)}
+              >
                 <FilePenLine />
                 편집 시작
               </CompactPrimaryPageAction>
@@ -136,7 +164,11 @@ export function EditorPage({ app }: AppPageProps) {
               }
               key={tab.id}
               onClick={() => {
-                logEvent({ action: "에디터 탭 CTA 클릭", description: tab.label, source: "editor-page" });
+                logEvent({
+                  action: "에디터 탭 CTA 클릭",
+                  description: tab.label,
+                  source: "editor-page",
+                });
                 setActiveTab(tab.id);
               }}
               type="button"
@@ -229,7 +261,11 @@ export function EditorPage({ app }: AppPageProps) {
                     className="block w-full px-5 py-4 text-left transition-colors hover:bg-[var(--secondary)]/55"
                     key={entry.id}
                     onClick={() => {
-                      logEvent({ action: "연결 문서 CTA 클릭", description: entry.title, source: "editor-page" });
+                      logEvent({
+                        action: "연결 문서 CTA 클릭",
+                        description: entry.title,
+                        source: "editor-page",
+                      });
                       app.handleDocumentSelect(entry.id);
                     }}
                     type="button"
@@ -298,7 +334,9 @@ export function EditorPage({ app }: AppPageProps) {
                 approvals.map((approval) => (
                   <div className="px-5 py-4" key={approval.id}>
                     <div className="flex flex-wrap items-center gap-2">
-                      <p className="font-medium text-[var(--foreground)]">{approval.reviewerLabel}</p>
+                      <p className="font-medium text-[var(--foreground)]">
+                        {approval.reviewerLabel}
+                      </p>
                       <Badge variant="outline">{translateLabel(approval.authority)}</Badge>
                       <Badge variant={statusBadgeVariant(approval.lifecycle.state)}>
                         {translateLabel(approval.lifecycle.state)}
@@ -327,5 +365,11 @@ function SnapshotCard({
   description: string;
   meta: string;
 }) {
-  return <SignalPanel description={description} label={title} value={<p className="text-sm font-medium text-[var(--muted-foreground)]">{meta}</p>} />;
+  return (
+    <SignalPanel
+      description={description}
+      label={title}
+      value={<p className="text-sm font-medium text-[var(--muted-foreground)]">{meta}</p>}
+    />
+  );
 }

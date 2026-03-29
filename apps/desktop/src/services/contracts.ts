@@ -1,5 +1,6 @@
 import type {
   AuthProvider,
+  WorkspaceInvitationAcceptRequestDto,
   WorkspaceCreateRequestDto,
   WorkspaceOnboardingEnvelopeDto,
 } from "@harness-docs/contracts";
@@ -100,8 +101,9 @@ export interface AppSessionService {
 }
 
 export interface WorkspaceOnboardingService {
-  createWorkspace: (
-    input: WorkspaceCreateRequestDto,
+  createWorkspace: (input: WorkspaceCreateRequestDto) => Promise<WorkspaceOnboardingEnvelopeDto>;
+  acceptWorkspaceInvitation: (
+    input: WorkspaceInvitationAcceptRequestDto,
   ) => Promise<WorkspaceOnboardingEnvelopeDto>;
 }
 

@@ -68,7 +68,6 @@ export function AuthenticatedOnboardingShell({
   const sidebar = (
     <AuthenticatedAppSidebar
       activeArea={activeArea}
-      className="sticky top-0 hidden h-screen w-64 shrink-0 xl:flex"
       lastActiveWorkspaceId={lastActiveWorkspaceId}
       onOpenArea={onOpenArea}
       onOpenLastWorkspace={onOpenLastWorkspace}
@@ -80,27 +79,10 @@ export function AuthenticatedOnboardingShell({
 
   return (
     <AppShellFrame
-      mobileMeta={{
+      navigationMeta={{
         eyebrow: "워크스페이스 접근",
         title: `워크스페이스 > ${active.label}`,
         description: active.description,
-      }}
-      mobileNavigation={{
-        content: (
-          <AuthenticatedAppSidebar
-            activeArea={activeArea}
-            className="h-full w-full"
-            layout="drawer"
-            lastActiveWorkspaceId={lastActiveWorkspaceId}
-            onOpenArea={onOpenArea}
-            onOpenLastWorkspace={onOpenLastWorkspace}
-            onSignOutRequest={() => void handleSignOutRequest()}
-            user={user}
-            workspaces={workspaces}
-          />
-        ),
-        description: "로그인 이후에도 온보딩 단계와 다른 액션 사이를 이동할 수 있습니다.",
-        title: "앱 메뉴",
       }}
       sidebar={sidebar}
     >

@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap");
 
 @tailwind base;
 @tailwind components;
@@ -72,15 +72,22 @@
 
   body {
     @apply bg-background text-foreground font-sans antialiased;
-    font-family: 'IBM Plex Sans', system-ui, sans-serif;
+    font-family: "IBM Plex Sans", system-ui, sans-serif;
   }
 
-  code, pre, .font-mono {
-    font-family: 'IBM Plex Mono', monospace;
+  code,
+  pre,
+  .font-mono {
+    font-family: "IBM Plex Mono", monospace;
   }
 
-  h1, h2, h3, h4, h5, h6 {
-    font-family: 'IBM Plex Sans', system-ui, sans-serif;
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-family: "IBM Plex Sans", system-ui, sans-serif;
     @apply font-semibold tracking-tight;
   }
 }
@@ -93,19 +100,51 @@
 }
 
 /* Markdown preview styles */
-.prose-harness h1 { @apply text-2xl font-bold mb-4 mt-6; }
-.prose-harness h2 { @apply text-xl font-semibold mb-3 mt-5; }
-.prose-harness h3 { @apply text-lg font-medium mb-2 mt-4; }
-.prose-harness p { @apply mb-3 leading-relaxed; }
-.prose-harness ul { @apply list-disc pl-6 mb-3; }
-.prose-harness ol { @apply list-decimal pl-6 mb-3; }
-.prose-harness li { @apply mb-1; }
-.prose-harness code { @apply font-mono text-sm px-1.5 py-0.5 rounded bg-muted; }
-.prose-harness pre { @apply font-mono text-sm p-4 rounded-md bg-muted overflow-x-auto mb-4; }
-.prose-harness pre code { @apply p-0 bg-transparent; }
-.prose-harness blockquote { @apply border-l-4 border-primary/30 pl-4 italic text-muted-foreground mb-3; }
-.prose-harness table { @apply w-full border-collapse mb-4; }
-.prose-harness th { @apply text-left p-2 border-b-2 border-border font-medium; }
-.prose-harness td { @apply p-2 border-b border-border; }
-.prose-harness a { @apply text-primary underline underline-offset-2; }
-.prose-harness hr { @apply my-6 border-border; }
+.prose-harness h1 {
+  @apply text-2xl font-bold mb-4 mt-6;
+}
+.prose-harness h2 {
+  @apply text-xl font-semibold mb-3 mt-5;
+}
+.prose-harness h3 {
+  @apply text-lg font-medium mb-2 mt-4;
+}
+.prose-harness p {
+  @apply mb-3 leading-relaxed;
+}
+.prose-harness ul {
+  @apply list-disc pl-6 mb-3;
+}
+.prose-harness ol {
+  @apply list-decimal pl-6 mb-3;
+}
+.prose-harness li {
+  @apply mb-1;
+}
+.prose-harness code {
+  @apply font-mono text-sm px-1.5 py-0.5 rounded bg-muted;
+}
+.prose-harness pre {
+  @apply font-mono text-sm p-4 rounded-md bg-muted overflow-x-auto mb-4;
+}
+.prose-harness pre code {
+  @apply p-0 bg-transparent;
+}
+.prose-harness blockquote {
+  @apply border-l-4 border-primary/30 pl-4 italic text-muted-foreground mb-3;
+}
+.prose-harness table {
+  @apply w-full border-collapse mb-4;
+}
+.prose-harness th {
+  @apply text-left p-2 border-b-2 border-border font-medium;
+}
+.prose-harness td {
+  @apply p-2 border-b border-border;
+}
+.prose-harness a {
+  @apply text-primary underline underline-offset-2;
+}
+.prose-harness hr {
+  @apply my-6 border-border;
+}

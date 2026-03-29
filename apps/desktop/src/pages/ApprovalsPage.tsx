@@ -4,12 +4,7 @@ import { CompactPrimaryPageAction, CompactSecondaryPageAction } from "@/componen
 import { PanelCard, PanelCardHeader, PanelEmptyState, SignalPanel } from "@/components/pagePanels";
 import { Badge } from "@/components/ui/badge";
 import type { WorkspaceShellModel } from "../hooks/useWorkspaceShell";
-import {
-  EmptyStateCard,
-  formatDateTime,
-  statusBadgeVariant,
-  translateLabel,
-} from "./pageUtils";
+import { EmptyStateCard, formatDateTime, statusBadgeVariant, translateLabel } from "./pageUtils";
 
 export function ApprovalsPage({
   app,
@@ -34,10 +29,14 @@ export function ApprovalsPage({
       approval.lifecycle.state === "not_requested",
   );
   const resolvedApprovals = allApprovals
-    .filter((approval) => approval.lifecycle.state === "approved" || approval.lifecycle.state === "restored")
+    .filter(
+      (approval) =>
+        approval.lifecycle.state === "approved" || approval.lifecycle.state === "restored",
+    )
     .sort(
       (left, right) =>
-        new Date(right.lifecycle.updatedAt).getTime() - new Date(left.lifecycle.updatedAt).getTime(),
+        new Date(right.lifecycle.updatedAt).getTime() -
+        new Date(left.lifecycle.updatedAt).getTime(),
     )
     .slice(0, 6);
   const selectedDocument = app.activeDocument;
@@ -52,7 +51,10 @@ export function ApprovalsPage({
             <CompactPrimaryPageAction clientLog="문서 라이브러리 열기" onClick={onGoToDocuments}>
               문서 라이브러리 열기
             </CompactPrimaryPageAction>
-            <CompactSecondaryPageAction clientLog="대시보드로 이동" onClick={() => app.handleAreaChange("dashboard")}>
+            <CompactSecondaryPageAction
+              clientLog="대시보드로 이동"
+              onClick={() => app.handleAreaChange("dashboard")}
+            >
               대시보드로 이동
             </CompactSecondaryPageAction>
           </div>
@@ -77,7 +79,10 @@ export function ApprovalsPage({
         <SignalPanel
           description="현재 문서가 막힌 이유를 가장 빠르게 찾을 수 있는 unresolved approval 개수입니다."
           label="차단 신호"
-          value={documents.reduce((count, document) => count + document.prePublication.unresolvedApprovalIds.length, 0)}
+          value={documents.reduce(
+            (count, document) => count + document.prePublication.unresolvedApprovalIds.length,
+            0,
+          )}
         />
       </section>
 
@@ -110,14 +115,20 @@ export function ApprovalsPage({
                       return;
                     }
 
-                    logEvent({ action: "승인 큐 항목 CTA 클릭", description: approval.reviewerLabel, source: "approvals-page" });
+                    logEvent({
+                      action: "승인 큐 항목 CTA 클릭",
+                      description: approval.reviewerLabel,
+                      source: "approvals-page",
+                    });
                     app.handleDocumentSelect(approval.documentId);
                   }}
                   type="button"
                 >
                   <div className="min-w-0 flex-1">
                     <div className="flex flex-wrap items-center gap-2">
-                      <p className="font-medium text-[var(--foreground)]">{approval.reviewerLabel}</p>
+                      <p className="font-medium text-[var(--foreground)]">
+                        {approval.reviewerLabel}
+                      </p>
                       <Badge variant="outline">{translateLabel(approval.authority)}</Badge>
                       <Badge variant="secondary">{translateLabel(approval.source)}</Badge>
                       <Badge variant={statusBadgeVariant(approval.lifecycle.state)}>
@@ -154,7 +165,9 @@ export function ApprovalsPage({
                 resolvedApprovals.map((approval) => (
                   <div className="px-5 py-4" key={approval.id}>
                     <div className="flex flex-wrap items-center gap-2">
-                      <p className="font-medium text-[var(--foreground)]">{approval.reviewerLabel}</p>
+                      <p className="font-medium text-[var(--foreground)]">
+                        {approval.reviewerLabel}
+                      </p>
                       <Badge variant="outline">{translateLabel(approval.authority)}</Badge>
                       <Badge variant={statusBadgeVariant(approval.lifecycle.state)}>
                         {translateLabel(approval.lifecycle.state)}
@@ -201,7 +214,9 @@ export function ApprovalsPage({
                 approvals.map((approval) => (
                   <div className="px-5 py-4" key={approval.id}>
                     <div className="flex flex-wrap items-center gap-2">
-                      <p className="font-medium text-[var(--foreground)]">{approval.reviewerLabel}</p>
+                      <p className="font-medium text-[var(--foreground)]">
+                        {approval.reviewerLabel}
+                      </p>
                       <Badge variant="outline">{translateLabel(approval.authority)}</Badge>
                       <Badge variant="secondary">{translateLabel(approval.source)}</Badge>
                     </div>

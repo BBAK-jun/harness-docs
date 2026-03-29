@@ -4,11 +4,7 @@ import type {
   WorkspaceMembershipService,
   WorkspaceMembershipSnapshot,
 } from "../domain/workspaceMembership";
-import type {
-  SessionUser,
-  WorkspaceGraph,
-  WorkspaceMembership,
-} from "../types/contracts";
+import type { SessionUser, WorkspaceGraph, WorkspaceMembership } from "../types/contracts";
 import type { UserId, WorkspaceId } from "../types/domain-ui";
 
 interface SessionBackedWorkspaceMembershipServiceOptions {
@@ -67,7 +63,9 @@ async function buildWorkspaceMemberProfile(
 ): Promise<WorkspaceMemberProfile> {
   const isCurrentUser = membership.userId === currentUserId;
   const displayName =
-    isCurrentUser && currentSessionUser ? currentSessionUser.name : formatDisplayName(membership.userId);
+    isCurrentUser && currentSessionUser
+      ? currentSessionUser.name
+      : formatDisplayName(membership.userId);
   const githubLogin =
     isCurrentUser && currentSessionUser
       ? currentSessionUser.githubLogin

@@ -1,18 +1,45 @@
+import { useState } from "react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import type { WorkspaceInvitationAcceptRequestDto } from "@harness-docs/contracts";
 import { Navigate, createFileRoute, useRouter } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
-import { useAppBootstrap } from "../hooks/useAppBootstrap";
+import { useAppBootstrap, loadBootstrapState } from "../hooks/useAppBootstrap";
 import { AuthenticatedOnboardingShell } from "../pages/AuthenticatedOnboardingShell";
+import { InvitationAcceptancePage } from "../pages/InvitationAcceptancePage";
 import { RouteErrorStateCard } from "../pages/pageUtils";
-import { WorkspaceOnboardingPage } from "../pages/WorkspaceOnboardingPage";
+import { desktopMutationKeys, desktopQueryKeys } from "../queries/queryKeys";
 
 export const Route = createFileRoute("/invitation-acceptance")({
+  validateSearch: (search: Record<string, unknown>) => ({
+    code: typeof search.code === "string" ? search.code.trim() : "",
+  }),
   component: InvitationAcceptanceRoute,
   errorComponent: InvitationAcceptanceErrorBoundary,
 });
 
 function InvitationAcceptanceRoute() {
   const app = useAppBootstrap();
+  const search = Route.useSearch();
+  const queryClient = useQueryClient();
   const router = useRouter();
+  const [submissionError, setSubmissionError] = useState<string | null>(null);
+  const acceptWorkspaceInvitationMutation = useMutation({
+    mutationKey: desktopMutationKeys.workspace.acceptInvitation(),
+    mutationFn: async (input: WorkspaceInvitationAcceptRequestDto) => {
+      await app.services.workspaceOnboarding.acceptWorkspaceInvitation(input);
+      const nextBootstrap = await loadBootstrapState(app.services);
+      queryClient.setQueryData(desktopQueryKeys.bootstrap(), nextBootstrap);
+      return nextBootstrap;
+    },
+    onMutate: () => {
+      setSubmissionError(null);
+    },
+    onError: (error) => {
+      setSubmissionError(
+        error instanceof Error ? error.message : "Workspace invitation acceptance failed.",
+      );
+    },
+  });
 
   if (app.authentication?.status !== "authenticated") {
     return <Navigate to="/sign-in" />;
@@ -33,7 +60,7 @@ function InvitationAcceptanceRoute() {
           return;
         }
 
-        void router.navigate({ to: "/invitation-acceptance" });
+        void router.navigate({ to: "/invitation-acceptance", search: { code: "" } });
       }}
       onOpenLastWorkspace={() => {
         const workspaceId = app.session?.lastActiveWorkspaceId;
@@ -48,27 +75,34 @@ function InvitationAcceptanceRoute() {
       user={app.authentication?.user ?? null}
       workspaces={app.session?.workspaces ?? []}
     >
-      <WorkspaceOnboardingPage
-        checklist={[
-          "팀 리드가 보낸 초대를 수락하면 active membership으로 전환됩니다.",
-          "membership은 GitHub collaborator 권한과 별개로 앱이 관리합니다.",
-          "현재 구현에서는 실제 초대 코드 입력 대신 다음 단계 안내만 제공합니다.",
-        ]}
-        description="정책상 인증은 되었지만 워크스페이스가 없다면 초대 수락 흐름으로 이동할 수 있어야 합니다."
-        onPrimaryAction={() => {
-          void router.navigate({ to: "/workspace-create" });
-        }}
-        onSecondaryAction={() => {
-          void router.navigate({ to: "/workspaces" });
-        }}
-        onSignOut={() => {
-          void app.handleSignOut().finally(() => {
-            void router.navigate({ to: "/sign-in" });
+      <InvitationAcceptancePage
+        defaultInvitationCode={search.code}
+        errorMessage={submissionError}
+        isSubmitting={acceptWorkspaceInvitationMutation.isPending}
+        onAccept={async (input) => {
+          const nextBootstrap = await acceptWorkspaceInvitationMutation.mutateAsync(input);
+          const workspaceId =
+            nextBootstrap.appSession?.workspace?.lastActiveWorkspaceId ??
+            nextBootstrap.appSession?.workspace?.workspaces[0]?.id ??
+            null;
+
+          if (!workspaceId) {
+            throw new Error("Invitation was accepted but no active workspace was returned.");
+          }
+
+          await router.navigate({
+            to: "/$workspaceId/dashboard",
+            params: {
+              workspaceId,
+            },
           });
         }}
-        primaryLabel="워크스페이스 만들기 흐름 보기"
-        secondaryLabel="워크스페이스 목록으로 돌아가기"
-        title="초대 수락"
+        onCancel={() => {
+          void router.navigate({ to: "/workspaces" });
+        }}
+        onOpenWorkspaceCreate={() => {
+          void router.navigate({ to: "/workspace-create" });
+        }}
         withinShell
       />
     </AuthenticatedOnboardingShell>

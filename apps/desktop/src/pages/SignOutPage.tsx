@@ -1,6 +1,12 @@
 import { LogOut, ShieldCheck } from "lucide-react";
 import { CompactPrimaryPageAction, CompactSecondaryPageAction } from "@/components/pageActions";
-import { ElevatedPanel, InsetPanel, PanelCard, PanelCardContent, PanelCardHeader } from "@/components/pagePanels";
+import {
+  ElevatedPanel,
+  InsetPanel,
+  PanelCard,
+  PanelCardContent,
+  PanelCardHeader,
+} from "@/components/pagePanels";
 import { Badge } from "@/components/ui/badge";
 import { CardDescription, CardTitle } from "@/components/ui/card";
 import type { useAppBootstrap } from "../hooks/useAppBootstrap";
@@ -38,12 +44,18 @@ export function SignOutPage({
           <PanelCardHeader className="gap-4">
             <div className="flex items-center gap-3">
               <div className="flex size-10 items-center justify-center rounded-full bg-[var(--surface)] text-[var(--foreground)]">
-                {isAuthenticated ? <LogOut className="size-5" /> : <ShieldCheck className="size-5" />}
+                {isAuthenticated ? (
+                  <LogOut className="size-5" />
+                ) : (
+                  <ShieldCheck className="size-5" />
+                )}
               </div>
               <div>
                 <CardTitle>{isAuthenticated ? "로그아웃" : "세션 상태"}</CardTitle>
                 <CardDescription>
-                  {isAuthenticated ? "현재 연결된 계정과 세션 상태입니다." : "이 디바이스에는 활성 세션이 없습니다."}
+                  {isAuthenticated
+                    ? "현재 연결된 계정과 세션 상태입니다."
+                    : "이 디바이스에는 활성 세션이 없습니다."}
                 </CardDescription>
               </div>
             </div>
@@ -57,10 +69,16 @@ export function SignOutPage({
             <div className="flex flex-wrap gap-2">
               {isAuthenticated ? (
                 <>
-                  <CompactPrimaryPageAction clientLog="로그아웃 실행" onClick={() => void app.handleSignOut()}>
+                  <CompactPrimaryPageAction
+                    clientLog="로그아웃 실행"
+                    onClick={() => void app.handleSignOut()}
+                  >
                     로그아웃 실행
                   </CompactPrimaryPageAction>
-                  <CompactSecondaryPageAction clientLog="워크스페이스로 돌아가기" onClick={onOpenWorkspaces}>
+                  <CompactSecondaryPageAction
+                    clientLog="워크스페이스로 돌아가기"
+                    onClick={onOpenWorkspaces}
+                  >
                     워크스페이스로 돌아가기
                   </CompactSecondaryPageAction>
                 </>
@@ -69,7 +87,10 @@ export function SignOutPage({
                   <CompactPrimaryPageAction clientLog="로그인 페이지로 이동" onClick={onOpenSignIn}>
                     로그인 페이지로 이동
                   </CompactPrimaryPageAction>
-                  <CompactSecondaryPageAction clientLog="워크스페이스 목록" onClick={onOpenWorkspaces}>
+                  <CompactSecondaryPageAction
+                    clientLog="워크스페이스 목록"
+                    onClick={onOpenWorkspaces}
+                  >
                     워크스페이스 목록
                   </CompactSecondaryPageAction>
                 </>

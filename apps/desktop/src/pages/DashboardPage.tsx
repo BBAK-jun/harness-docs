@@ -1,4 +1,14 @@
-import { ArrowRight, CheckCircle2, Clock3, Eye, FileText, GitBranch, Sparkles, TriangleAlert, Users } from "lucide-react";
+import {
+  ArrowRight,
+  CheckCircle2,
+  Clock3,
+  Eye,
+  FileText,
+  GitBranch,
+  Sparkles,
+  TriangleAlert,
+  Users,
+} from "lucide-react";
 import { useClientActivityLog } from "@/components/ClientActivityLogProvider";
 import {
   ElevatedPanel,
@@ -34,17 +44,26 @@ export function DashboardPage({
             이 워크스페이스는 아직 비어 있습니다
           </h2>
           <p className="mt-3 max-w-3xl text-sm leading-7 text-[var(--muted-foreground)]">
-            대시보드는 빈 상태에서도 다음 작업을 안내해야 합니다. 먼저 AI로 초안을 만들거나,
-            문서 라이브러리에서 첫 문서를 시작할 준비를 확인하세요.
+            대시보드는 빈 상태에서도 다음 작업을 안내해야 합니다. 먼저 AI로 초안을 만들거나, 문서
+            라이브러리에서 첫 문서를 시작할 준비를 확인하세요.
           </p>
           <div className="mt-5 flex flex-wrap gap-2">
-            <CompactPrimaryPageAction clientLog="AI로 첫 문서 시작" onClick={() => app.handleAreaChange("ai")}>
+            <CompactPrimaryPageAction
+              clientLog="AI로 첫 문서 시작"
+              onClick={() => app.handleAreaChange("ai")}
+            >
               AI로 첫 문서 시작
             </CompactPrimaryPageAction>
-            <CompactSecondaryPageAction clientLog="빈 문서 라이브러리 보기" onClick={() => app.handleAreaChange("documents")}>
+            <CompactSecondaryPageAction
+              clientLog="빈 문서 라이브러리 보기"
+              onClick={() => app.handleAreaChange("documents")}
+            >
               빈 문서 라이브러리 보기
             </CompactSecondaryPageAction>
-            <CompactSecondaryPageAction clientLog="발행 준비 상태 보기" onClick={() => app.handleAreaChange("publish")}>
+            <CompactSecondaryPageAction
+              clientLog="발행 준비 상태 보기"
+              onClick={() => app.handleAreaChange("publish")}
+            >
               발행 준비 상태 보기
             </CompactSecondaryPageAction>
           </div>
@@ -89,7 +108,11 @@ export function DashboardPage({
             icon={<StatIcon label={stat.label} />}
             key={stat.label}
             label={stat.label}
-            value={<p className="text-4xl font-semibold tracking-tight text-[var(--foreground)]">{stat.value}</p>}
+            value={
+              <p className="text-4xl font-semibold tracking-tight text-[var(--foreground)]">
+                {stat.value}
+              </p>
+            }
           />
         ))}
       </section>
@@ -97,7 +120,9 @@ export function DashboardPage({
       <div className="grid gap-5 xl:grid-cols-[1.2fr_0.8fr]">
         <PanelCard>
           <PanelCardHeader>
-            <h3 className="text-sm font-semibold uppercase tracking-[0.16em] text-[var(--muted-foreground)]">최근 업데이트</h3>
+            <h3 className="text-sm font-semibold uppercase tracking-[0.16em] text-[var(--muted-foreground)]">
+              최근 업데이트
+            </h3>
           </PanelCardHeader>
           <div className="divide-y divide-[var(--border)]">
             {dashboard.recentDocuments.length === 0 ? (
@@ -111,7 +136,11 @@ export function DashboardPage({
                   className="flex w-full items-center gap-3 px-5 py-4 text-left transition-colors hover:bg-[var(--secondary)]/55"
                   key={document.id}
                   onClick={() => {
-                    logEvent({ action: "최근 업데이트 문서 CTA 클릭", description: document.title, source: "dashboard" });
+                    logEvent({
+                      action: "최근 업데이트 문서 CTA 클릭",
+                      description: document.title,
+                      source: "dashboard",
+                    });
                     app.handleDocumentSelect(document.id);
                   }}
                   type="button"
@@ -125,7 +154,8 @@ export function DashboardPage({
                       </Badge>
                     </div>
                     <p className="mt-2 text-sm text-[var(--muted-foreground)]">
-                      {document.owner?.avatarInitials ?? "HD"} · 업데이트 {formatDateTime(document.updatedAt)}
+                      {document.owner?.avatarInitials ?? "HD"} · 업데이트{" "}
+                      {formatDateTime(document.updatedAt)}
                     </p>
                   </div>
                   <ArrowRight className="size-4 text-[var(--muted-foreground)]" />
@@ -138,7 +168,9 @@ export function DashboardPage({
         <div className="flex flex-col gap-5">
           <PanelCard>
             <PanelCardHeader>
-              <h3 className="text-sm font-semibold uppercase tracking-[0.16em] text-[var(--muted-foreground)]">대기 중인 리뷰</h3>
+              <h3 className="text-sm font-semibold uppercase tracking-[0.16em] text-[var(--muted-foreground)]">
+                대기 중인 리뷰
+              </h3>
             </PanelCardHeader>
             <div className="divide-y divide-[var(--border)]">
               {dashboard.pendingReviews.length === 0 ? (
@@ -148,10 +180,19 @@ export function DashboardPage({
                 />
               ) : (
                 dashboard.pendingReviews.map((review) => (
-                  <button className="block w-full px-5 py-4 text-left transition-colors hover:bg-[var(--secondary)]/55" key={review.id} onClick={() => {
-                    logEvent({ action: "대기 중인 리뷰 CTA 클릭", description: review.title, source: "dashboard" });
-                    app.handleDocumentSelect(review.id);
-                  }} type="button">
+                  <button
+                    className="block w-full px-5 py-4 text-left transition-colors hover:bg-[var(--secondary)]/55"
+                    key={review.id}
+                    onClick={() => {
+                      logEvent({
+                        action: "대기 중인 리뷰 CTA 클릭",
+                        description: review.title,
+                        source: "dashboard",
+                      });
+                      app.handleDocumentSelect(review.id);
+                    }}
+                    type="button"
+                  >
                     <p className="font-medium text-[var(--foreground)]">{review.title}</p>
                     <p className="mt-2 text-sm text-[var(--muted-foreground)]">
                       승인 {review.unresolvedApprovalCount}/{review.approvalCount}건
@@ -164,7 +205,9 @@ export function DashboardPage({
 
           <PanelCard>
             <PanelCardHeader>
-              <h3 className="text-sm font-semibold uppercase tracking-[0.16em] text-[var(--muted-foreground)]">팀</h3>
+              <h3 className="text-sm font-semibold uppercase tracking-[0.16em] text-[var(--muted-foreground)]">
+                팀
+              </h3>
             </PanelCardHeader>
             <div className="divide-y divide-[var(--border)]">
               {dashboard.teamMembers.length === 0 ? (
@@ -180,7 +223,9 @@ export function DashboardPage({
                     </div>
                     <div>
                       <p className="font-medium text-[var(--foreground)]">{member.name}</p>
-                      <p className="mt-1 text-sm capitalize text-[var(--muted-foreground)]">{member.role}</p>
+                      <p className="mt-1 text-sm capitalize text-[var(--muted-foreground)]">
+                        {member.role}
+                      </p>
                     </div>
                   </div>
                 ))

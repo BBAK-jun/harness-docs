@@ -7,7 +7,10 @@ import type {
 } from "@harness-docs/contracts";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import type { PublishExecutionResult } from "../domain/publishing";
-import { buildPublishAttemptPreview, getDefaultPublishGovernanceSnapshot } from "../lib/publishGovernanceView";
+import {
+  buildPublishAttemptPreview,
+  getDefaultPublishGovernanceSnapshot,
+} from "../lib/publishGovernanceView";
 import { buildPublishExecutionInput } from "../lib/runtimePayloads";
 import { desktopMutationKeys, desktopQueryKeys } from "../queries/queryKeys";
 import type { WorkspaceShellModel } from "./useWorkspaceShell";
@@ -48,7 +51,10 @@ export function usePublishPage(shell: WorkspaceShellModel) {
   const targetDocumentId = shell.activeDocument?.id ?? fallbackSnapshot?.document.id ?? null;
   const workspaceId = shell.activeWorkspaceId;
   const preflightQuery = useQuery({
-    queryKey: desktopQueryKeys.publishing.preflight(workspaceId ?? "unknown", targetDocumentId ?? "unknown"),
+    queryKey: desktopQueryKeys.publishing.preflight(
+      workspaceId ?? "unknown",
+      targetDocumentId ?? "unknown",
+    ),
     enabled: Boolean(workspaceId && targetDocumentId),
     queryFn: async (): Promise<PublishPreflightView> => {
       if (!workspaceId || !targetDocumentId) {
@@ -75,7 +81,8 @@ export function usePublishPage(shell: WorkspaceShellModel) {
 
     return buildPublishAttemptPreview(preflight, publishRecord);
   }, [preflight, publishRecord]);
-  const isRationaleRequired = preflight?.document.publishEligibility.status === "requires_rationale";
+  const isRationaleRequired =
+    preflight?.document.publishEligibility.status === "requires_rationale";
   const isRationaleComplete =
     !isRationaleRequired ||
     (rationaleDraft.summary.trim().length > 0 &&
@@ -141,7 +148,11 @@ export function usePublishPage(shell: WorkspaceShellModel) {
   });
 
   const handleExecutePublish = async () => {
-    if (!shell.activeWorkspaceGraph || !preflight || preflight.document.publishEligibility.status === "blocked") {
+    if (
+      !shell.activeWorkspaceGraph ||
+      !preflight ||
+      preflight.document.publishEligibility.status === "blocked"
+    ) {
       return;
     }
 

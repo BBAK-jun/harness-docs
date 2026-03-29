@@ -34,10 +34,7 @@ export async function revokeApiSession(sessionToken: string) {
     header: sessionToken ? { authorization: `Bearer ${sessionToken}` } : undefined,
   });
 
-  return unwrapRpcResponse<ApiAuthenticationSessionDto>(
-    response,
-    "Authentication sign-out failed",
-  );
+  return unwrapRpcResponse<ApiAuthenticationSessionDto>(response, "Authentication sign-out failed");
 }
 
 export async function startGitHubOAuth() {

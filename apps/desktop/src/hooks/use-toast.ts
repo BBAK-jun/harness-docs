@@ -10,7 +10,11 @@ export type ToasterToast = ToastProps & {
 
 type ToastContextValue = {
   toasts: ToasterToast[];
-  toast: (toast: Omit<ToasterToast, "id">) => { id: string; dismiss: () => void; update: () => void };
+  toast: (toast: Omit<ToasterToast, "id">) => {
+    id: string;
+    dismiss: () => void;
+    update: () => void;
+  };
   dismiss: (toastId?: string) => void;
 };
 

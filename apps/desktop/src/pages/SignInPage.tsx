@@ -34,7 +34,8 @@ export function SignInPage({
             문서 거버넌스.
           </h1>
           <p className="text-sm text-sidebar-muted leading-relaxed max-w-sm">
-            하나의 워크스페이스에서 제품 문서를 작성하고, 검토하고, 승인하고, 발행하세요. 추적성과 거버넌스를 앱이 직접 관리합니다.
+            하나의 워크스페이스에서 제품 문서를 작성하고, 검토하고, 승인하고, 발행하세요. 추적성과
+            거버넌스를 앱이 직접 관리합니다.
           </p>
 
           <div className="mt-10 space-y-3">
@@ -44,7 +45,10 @@ export function SignInPage({
               "브랜치와 PR 흐름을 포함한 GitHub 발행",
               "AI 기반 초안 작성과 구조 제안",
             ].map((feature) => (
-              <div key={feature} className="flex items-center gap-2.5 text-sm text-sidebar-foreground">
+              <div
+                key={feature}
+                className="flex items-center gap-2.5 text-sm text-sidebar-foreground"
+              >
                 <div className="w-1 h-1 rounded-full bg-sidebar-primary shrink-0" />
                 {feature}
               </div>
@@ -64,13 +68,17 @@ export function SignInPage({
               <FileText className="w-4.5 h-4.5 text-sidebar-primary-foreground" />
             </div>
             <div>
-              <span className="text-base font-semibold text-sidebar-accent-foreground">Harness</span>
+              <span className="text-base font-semibold text-sidebar-accent-foreground">
+                Harness
+              </span>
               <span className="text-base font-semibold text-sidebar-primary"> Docs</span>
             </div>
           </div>
 
           <div className="text-center mb-8">
-            <h2 className="text-xl font-bold text-sidebar-accent-foreground mb-1.5">워크스페이스에 로그인</h2>
+            <h2 className="text-xl font-bold text-sidebar-accent-foreground mb-1.5">
+              워크스페이스에 로그인
+            </h2>
             <p className="text-sm text-sidebar-muted">GitHub 계정을 연결해 시작하세요</p>
           </div>
 

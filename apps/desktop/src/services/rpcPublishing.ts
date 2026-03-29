@@ -25,11 +25,14 @@ export function createRpcPublishingService({
         const sessionToken = await getSessionToken?.();
         const response = await harnessRpcClient.api.workspaces[":workspaceId"].documents[
           ":documentId"
-        ]["publish-preflight"].$get({
-          param: { workspaceId, documentId },
-        }, {
-          headers: sessionToken ? { authorization: `Bearer ${sessionToken}` } : undefined,
-        });
+        ]["publish-preflight"].$get(
+          {
+            param: { workspaceId, documentId },
+          },
+          {
+            headers: sessionToken ? { authorization: `Bearer ${sessionToken}` } : undefined,
+          },
+        );
 
         const payload = await unwrapRpcResponse<PublishPreflightEnvelopeDto>(
           response,
@@ -37,7 +40,9 @@ export function createRpcPublishingService({
         );
         return payload.preflight;
       } catch {
-        throw new Error("Publish preflight must be loaded from the API before publish can continue.");
+        throw new Error(
+          "Publish preflight must be loaded from the API before publish can continue.",
+        );
       }
     },
   };

@@ -1,6 +1,10 @@
 import type { WorkspaceGraph, WorkspaceSummary } from "../types/contracts";
 import type { AITaskEntryPoint } from "../types/domain-ui";
-import { getMemberSummaryByMembershipId, listWorkspaceMembers, type MemberSummaryView } from "./memberSummaries";
+import {
+  getMemberSummaryByMembershipId,
+  listWorkspaceMembers,
+  type MemberSummaryView,
+} from "./memberSummaries";
 
 export interface DashboardStatCard {
   label: string;
@@ -50,7 +54,8 @@ export function buildWorkspaceDashboardView(
   const recentDocuments = documents
     .sort(
       (left, right) =>
-        new Date(right.lifecycle.updatedAt).getTime() - new Date(left.lifecycle.updatedAt).getTime(),
+        new Date(right.lifecycle.updatedAt).getTime() -
+        new Date(left.lifecycle.updatedAt).getTime(),
     )
     .slice(0, 5)
     .map((document) => ({
@@ -83,11 +88,30 @@ export function buildWorkspaceDashboardView(
     },
     stats: [
       { label: "전체 문서", value: documents.length },
-      { label: "초안", value: documents.filter((document) => document.lifecycle.status === "draft").length },
-      { label: "검토 중", value: documents.filter((document) => document.lifecycle.review.status === "review_requested").length },
-      { label: "승인됨", value: documents.filter((document) => document.lifecycle.status === "approved").length },
-      { label: "발행됨", value: documents.filter((document) => document.lifecycle.status === "published").length },
-      { label: "오래됨", value: documents.filter((document) => document.lifecycle.review.freshness.status === "stale").length },
+      {
+        label: "초안",
+        value: documents.filter((document) => document.lifecycle.status === "draft").length,
+      },
+      {
+        label: "검토 중",
+        value: documents.filter(
+          (document) => document.lifecycle.review.status === "review_requested",
+        ).length,
+      },
+      {
+        label: "승인됨",
+        value: documents.filter((document) => document.lifecycle.status === "approved").length,
+      },
+      {
+        label: "발행됨",
+        value: documents.filter((document) => document.lifecycle.status === "published").length,
+      },
+      {
+        label: "오래됨",
+        value: documents.filter(
+          (document) => document.lifecycle.review.freshness.status === "stale",
+        ).length,
+      },
     ],
     recentDocuments,
     pendingReviews,

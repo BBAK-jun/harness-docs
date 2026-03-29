@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { useDocumentComments } from "./useDocumentComments";
 import { useDocumentEditingLocks } from "./useDocumentEditingLocks";
 import type {
@@ -62,7 +62,9 @@ export function useWorkspaceLocalState(
     onSelectedDocumentChange: (documentId: string) => void;
   },
 ) {
-  const [selectedDocumentIds, setSelectedDocumentIds] = useState<Record<string, string>>({});
+  const [selectedDocumentIds, setSelectedDocumentIds] = useState<Record<string, string>>(() =>
+    buildSelectedDocumentMap(initialWorkspaceGraphs),
+  );
   const [documentDrafts, setDocumentDrafts] = useState<Record<string, string>>({});
   const lastInteractionTouchMsRef = useRef(0);
   const { workspaceGraphs, createBlockCommentThread } = useDocumentComments(initialWorkspaceGraphs);
@@ -74,13 +76,8 @@ export function useWorkspaceLocalState(
     touchDocumentEditingLock,
   } = useDocumentEditingLocks(workspaceGraphs);
 
-  useEffect(() => {
-    setSelectedDocumentIds(buildSelectedDocumentMap(initialWorkspaceGraphs));
-  }, [initialWorkspaceGraphs]);
-
   const activeWorkspaceGraph = useMemo(
-    () =>
-      workspaceGraphs.find((graph) => graph.workspace.id === options.activeWorkspaceId) ?? null,
+    () => workspaceGraphs.find((graph) => graph.workspace.id === options.activeWorkspaceId) ?? null,
     [options.activeWorkspaceId, workspaceGraphs],
   );
 
@@ -178,11 +175,7 @@ export function useWorkspaceLocalState(
   };
 
   const handleCreateBlockComment = (document: WorkspaceDocument, bodyMarkdown: string) => {
-    if (
-      !options.activeMembershipId ||
-      !activeWorkspaceGraph ||
-      bodyMarkdown.trim().length === 0
-    ) {
+    if (!options.activeMembershipId || !activeWorkspaceGraph || bodyMarkdown.trim().length === 0) {
       return;
     }
 

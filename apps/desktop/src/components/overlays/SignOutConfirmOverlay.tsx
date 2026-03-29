@@ -52,11 +52,16 @@ export function SignOutConfirmOverlay({
   };
 
   return (
-    <AlertDialog onOpenChange={(nextOpen) => (!nextOpen ? handleCancel() : undefined)} open={isOpen}>
+    <AlertDialog
+      onOpenChange={(nextOpen) => (!nextOpen ? handleCancel() : undefined)}
+      open={isOpen}
+    >
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle>로그아웃하시겠습니까?</AlertDialogTitle>
-          <AlertDialogDescription>현재 세션을 종료하고 로그인 페이지로 이동합니다.</AlertDialogDescription>
+          <AlertDialogDescription>
+            현재 세션을 종료하고 로그인 페이지로 이동합니다.
+          </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
           <Button

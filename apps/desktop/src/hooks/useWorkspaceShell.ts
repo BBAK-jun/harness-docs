@@ -37,7 +37,9 @@ export function useWorkspaceShell(
       return null;
     }
 
-    const graph = session?.workspaceGraphs.find((entry) => entry.workspace.id === activeWorkspace.id);
+    const graph = session?.workspaceGraphs.find(
+      (entry) => entry.workspace.id === activeWorkspace.id,
+    );
     return (
       graph?.memberships.find(
         (membership) => membership.userId === user.id && membership.lifecycle.status === "active",
@@ -65,16 +67,18 @@ export function useWorkspaceShell(
     );
   }, [localState.activeWorkspaceGraph, user]);
 
-  useEffect(() => {
-    const activeDocument = localState.activeDocument;
-    const activeDocumentLock = localState.activeDocumentLock;
+  const activeDocumentId = localState.activeDocument?.id ?? null;
+  const currentActiveMembershipId = activeMembership?.id ?? null;
+  const activeDocumentLockStatus = localState.activeDocumentLock?.lifecycle.status ?? null;
+  const activeDocumentLockedByMembershipId =
+    localState.activeDocumentLock?.lockedByMembershipId ?? null;
 
+  useEffect(() => {
     if (
-      !activeDocument ||
-      !activeMembership ||
-      !activeDocumentLock ||
-      activeDocumentLock.lifecycle.status !== "active" ||
-      activeDocumentLock.lockedByMembershipId !== activeMembership.id
+      !activeDocumentId ||
+      !currentActiveMembershipId ||
+      activeDocumentLockStatus !== "active" ||
+      activeDocumentLockedByMembershipId !== currentActiveMembershipId
     ) {
       return;
     }
@@ -88,13 +92,21 @@ export function useWorkspaceShell(
 
       localState.lastInteractionTouchMsRef.current = now;
       localState.touchDocumentEditingLock({
-        documentId: activeDocument.id,
-        membershipId: activeMembership.id,
+        documentId: activeDocumentId,
+        membershipId: currentActiveMembershipId,
       });
     };
 
     return services.desktopWindow.subscribeToUserActivity(touchActiveLock);
-  }, [activeMembership, localState, services]);
+  }, [
+    activeDocumentId,
+    activeDocumentLockStatus,
+    activeDocumentLockedByMembershipId,
+    currentActiveMembershipId,
+    localState.lastInteractionTouchMsRef,
+    localState.touchDocumentEditingLock,
+    services,
+  ]);
 
   return {
     services,

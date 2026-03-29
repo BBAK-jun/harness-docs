@@ -9,4 +9,5 @@ path/
 **/node_modules/
 **/dist/
 **/target/
+docs/.vitepress/cache/
 scripts/.cache/

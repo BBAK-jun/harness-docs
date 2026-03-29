@@ -41,22 +41,10 @@ export function WorkspacePage({
 
   return (
     <AppShellFrame
-      mobileMeta={{
+      navigationMeta={{
         eyebrow: app.activeWorkspace?.name ?? "워크스페이스",
         title: hierarchy.join(" > "),
         description: activeArea.label,
-      }}
-      mobileNavigation={{
-        content: (
-          <AppSidebar
-            app={app}
-            className="h-full w-full"
-            layout="drawer"
-            onSignOutRequest={() => void handleSignOutRequest()}
-          />
-        ),
-        description: "현재 워크스페이스 안에서 이동할 수 있는 작업 영역입니다.",
-        title: "워크스페이스 메뉴",
       }}
       sidebar={<AppSidebar app={app} onSignOutRequest={() => void handleSignOutRequest()} />}
     >

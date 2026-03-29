@@ -43,7 +43,10 @@ export function DocumentsPage({
             <CompactPrimaryPageAction clientLog="대시보드로 이동" onClick={onGoToDashboard}>
               대시보드로 이동
             </CompactPrimaryPageAction>
-            <CompactSecondaryPageAction clientLog="워크스페이스 다시 선택" onClick={onOpenWorkspaces}>
+            <CompactSecondaryPageAction
+              clientLog="워크스페이스 다시 선택"
+              onClick={onOpenWorkspaces}
+            >
               워크스페이스 다시 선택
             </CompactSecondaryPageAction>
             <CompactSecondaryPageAction clientLog="AI 화면 보기" onClick={onGoToAI}>
@@ -130,7 +133,11 @@ function DocumentRow({
           : "bg-transparent hover:bg-[var(--secondary)]/55",
       )}
       onClick={() => {
-        logEvent({ action: "문서 행 CTA 클릭", description: document.title, source: "documents-page" });
+        logEvent({
+          action: "문서 행 CTA 클릭",
+          description: document.title,
+          source: "documents-page",
+        });
         app.handleDocumentSelect(document.id);
       }}
       type="button"

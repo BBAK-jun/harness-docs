@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import type {
   DocumentComment,
   DocumentCommentMention,
@@ -17,6 +17,18 @@ function buildCommentId(documentId: string, now: number) {
 
 function buildThreadId(documentId: string, blockId: string, now: number) {
   return `thread_${documentId}_${blockId}_${now}`;
+}
+
+function appendUniqueIds(currentIds: string[] | undefined, nextIds: string[]) {
+  return Array.from(new Set([...(currentIds ?? []), ...nextIds]));
+}
+
+function mergeEntitiesById<T extends { id: string }>(base: T[], overlays: T[]) {
+  const overlayById = new Map(overlays.map((entry) => [entry.id, entry]));
+  const mergedBase = base.map((entry) => overlayById.get(entry.id) ?? entry);
+  const baseIds = new Set(base.map((entry) => entry.id));
+
+  return mergedBase.concat(overlays.filter((entry) => !baseIds.has(entry.id)));
 }
 
 function createMentions(
@@ -95,20 +107,66 @@ function createComment(input: {
   };
 }
 
-function collectInitialCommentState(workspaceGraphs: WorkspaceGraph[]) {
-  return workspaceGraphs;
-}
-
 export function useDocumentComments(initialWorkspaceGraphs: WorkspaceGraph[]) {
-  const initialGraphs = useMemo(
-    () => collectInitialCommentState(initialWorkspaceGraphs),
-    [initialWorkspaceGraphs],
-  );
-  const [workspaceGraphs, setWorkspaceGraphs] = useState<WorkspaceGraph[]>(initialGraphs);
+  const [documentCommentThreadIdsByDocumentId, setDocumentCommentThreadIdsByDocumentId] = useState<
+    Record<string, string[]>
+  >({});
+  const [documentUpdatedAtByDocumentId, setDocumentUpdatedAtByDocumentId] = useState<
+    Record<string, string>
+  >({});
+  const [commentThreadsById, setCommentThreadsById] = useState<
+    Record<string, DocumentCommentThread>
+  >({});
+  const [commentsById, setCommentsById] = useState<Record<string, DocumentComment>>({});
 
-  useEffect(() => {
-    setWorkspaceGraphs(initialGraphs);
-  }, [initialGraphs]);
+  const workspaceGraphs = useMemo(
+    () =>
+      initialWorkspaceGraphs.map((graph) => {
+        const commentThreadOverlays = Object.values(commentThreadsById).filter(
+          (thread) => thread.workspaceId === graph.workspace.id,
+        );
+        const commentOverlays = Object.values(commentsById).filter(
+          (comment) => comment.workspaceId === graph.workspace.id,
+        );
+
+        return {
+          ...graph,
+          documents: graph.documents.map((document) => {
+            const extraThreadIds = documentCommentThreadIdsByDocumentId[document.id] ?? [];
+            const nextUpdatedAt = documentUpdatedAtByDocumentId[document.id];
+            const hasThreadChanges = extraThreadIds.some(
+              (threadId) => !document.commentThreadIds.includes(threadId),
+            );
+
+            if (!hasThreadChanges && !nextUpdatedAt) {
+              return document;
+            }
+
+            return {
+              ...document,
+              commentThreadIds: hasThreadChanges
+                ? appendUniqueIds(document.commentThreadIds, extraThreadIds)
+                : document.commentThreadIds,
+              lifecycle: nextUpdatedAt
+                ? {
+                    ...document.lifecycle,
+                    updatedAt: nextUpdatedAt,
+                  }
+                : document.lifecycle,
+            };
+          }),
+          commentThreads: mergeEntitiesById(graph.commentThreads, commentThreadOverlays),
+          comments: mergeEntitiesById(graph.comments, commentOverlays),
+        };
+      }),
+    [
+      commentThreadsById,
+      commentsById,
+      documentCommentThreadIdsByDocumentId,
+      documentUpdatedAtByDocumentId,
+      initialWorkspaceGraphs,
+    ],
+  );
 
   const createBlockCommentThread = (input: CreateDocumentBlockCommentInput) => {
     const timestamp = input.createdAt ?? new Date().toISOString();
@@ -145,33 +203,22 @@ export function useDocumentComments(initialWorkspaceGraphs: WorkspaceGraph[]) {
       },
     };
 
-    setWorkspaceGraphs((current) =>
-      current.map((graph) => {
-        if (graph.workspace.id !== input.workspaceId) {
-          return graph;
-        }
-
-        return {
-          ...graph,
-          documents: graph.documents.map((document) =>
-            document.id === input.documentId
-              ? {
-                  ...document,
-                  commentThreadIds: Array.from(
-                    new Set([...document.commentThreadIds, nextThread.id]),
-                  ),
-                  lifecycle: {
-                    ...document.lifecycle,
-                    updatedAt: timestamp,
-                  },
-                }
-              : document,
-          ),
-          commentThreads: [...graph.commentThreads, nextThread],
-          comments: [...graph.comments, initialComment],
-        };
-      }),
-    );
+    setDocumentCommentThreadIdsByDocumentId((current) => ({
+      ...current,
+      [input.documentId]: appendUniqueIds(current[input.documentId], [nextThread.id]),
+    }));
+    setDocumentUpdatedAtByDocumentId((current) => ({
+      ...current,
+      [input.documentId]: timestamp,
+    }));
+    setCommentThreadsById((current) => ({
+      ...current,
+      [nextThread.id]: nextThread,
+    }));
+    setCommentsById((current) => ({
+      ...current,
+      [initialComment.id]: initialComment,
+    }));
 
     return {
       thread: nextThread,
@@ -193,47 +240,47 @@ export function useDocumentComments(initialWorkspaceGraphs: WorkspaceGraph[]) {
       createdAt: timestamp,
       idSeed,
     });
+    const existingThread =
+      workspaceGraphs
+        .find((graph) => graph.workspace.id === input.workspaceId)
+        ?.commentThreads.find((thread) => thread.id === input.threadId) ?? null;
 
-    setWorkspaceGraphs((current) =>
-      current.map((graph) => {
-        if (graph.workspace.id !== input.workspaceId) {
-          return graph;
-        }
+    if (!existingThread) {
+      return nextComment;
+    }
 
-        return {
-          ...graph,
-          commentThreads: graph.commentThreads.map((thread) =>
-            thread.id === input.threadId
-              ? {
-                  ...thread,
-                  participantMembershipIds: Array.from(
-                    new Set([
-                      ...thread.participantMembershipIds,
-                      input.authorMembershipId,
-                      ...(input.mentionedMembershipIds ?? []),
-                    ]),
-                  ),
-                  commentIds: [...thread.commentIds, nextComment.id],
-                  lifecycle: {
-                    ...thread.lifecycle,
-                    status: "open",
-                    updatedAt: timestamp,
-                    lastCommentAt: timestamp,
-                  },
-                }
-              : thread,
-          ),
-          comments: [...graph.comments, nextComment],
-        };
-      }),
-    );
+    const nextThread: DocumentCommentThread = {
+      ...existingThread,
+      participantMembershipIds: Array.from(
+        new Set([
+          ...existingThread.participantMembershipIds,
+          input.authorMembershipId,
+          ...(input.mentionedMembershipIds ?? []),
+        ]),
+      ),
+      commentIds: [...existingThread.commentIds, nextComment.id],
+      lifecycle: {
+        ...existingThread.lifecycle,
+        status: "open",
+        updatedAt: timestamp,
+        lastCommentAt: timestamp,
+      },
+    };
+
+    setCommentThreadsById((current) => ({
+      ...current,
+      [nextThread.id]: nextThread,
+    }));
+    setCommentsById((current) => ({
+      ...current,
+      [nextComment.id]: nextComment,
+    }));
 
     return nextComment;
   };
 
   return {
     workspaceGraphs,
-    setWorkspaceGraphs,
     createBlockCommentThread,
     addCommentToThread,
   };

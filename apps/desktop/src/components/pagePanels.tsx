@@ -2,12 +2,7 @@ import * as React from "react";
 import { cn } from "@/lib/utils";
 import { elevatedPanelClassName, insetPanelClassName } from "@/components/panelStyles";
 import { Badge } from "@/components/ui/badge";
-import {
-  Card,
-  CardContent,
-  CardFooter,
-  CardHeader,
-} from "@/components/ui/card";
+import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 
 type PanelPadding = "none" | "md" | "lg";
 type NoticeTone = "default" | "success" | "warning" | "danger";
@@ -89,22 +84,22 @@ export function HintPanel({
   );
 }
 
-export function PanelCard({
-  children,
-  className,
-}: React.HTMLAttributes<HTMLDivElement>) {
+export function PanelCard({ children, className }: React.HTMLAttributes<HTMLDivElement>) {
   return (
-    <Card className={cn(elevatedPanelClassName, "overflow-hidden", className)}>
-      {children}
-    </Card>
+    <Card className={cn(elevatedPanelClassName, "overflow-hidden", className)}>{children}</Card>
   );
 }
 
 export function PanelCardHeader({ className, ...props }: React.ComponentProps<typeof CardHeader>) {
-  return <CardHeader className={cn("border-b border-[var(--border)] px-5 py-4", className)} {...props} />;
+  return (
+    <CardHeader className={cn("border-b border-[var(--border)] px-5 py-4", className)} {...props} />
+  );
 }
 
-export function PanelCardContent({ className, ...props }: React.ComponentProps<typeof CardContent>) {
+export function PanelCardContent({
+  className,
+  ...props
+}: React.ComponentProps<typeof CardContent>) {
   return <CardContent className={cn("p-5", className)} {...props} />;
 }
 
@@ -128,7 +123,9 @@ export function SignalPanel({
   return (
     <ElevatedPanel padding="md">
       <div className="flex items-center justify-between gap-3">
-        <p className="text-xs uppercase tracking-[0.18em] text-[var(--muted-foreground)]">{label}</p>
+        <p className="text-xs uppercase tracking-[0.18em] text-[var(--muted-foreground)]">
+          {label}
+        </p>
         {icon}
       </div>
       <div className="mt-4">
@@ -203,7 +200,17 @@ export function NoticePanel({
       <div className="flex flex-wrap items-center gap-2">
         <p className="font-medium text-[var(--foreground)]">{title}</p>
         {badge ? (
-          <Badge variant={tone === "success" ? "success" : tone === "warning" ? "warning" : tone === "danger" ? "destructive" : "outline"}>
+          <Badge
+            variant={
+              tone === "success"
+                ? "success"
+                : tone === "warning"
+                  ? "warning"
+                  : tone === "danger"
+                    ? "destructive"
+                    : "outline"
+            }
+          >
             {badge}
           </Badge>
         ) : null}

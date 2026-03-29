@@ -83,17 +83,23 @@ export function useAppBootstrap() {
     },
   });
 
-  const handleSignIn = async (provider: AuthenticationSessionSnapshot["provider"]["id"], redirectTo?: FileRouteTypes['to']) => {
-    await authenticationMutation.mutateAsync({
-      type: "sign-in",
-      provider,
-    }, {
-      onSuccess: () => {
-        if (redirectTo) {
-          void router.navigate({ to: redirectTo });
-        }
+  const handleSignIn = async (
+    provider: AuthenticationSessionSnapshot["provider"]["id"],
+    redirectTo?: FileRouteTypes["to"],
+  ) => {
+    await authenticationMutation.mutateAsync(
+      {
+        type: "sign-in",
+        provider,
       },
-    });
+      {
+        onSuccess: () => {
+          if (redirectTo) {
+            void router.navigate({ to: redirectTo });
+          }
+        },
+      },
+    );
   };
 
   const handleSignOut = async () => {

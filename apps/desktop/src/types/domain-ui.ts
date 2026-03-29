@@ -24,11 +24,7 @@ export type ApprovalId = string;
 export type DocumentInvalidationId = string;
 export type PublishRecordId = string;
 
-export type AIDraftSuggestionStatus =
-  | "proposed"
-  | "reviewed"
-  | "accepted"
-  | "rejected";
+export type AIDraftSuggestionStatus = "proposed" | "reviewed" | "accepted" | "rejected";
 
 export type AITaskEntryPointScope = "workspace" | "document" | "publish";
 export type AITaskEntryPointContext =

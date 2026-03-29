@@ -19,8 +19,8 @@ export function WorkspaceUnavailablePage({ app }: { app: WorkspaceShellModel }) 
             <div>
               <CardTitle>활성 워크스페이스 없음</CardTitle>
               <CardDescription>
-                로그인은 유지되지만 활성 워크스페이스 멤버십이 없습니다. 워크스페이스 생성이나
-                초대 수락 흐름으로 이동할 수 있습니다.
+                로그인은 유지되지만 활성 워크스페이스 멤버십이 없습니다. 워크스페이스 생성이나 초대
+                수락 흐름으로 이동할 수 있습니다.
               </CardDescription>
             </div>
           </div>
@@ -37,7 +37,7 @@ export function WorkspaceUnavailablePage({ app }: { app: WorkspaceShellModel }) 
           <CompactSecondaryPageAction
             clientLog="초대 수락"
             onClick={() => {
-              void navigate({ to: "/invitation-acceptance" });
+              void navigate({ to: "/invitation-acceptance", search: { code: "" } });
             }}
           >
             초대 수락

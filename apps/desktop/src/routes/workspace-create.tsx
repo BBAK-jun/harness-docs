@@ -54,7 +54,7 @@ function WorkspaceCreateRoute() {
           return;
         }
 
-        void router.navigate({ to: "/invitation-acceptance" });
+        void router.navigate({ to: "/invitation-acceptance", search: { code: "" } });
       }}
       onOpenLastWorkspace={() => {
         const workspaceId = app.session?.lastActiveWorkspaceId;

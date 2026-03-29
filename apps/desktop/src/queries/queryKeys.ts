@@ -25,6 +25,7 @@ export const desktopMutationKeys = {
   },
   workspace: {
     create: () => [...desktopQueryRoot, "workspace", "create"] as const,
+    acceptInvitation: () => [...desktopQueryRoot, "workspace", "accept-invitation"] as const,
   },
   ai: {
     runEntryPoint: () => [...desktopQueryRoot, "ai", "run-entry-point"] as const,

@@ -105,10 +105,12 @@ export function buildWorkspaceDashboardView(graph: WorkspaceGraph): WorkspaceDas
       name: graph.workspace.name,
       repo: `${graph.workspace.docsRepository.owner}/${graph.workspace.docsRepository.name}`,
       role:
-        graph.memberships.find((membership) => membership.userId === graph.workspace.createdByUserId)?.role ??
-        "Reviewer",
+        graph.memberships.find(
+          (membership) => membership.userId === graph.workspace.createdByUserId,
+        )?.role ?? "Reviewer",
       description: graph.workspace.description,
-      openReviews: graph.commentThreads.filter((thread) => thread.lifecycle.status === "open").length,
+      openReviews: graph.commentThreads.filter((thread) => thread.lifecycle.status === "open")
+        .length,
       pendingDrafts: documents.filter((document) => document.status === "draft").length,
       staleDocuments: documents.filter((document) => document.isStale).length,
       areas: {} as WorkspaceSummary["areas"],

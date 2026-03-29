@@ -19,7 +19,13 @@ const typeStyles: Record<DocType, string> = {
 
 export function StatusBadge({ status, className }: { status: DocStatus; className?: string }) {
   return (
-    <span className={cn("inline-flex items-center px-2 py-0.5 text-xs font-medium border rounded-sm", statusStyles[status], className)}>
+    <span
+      className={cn(
+        "inline-flex items-center px-2 py-0.5 text-xs font-medium border rounded-sm",
+        statusStyles[status],
+        className,
+      )}
+    >
       {statusLabels[status]}
     </span>
   );
@@ -27,7 +33,13 @@ export function StatusBadge({ status, className }: { status: DocStatus; classNam
 
 export function TypeBadge({ type, className }: { type: DocType; className?: string }) {
   return (
-    <span className={cn("inline-flex items-center px-2 py-0.5 text-xs font-medium border rounded-sm", typeStyles[type], className)}>
+    <span
+      className={cn(
+        "inline-flex items-center px-2 py-0.5 text-xs font-medium border rounded-sm",
+        typeStyles[type],
+        className,
+      )}
+    >
       {docTypeLabels[type]}
     </span>
   );
@@ -35,7 +47,12 @@ export function TypeBadge({ type, className }: { type: DocType; className?: stri
 
 export function StaleBadge({ className }: { className?: string }) {
   return (
-    <span className={cn("inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium border rounded-sm bg-status-stale/10 text-status-stale border-status-stale/20", className)}>
+    <span
+      className={cn(
+        "inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium border rounded-sm bg-status-stale/10 text-status-stale border-status-stale/20",
+        className,
+      )}
+    >
       <span className="w-1.5 h-1.5 rounded-full bg-status-stale animate-pulse" />
       Stale
     </span>

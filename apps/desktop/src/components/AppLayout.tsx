@@ -1,3 +1,5 @@
+import { SidebarProvider } from "@/components/ui/sidebar";
+
 export function AppLayout({
   sidebar,
   children,
@@ -6,9 +8,9 @@ export function AppLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="flex min-h-screen w-full bg-transparent">
+    <SidebarProvider className="min-h-screen bg-transparent">
       {sidebar}
-      <main className="min-w-0 flex-1 overflow-auto">{children}</main>
-    </div>
+      <div className="min-w-0 flex-1 overflow-auto">{children}</div>
+    </SidebarProvider>
   );
 }

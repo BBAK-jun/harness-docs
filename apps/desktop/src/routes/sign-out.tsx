@@ -1,5 +1,5 @@
 import { Navigate, createFileRoute, useRouter } from "@tanstack/react-router";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { useAppBootstrap } from "../hooks/useAppBootstrap";
 import { RouteErrorStateCard } from "../pages/pageUtils";
@@ -12,14 +12,19 @@ export const Route = createFileRoute("/sign-out")({
 function SignOutRoute() {
   const app = useAppBootstrap();
   const router = useRouter();
+  const hasStartedSignOutRef = useRef(false);
 
   useEffect(() => {
-    if (app.authentication?.status === "authenticated") {
-      void app.handleSignOut().finally(() => {
-        void router.navigate({ to: "/sign-in" });
-      });
+    if (app.authentication?.status !== "authenticated" || hasStartedSignOutRef.current) {
+      return;
     }
-  }, [app, router]);
+
+    hasStartedSignOutRef.current = true;
+
+    void app.handleSignOut().finally(() => {
+      void router.navigate({ to: "/sign-in" });
+    });
+  }, [app.authentication?.status, app.handleSignOut, router]);
 
   if (app.authentication?.status !== "authenticated") {
     return <Navigate to="/sign-in" />;

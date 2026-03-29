@@ -1,4 +1,8 @@
-import type { PublishAttemptResult, PublishPreflightView, StaleReasonCode } from "@harness-docs/contracts";
+import type {
+  PublishAttemptResult,
+  PublishPreflightView,
+  StaleReasonCode,
+} from "@harness-docs/contracts";
 import type { PublishRecord } from "../types/contracts";
 
 export interface PublishFlowViewModel {

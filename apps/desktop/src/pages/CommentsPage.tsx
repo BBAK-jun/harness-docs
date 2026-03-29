@@ -20,7 +20,9 @@ export function CommentsPage({
   onGoToApprovals,
 }: {
   app: WorkspaceShellModel;
-  threads: Array<NonNullable<WorkspaceShellModel["activeWorkspaceGraph"]>["commentThreads"][number]>;
+  threads: Array<
+    NonNullable<WorkspaceShellModel["activeWorkspaceGraph"]>["commentThreads"][number]
+  >;
   onGoToDocuments: () => void;
   onGoToApprovals: () => void;
 }) {
@@ -42,8 +44,9 @@ export function CommentsPage({
         (thread) => thread.documentId === document.id && thread.lifecycle.status === "open",
       ).length,
       unresolvedApprovalCount: document.prePublication.unresolvedApprovalIds.length,
-      owner:
-        graph ? getMemberSummaryByMembershipId(graph, document.ownerMembershipId)?.name ?? "알 수 없음" : "알 수 없음",
+      owner: graph
+        ? (getMemberSummaryByMembershipId(graph, document.ownerMembershipId)?.name ?? "알 수 없음")
+        : "알 수 없음",
       updatedAt: document.lifecycle.updatedAt,
     }));
   const recentlyApproved = documents
@@ -55,7 +58,8 @@ export function CommentsPage({
     )
     .sort(
       (left, right) =>
-        new Date(right.lifecycle.updatedAt).getTime() - new Date(left.lifecycle.updatedAt).getTime(),
+        new Date(right.lifecycle.updatedAt).getTime() -
+        new Date(left.lifecycle.updatedAt).getTime(),
     )
     .slice(0, 5);
   const openThreadCount = (graph?.commentThreads ?? []).filter(
@@ -73,7 +77,10 @@ export function CommentsPage({
             <CompactPrimaryPageAction clientLog="문서 라이브러리 열기" onClick={onGoToDocuments}>
               문서 라이브러리 열기
             </CompactPrimaryPageAction>
-            <CompactSecondaryPageAction clientLog="대시보드로 이동" onClick={() => app.handleAreaChange("dashboard")}>
+            <CompactSecondaryPageAction
+              clientLog="대시보드로 이동"
+              onClick={() => app.handleAreaChange("dashboard")}
+            >
               대시보드로 이동
             </CompactSecondaryPageAction>
           </div>
@@ -96,7 +103,11 @@ export function CommentsPage({
           value={openThreadCount}
         />
         <SignalPanel
-          description={selectedDocument ? selectedDocument.title : "문서를 선택하면 해당 문서의 대화 맥락을 함께 봅니다."}
+          description={
+            selectedDocument
+              ? selectedDocument.title
+              : "문서를 선택하면 해당 문서의 대화 맥락을 함께 봅니다."
+          }
           label="집중 문서"
           value={selectedDocument ? 1 : 0}
         />
@@ -108,7 +119,8 @@ export function CommentsPage({
             <div>
               <h2 className="text-lg font-semibold text-[var(--foreground)]">검토 대기</h2>
               <p className="mt-1 text-sm text-[var(--muted-foreground)]">
-                러버블 기준으로 리뷰 페이지는 현재 문서가 아니라 워크스페이스 리뷰 큐를 먼저 보여줍니다.
+                러버블 기준으로 리뷰 페이지는 현재 문서가 아니라 워크스페이스 리뷰 큐를 먼저
+                보여줍니다.
               </p>
             </div>
             <CompactSecondaryPageAction clientLog="승인 큐 보기" onClick={onGoToApprovals}>
@@ -127,7 +139,11 @@ export function CommentsPage({
                   className="flex w-full items-start gap-4 px-5 py-4 text-left transition-colors hover:bg-[var(--secondary)]/55"
                   key={document.id}
                   onClick={() => {
-                    logEvent({ action: "검토 대기 문서 CTA 클릭", description: document.title, source: "comments-page" });
+                    logEvent({
+                      action: "검토 대기 문서 CTA 클릭",
+                      description: document.title,
+                      source: "comments-page",
+                    });
                     app.handleDocumentSelect(document.id);
                   }}
                   type="button"
@@ -144,8 +160,12 @@ export function CommentsPage({
                       {document.owner} · 업데이트 {formatDateTime(document.updatedAt)}
                     </p>
                     <div className="mt-3 flex flex-wrap gap-2">
-                      <Badge variant="secondary">열린 스레드 {document.unresolvedThreadCount}</Badge>
-                      <Badge variant="secondary">미해결 승인 {document.unresolvedApprovalCount}</Badge>
+                      <Badge variant="secondary">
+                        열린 스레드 {document.unresolvedThreadCount}
+                      </Badge>
+                      <Badge variant="secondary">
+                        미해결 승인 {document.unresolvedApprovalCount}
+                      </Badge>
                     </div>
                   </div>
                   <ArrowRight className="mt-1 size-4 text-[var(--muted-foreground)]" />
@@ -175,7 +195,11 @@ export function CommentsPage({
                     className="block w-full px-5 py-4 text-left transition-colors hover:bg-[var(--secondary)]/55"
                     key={document.id}
                     onClick={() => {
-                      logEvent({ action: "최근 승인 문서 CTA 클릭", description: document.title, source: "comments-page" });
+                      logEvent({
+                        action: "최근 승인 문서 CTA 클릭",
+                        description: document.title,
+                        source: "comments-page",
+                      });
                       app.handleDocumentSelect(document.id);
                     }}
                     type="button"
@@ -226,7 +250,10 @@ export function CommentsPage({
                       >
                         샘플 스레드 추가
                       </CompactPrimaryPageAction>
-                      <CompactSecondaryPageAction clientLog="승인 상태 보기" onClick={onGoToApprovals}>
+                      <CompactSecondaryPageAction
+                        clientLog="승인 상태 보기"
+                        onClick={onGoToApprovals}
+                      >
                         승인 상태 보기
                       </CompactSecondaryPageAction>
                     </>

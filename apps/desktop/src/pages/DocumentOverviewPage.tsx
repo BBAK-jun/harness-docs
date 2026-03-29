@@ -1,10 +1,13 @@
 import { FilePenLine, GitBranch, MessageSquareMore, ShieldCheck, Sparkles } from "lucide-react";
 import { useClientActivityLog } from "@/components/ClientActivityLogProvider";
+import { CompactPrimaryPageAction, CompactSecondaryPageAction } from "@/components/pageActions";
 import {
-  CompactPrimaryPageAction,
-  CompactSecondaryPageAction,
-} from "@/components/pageActions";
-import { ElevatedPanel, PanelCard, PanelCardHeader, PanelEmptyState, SignalPanel } from "@/components/pagePanels";
+  ElevatedPanel,
+  PanelCard,
+  PanelCardHeader,
+  PanelEmptyState,
+  SignalPanel,
+} from "@/components/pagePanels";
 import { Badge } from "@/components/ui/badge";
 import type { WorkspaceShellModel } from "../hooks/useWorkspaceShell";
 import { EmptyStateCard, formatDateTime, statusBadgeVariant, translateLabel } from "./pageUtils";
@@ -24,7 +27,10 @@ export function DocumentOverviewPage({
         title="문서 개요를 열 수 없음"
         description="선택된 문서가 없거나 개요에 필요한 데이터가 준비되지 않았습니다."
         actions={
-          <CompactSecondaryPageAction clientLog="문서 목록으로 이동" onClick={() => app.handleAreaChange("documents")}>
+          <CompactSecondaryPageAction
+            clientLog="문서 목록으로 이동"
+            onClick={() => app.handleAreaChange("documents")}
+          >
             문서 목록으로 이동
           </CompactSecondaryPageAction>
         }
@@ -47,32 +53,50 @@ export function DocumentOverviewPage({
                 {translateLabel(overview.header.githubStatus)}
               </Badge>
             </div>
-            <h2 className="mt-3 text-2xl font-semibold text-[var(--foreground)]">{overview.header.title}</h2>
+            <h2 className="mt-3 text-2xl font-semibold text-[var(--foreground)]">
+              {overview.header.title}
+            </h2>
             <p className="mt-2 max-w-3xl text-sm leading-6 text-[var(--muted-foreground)]">
               {overview.header.freshnessSummary}
             </p>
             <p className="mt-2 text-sm text-[var(--muted-foreground)]">
-              담당자 {overview.header.owner?.name ?? "알 수 없음"} · 업데이트 {formatDateTime(overview.header.updatedAt)}
+              담당자 {overview.header.owner?.name ?? "알 수 없음"} · 업데이트{" "}
+              {formatDateTime(overview.header.updatedAt)}
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
-            <CompactPrimaryPageAction clientLog="문서 편집 이동" onClick={() => app.handleAreaChange("editor")}>
+            <CompactPrimaryPageAction
+              clientLog="문서 편집 이동"
+              onClick={() => app.handleAreaChange("editor")}
+            >
               <FilePenLine />
               편집
             </CompactPrimaryPageAction>
-            <CompactSecondaryPageAction clientLog="문서 댓글 이동" onClick={() => app.handleAreaChange("comments")}>
+            <CompactSecondaryPageAction
+              clientLog="문서 댓글 이동"
+              onClick={() => app.handleAreaChange("comments")}
+            >
               <MessageSquareMore />
               댓글
             </CompactSecondaryPageAction>
-            <CompactSecondaryPageAction clientLog="문서 승인 이동" onClick={() => app.handleAreaChange("approvals")}>
+            <CompactSecondaryPageAction
+              clientLog="문서 승인 이동"
+              onClick={() => app.handleAreaChange("approvals")}
+            >
               <ShieldCheck />
               승인
             </CompactSecondaryPageAction>
-            <CompactSecondaryPageAction clientLog="문서 발행 이동" onClick={() => app.handleAreaChange("publish")}>
+            <CompactSecondaryPageAction
+              clientLog="문서 발행 이동"
+              onClick={() => app.handleAreaChange("publish")}
+            >
               <GitBranch />
               발행
             </CompactSecondaryPageAction>
-            <CompactSecondaryPageAction clientLog="문서 AI 이동" onClick={() => app.handleAreaChange("ai")}>
+            <CompactSecondaryPageAction
+              clientLog="문서 AI 이동"
+              onClick={() => app.handleAreaChange("ai")}
+            >
               <Sparkles />
               AI
             </CompactSecondaryPageAction>
@@ -100,15 +124,26 @@ export function DocumentOverviewPage({
               />
             ) : (
               overview.linkedDocuments.map((document) => (
-                <button className="block w-full px-5 py-4 text-left transition-colors hover:bg-[var(--secondary)]/55" key={document.id} onClick={() => {
-                  logEvent({ action: "연결 문서 CTA 클릭", description: document.title, source: "document-overview" });
-                  app.handleDocumentSelect(document.id);
-                }} type="button">
+                <button
+                  className="block w-full px-5 py-4 text-left transition-colors hover:bg-[var(--secondary)]/55"
+                  key={document.id}
+                  onClick={() => {
+                    logEvent({
+                      action: "연결 문서 CTA 클릭",
+                      description: document.title,
+                      source: "document-overview",
+                    });
+                    app.handleDocumentSelect(document.id);
+                  }}
+                  type="button"
+                >
                   <div className="flex flex-wrap items-center gap-2">
                     <p className="font-medium text-[var(--foreground)]">{document.title}</p>
                     <Badge variant="outline">{document.type}</Badge>
                   </div>
-                  <p className="mt-2 text-sm text-[var(--muted-foreground)]">{document.shortSummary}</p>
+                  <p className="mt-2 text-sm text-[var(--muted-foreground)]">
+                    {document.shortSummary}
+                  </p>
                 </button>
               ))
             )}
@@ -123,7 +158,9 @@ export function DocumentOverviewPage({
             {overview.reviewThreads.map((thread) => (
               <div className="px-5 py-4" key={thread.id}>
                 <div className="flex flex-wrap items-center gap-2">
-                  <Badge variant={statusBadgeVariant(thread.status)}>{translateLabel(thread.status)}</Badge>
+                  <Badge variant={statusBadgeVariant(thread.status)}>
+                    {translateLabel(thread.status)}
+                  </Badge>
                   <p className="font-medium text-[var(--foreground)]">{thread.anchorLabel}</p>
                 </div>
                 <p className="mt-2 text-sm text-[var(--muted-foreground)]">{thread.excerpt}</p>
@@ -146,7 +183,9 @@ export function DocumentOverviewPage({
                 <div className="flex flex-wrap items-center gap-2">
                   <p className="font-medium text-[var(--foreground)]">{approval.reviewerLabel}</p>
                   <Badge variant="outline">{translateLabel(approval.authority)}</Badge>
-                  <Badge variant={statusBadgeVariant(approval.state)}>{translateLabel(approval.state)}</Badge>
+                  <Badge variant={statusBadgeVariant(approval.state)}>
+                    {translateLabel(approval.state)}
+                  </Badge>
                 </div>
               </div>
             ))}

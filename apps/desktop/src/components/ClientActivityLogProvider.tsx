@@ -112,7 +112,10 @@ function ClientActivityDock({
           aria-expanded={isOpen}
           aria-label="클라이언트 로그 패널 열기"
           className="h-10 gap-2 rounded-full border border-[var(--border)] bg-[rgba(255,255,255,0.94)] px-4 shadow-lg backdrop-blur"
-          clientLog={{ action: isOpen ? "클라이언트 로그 패널 닫기" : "클라이언트 로그 패널 열기", source: "client-log-dock" }}
+          clientLog={{
+            action: isOpen ? "클라이언트 로그 패널 닫기" : "클라이언트 로그 패널 열기",
+            source: "client-log-dock",
+          }}
           onClick={onToggle}
           size="sm"
           variant="outline"
@@ -146,7 +149,9 @@ function ClientActivityDock({
                   <li className="px-4 py-3" key={entry.id}>
                     <div className="flex items-start justify-between gap-3">
                       <div className="min-w-0">
-                        <p className="text-sm font-medium text-[var(--foreground)]">{entry.action}</p>
+                        <p className="text-sm font-medium text-[var(--foreground)]">
+                          {entry.action}
+                        </p>
                         {entry.description ? (
                           <p className="mt-1 text-xs leading-5 text-[var(--muted-foreground)]">
                             {entry.description}

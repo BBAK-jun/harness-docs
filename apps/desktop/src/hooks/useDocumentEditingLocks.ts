@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import type {
   DocumentEditingLock,
   DocumentEditingReleaseReason,
@@ -144,7 +144,7 @@ function createLock(
   };
 }
 
-function collectInitialLockState(workspaceGraphs: WorkspaceGraph[]) {
+function collectBaseLockState(workspaceGraphs: WorkspaceGraph[]) {
   const initialEntries = workspaceGraphs.flatMap((graph) =>
     graph.documents
       .map((document) => document.lifecycle.activeEditLock)
@@ -156,142 +156,191 @@ function collectInitialLockState(workspaceGraphs: WorkspaceGraph[]) {
   return Object.fromEntries(initialEntries);
 }
 
-export function useDocumentEditingLocks(workspaceGraphs: WorkspaceGraph[]) {
-  const initialLocks = useMemo(() => collectInitialLockState(workspaceGraphs), [workspaceGraphs]);
-  const [locksByDocumentId, setLocksByDocumentId] =
-    useState<Record<string, DocumentEditingLock>>(initialLocks);
+function normalizeLock(lock: DocumentEditingLock, now: Date) {
+  const nowMs = now.getTime();
 
-  useEffect(() => {
-    setLocksByDocumentId(initialLocks);
-  }, [initialLocks]);
+  if (hasLockTimedOut(lock, nowMs)) {
+    return releaseTimedOutLock(lock, now);
+  }
+
+  if (!isLockActive(lock, nowMs) && lock.lifecycle.status === "active") {
+    return expireLock(lock, now);
+  }
+
+  return lock;
+}
+
+export function useDocumentEditingLocks(workspaceGraphs: WorkspaceGraph[]) {
+  const baseLocksByDocumentId = useMemo(
+    () => collectBaseLockState(workspaceGraphs),
+    [workspaceGraphs],
+  );
+  const [lockOverridesByDocumentId, setLockOverridesByDocumentId] = useState<
+    Record<string, DocumentEditingLock>
+  >({});
 
   useEffect(() => {
     const intervalId = window.setInterval(() => {
       const now = new Date();
-      const nowMs = now.getTime();
 
-      setLocksByDocumentId((current) => {
+      setLockOverridesByDocumentId((current) => {
+        const combinedLocksByDocumentId = {
+          ...baseLocksByDocumentId,
+          ...current,
+        };
         let didChange = false;
-        const nextEntries = Object.entries(current).map(([documentId, lock]) => {
-          if (hasLockTimedOut(lock, nowMs)) {
+        const nextOverrides = { ...current };
+
+        for (const [documentId, lock] of Object.entries(combinedLocksByDocumentId)) {
+          const normalizedLock = normalizeLock(lock, now);
+
+          if (normalizedLock !== lock) {
+            nextOverrides[documentId] = normalizedLock;
             didChange = true;
-            return [documentId, releaseTimedOutLock(lock, now)] as const;
           }
+        }
 
-          if (!isLockActive(lock, nowMs) && lock.lifecycle.status === "active") {
-            didChange = true;
-            return [documentId, expireLock(lock, now)] as const;
-          }
-
-          return [documentId, lock] as const;
-        });
-
-        return didChange ? Object.fromEntries(nextEntries) : current;
+        return didChange ? nextOverrides : current;
       });
     }, LOCK_CLEANUP_INTERVAL_MS);
 
     return () => window.clearInterval(intervalId);
-  }, []);
+  }, [baseLocksByDocumentId]);
 
-  const getActiveLockForDocument = (documentId: string) => {
-    const lock = locksByDocumentId[documentId];
+  const getDocumentLockForDocument = useCallback(
+    (documentId: string) => {
+      const lock = lockOverridesByDocumentId[documentId] ?? baseLocksByDocumentId[documentId];
 
-    if (!lock) {
-      return null;
-    }
+      if (!lock) {
+        return null;
+      }
 
-    return isLockActive(lock, Date.now()) ? lock : null;
-  };
+      return normalizeLock(lock, new Date());
+    },
+    [baseLocksByDocumentId, lockOverridesByDocumentId],
+  );
 
-  const getDocumentLockForDocument = (documentId: string) => locksByDocumentId[documentId] ?? null;
+  const getActiveLockForDocument = useCallback(
+    (documentId: string) => {
+      const lock = getDocumentLockForDocument(documentId);
 
-  const acquireDocumentEditingLock = ({
-    document,
-    membershipId,
-    area = "editor",
-  }: AcquireDocumentEditingLockInput) => {
-    const now = new Date();
-    const nextLock = createLock(document, membershipId, area, now);
-    let acquired = false;
+      if (!lock) {
+        return null;
+      }
 
-    setLocksByDocumentId((current) => {
-      const existingLock = current[document.id];
+      return isLockActive(lock, Date.now()) ? lock : null;
+    },
+    [getDocumentLockForDocument],
+  );
 
-      if (existingLock && isLockActive(existingLock, now.getTime())) {
-        if (existingLock.lockedByMembershipId === membershipId) {
-          acquired = true;
+  const acquireDocumentEditingLock = useCallback(
+    ({ document, membershipId, area = "editor" }: AcquireDocumentEditingLockInput) => {
+      const now = new Date();
+      const nextLock = createLock(document, membershipId, area, now);
+      let acquired = false;
+
+      setLockOverridesByDocumentId((current) => {
+        const existingLock = current[document.id] ?? baseLocksByDocumentId[document.id];
+        const normalizedLock = existingLock ? normalizeLock(existingLock, now) : null;
+
+        if (normalizedLock && isLockActive(normalizedLock, now.getTime())) {
+          if (normalizedLock.lockedByMembershipId === membershipId) {
+            acquired = true;
+          }
+
+          if (normalizedLock !== existingLock) {
+            return {
+              ...current,
+              [document.id]: normalizedLock,
+            };
+          }
+
+          return current;
         }
 
-        return current;
-      }
+        acquired = true;
 
-      acquired = true;
+        return {
+          ...current,
+          [document.id]: nextLock,
+        };
+      });
 
-      return {
-        ...current,
-        [document.id]: nextLock,
-      };
-    });
+      return acquired;
+    },
+    [baseLocksByDocumentId],
+  );
 
-    return acquired;
-  };
+  const releaseDocumentEditingLock = useCallback(
+    ({ documentId, membershipId, reason = "manual_release" }: ReleaseDocumentEditingLockInput) => {
+      const now = new Date();
+      let released = false;
 
-  const releaseDocumentEditingLock = ({
-    documentId,
-    membershipId,
-    reason = "manual_release",
-  }: ReleaseDocumentEditingLockInput) => {
-    const now = new Date();
-    let released = false;
+      setLockOverridesByDocumentId((current) => {
+        const existingLock = current[documentId] ?? baseLocksByDocumentId[documentId];
+        const normalizedLock = existingLock ? normalizeLock(existingLock, now) : null;
 
-    setLocksByDocumentId((current) => {
-      const existingLock = current[documentId];
+        if (
+          !normalizedLock ||
+          !isLockActive(normalizedLock, now.getTime()) ||
+          normalizedLock.lockedByMembershipId !== membershipId
+        ) {
+          if (normalizedLock && normalizedLock !== existingLock) {
+            return {
+              ...current,
+              [documentId]: normalizedLock,
+            };
+          }
 
-      if (
-        !existingLock ||
-        !isLockActive(existingLock, now.getTime()) ||
-        existingLock.lockedByMembershipId !== membershipId
-      ) {
-        return current;
-      }
+          return current;
+        }
 
-      released = true;
+        released = true;
 
-      return {
-        ...current,
-        [documentId]: releaseLock(existingLock, membershipId, reason, now),
-      };
-    });
+        return {
+          ...current,
+          [documentId]: releaseLock(normalizedLock, membershipId, reason, now),
+        };
+      });
 
-    return released;
-  };
+      return released;
+    },
+    [baseLocksByDocumentId],
+  );
 
-  const touchDocumentEditingLock = ({
-    documentId,
-    membershipId,
-  }: TouchDocumentEditingLockInput) => {
-    const now = new Date();
+  const touchDocumentEditingLock = useCallback(
+    ({ documentId, membershipId }: TouchDocumentEditingLockInput) => {
+      const now = new Date();
 
-    setLocksByDocumentId((current) => {
-      const existingLock = current[documentId];
+      setLockOverridesByDocumentId((current) => {
+        const existingLock = current[documentId] ?? baseLocksByDocumentId[documentId];
+        const normalizedLock = existingLock ? normalizeLock(existingLock, now) : null;
 
-      if (
-        !existingLock ||
-        !isLockActive(existingLock, now.getTime()) ||
-        existingLock.lockedByMembershipId !== membershipId
-      ) {
-        return current;
-      }
+        if (
+          !normalizedLock ||
+          !isLockActive(normalizedLock, now.getTime()) ||
+          normalizedLock.lockedByMembershipId !== membershipId
+        ) {
+          if (normalizedLock && normalizedLock !== existingLock) {
+            return {
+              ...current,
+              [documentId]: normalizedLock,
+            };
+          }
 
-      return {
-        ...current,
-        [documentId]: touchLock(existingLock, now),
-      };
-    });
-  };
+          return current;
+        }
+
+        return {
+          ...current,
+          [documentId]: touchLock(normalizedLock, now),
+        };
+      });
+    },
+    [baseLocksByDocumentId],
+  );
 
   return {
-    locksByDocumentId,
     getDocumentLockForDocument,
     getActiveLockForDocument,
     acquireDocumentEditingLock,

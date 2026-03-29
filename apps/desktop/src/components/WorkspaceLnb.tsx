@@ -28,7 +28,9 @@ export function WorkspaceLnb({
           <FileText className="size-4" />
         </div>
         <div className="min-w-0">
-          <p className="text-sm font-semibold text-[var(--sidebar-accent-foreground)]">Harness Docs</p>
+          <p className="text-sm font-semibold text-[var(--sidebar-accent-foreground)]">
+            Harness Docs
+          </p>
           <p className="text-xs text-[var(--sidebar-muted)]">Workspace governance</p>
         </div>
       </div>
@@ -43,13 +45,17 @@ export function WorkspaceLnb({
               <p className="truncate text-sm font-medium text-[var(--sidebar-accent-foreground)]">
                 {workspace.name}
               </p>
-              <p className="truncate text-xs text-[var(--sidebar-muted)]">{app.user?.githubLogin}</p>
+              <p className="truncate text-xs text-[var(--sidebar-muted)]">
+                {app.user?.githubLogin}
+              </p>
             </div>
           </div>
           <p className="mt-3 text-xs leading-5 text-[var(--sidebar-foreground)]">
             {documents.length} documents · {members.length} members
           </p>
-          <p className="mt-2 text-xs leading-5 text-[var(--sidebar-muted)]">{workspace.description}</p>
+          <p className="mt-2 text-xs leading-5 text-[var(--sidebar-muted)]">
+            {workspace.description}
+          </p>
         </div>
       </div>
 

@@ -1,6 +1,12 @@
 import { ArrowRight, CheckCircle2 } from "lucide-react";
 import { PrimaryPageAction, QuietPageAction, SecondaryPageAction } from "@/components/pageActions";
-import { ElevatedPanel, InsetPanel, PanelCard, PanelCardContent, PanelCardHeader } from "@/components/pagePanels";
+import {
+  ElevatedPanel,
+  InsetPanel,
+  PanelCard,
+  PanelCardContent,
+  PanelCardHeader,
+} from "@/components/pagePanels";
 import { Badge } from "@/components/ui/badge";
 import { CardDescription, CardTitle } from "@/components/ui/card";
 import { PanelSlotsLayout } from "@/components/PanelSlotsLayout";
@@ -44,8 +50,12 @@ export function WorkspaceOnboardingPage({
               워크스페이스 접근
             </Badge>
             <div className="flex flex-col gap-4">
-              <h1 className="text-4xl font-semibold tracking-tight text-[var(--foreground)]">{title}</h1>
-              <p className="max-w-2xl text-base leading-8 text-[var(--muted-foreground)]">{description}</p>
+              <h1 className="text-4xl font-semibold tracking-tight text-[var(--foreground)]">
+                {title}
+              </h1>
+              <p className="max-w-2xl text-base leading-8 text-[var(--muted-foreground)]">
+                {description}
+              </p>
             </div>
           </ElevatedPanel>
         }
@@ -62,17 +72,21 @@ export function WorkspaceOnboardingPage({
                 {checklist.map((item) => (
                   <InsetPanel key={item} padding="none">
                     <div className="px-4 py-3.5 text-sm leading-6 text-[var(--foreground)]">
-                    <div className="flex gap-3">
-                      <CheckCircle2 className="mt-1 size-4 shrink-0 text-[var(--info-foreground)]" />
-                      <span>{item}</span>
-                    </div>
+                      <div className="flex gap-3">
+                        <CheckCircle2 className="mt-1 size-4 shrink-0 text-[var(--info-foreground)]" />
+                        <span>{item}</span>
+                      </div>
                     </div>
                   </InsetPanel>
                 ))}
               </div>
               <div className="border-t border-[var(--border)] pt-5">
                 <div className="flex flex-col gap-2 sm:flex-row">
-                  <PrimaryPageAction className="sm:flex-1" clientLog={primaryLabel} onClick={onPrimaryAction}>
+                  <PrimaryPageAction
+                    className="sm:flex-1"
+                    clientLog={primaryLabel}
+                    onClick={onPrimaryAction}
+                  >
                     {primaryLabel}
                     <ArrowRight />
                   </PrimaryPageAction>
