@@ -41,10 +41,11 @@ import { cn } from "@/lib/utils";
 import { useCleanup } from "../hooks/useCleanup";
 import { useUpdateEffect } from "../hooks/useUpdateEffect";
 import type { AITaskRunningExecution } from "../domain/aiTasks";
+import { parseEditorAIDraftProposal } from "../lib/aiDraftProposal";
 import { buildAITaskEntryPoints } from "../lib/aiTaskEntryPoints";
 import { buildAITaskPrompt } from "../lib/runtimePayloads";
 import { desktopMutationKeys } from "../queries/queryKeys";
-import type { AITaskEntryPoint } from "../types/domain-ui";
+import type { AITaskEntryPoint, EditorAIDraftProposal } from "../types/domain-ui";
 import type { AppPageProps } from "./pageUtils";
 import {
   EmptyStateCard,
@@ -81,6 +82,11 @@ export function EditorPage({ app }: AppPageProps) {
   const [isAssistantOpen, setIsAssistantOpen] = useState(false);
   const [selectedAssistantEntryId, setSelectedAssistantEntryId] = useState<string | null>(null);
   const [assistantMessages, setAssistantMessages] = useState<EditorAIAssistantMessage[]>([]);
+  const [lastAppliedDraft, setLastAppliedDraft] = useState<{
+    messageId: string;
+    previousSource: string;
+    appliedSource: string;
+  } | null>(null);
   const activeAssistantTaskRef = useRef<AITaskRunningExecution | null>(null);
   const document = app.activeDocument;
   const graph = app.activeWorkspaceGraph;
@@ -161,12 +167,17 @@ export function EditorPage({ app }: AppPageProps) {
           prompt,
           stderrMessageId,
         });
+        const proposal = parseEditorAIDraftProposal(result.output);
 
         replaceAssistantMessage(assistantMessageId, result.output, {
           format: "markdown",
           isStreaming: false,
           label: result.promptLabel,
           tone: "default",
+          proposal,
+          canUndoApply: false,
+          isCompareOpen: false,
+          statusText: proposal ? "적용 가능한 초안이 포함되어 있습니다." : null,
         });
         finalizeSystemMessage(stderrMessageId, "warning");
       } catch (error) {
@@ -178,6 +189,10 @@ export function EditorPage({ app }: AppPageProps) {
             isStreaming: false,
             label: assistantLabel,
             tone: "danger",
+            proposal: null,
+            canUndoApply: false,
+            isCompareOpen: false,
+            statusText: null,
           },
         );
         finalizeSystemMessage(stderrMessageId, "danger");
@@ -193,8 +208,30 @@ export function EditorPage({ app }: AppPageProps) {
 
     setSelectedAssistantEntryId(null);
     setAssistantMessages([]);
+    setLastAppliedDraft(null);
     assistantForm.reset();
   }, [assistantForm, document?.id]);
+
+  useUpdateEffect(() => {
+    if (!lastAppliedDraft || app.activeDocumentSource === lastAppliedDraft.appliedSource) {
+      return;
+    }
+
+    setLastAppliedDraft(null);
+    startTransition(() => {
+      setAssistantMessages((current) =>
+        current.map((message) =>
+          message.canUndoApply
+            ? {
+                ...message,
+                canUndoApply: false,
+                statusText: "AI 초안 적용 이후 본문이 다시 변경되어 되돌리기를 닫았습니다.",
+              }
+            : message,
+        ),
+      );
+    });
+  }, [app.activeDocumentSource, lastAppliedDraft]);
 
   const upsertAssistantMessage = (message: EditorAIAssistantMessage) => {
     startTransition(() => {
@@ -215,7 +252,12 @@ export function EditorPage({ app }: AppPageProps) {
   const replaceAssistantMessage = (
     messageId: string,
     content: string,
-    options: Pick<EditorAIAssistantMessage, "format" | "isStreaming" | "label" | "tone">,
+    options: Pick<EditorAIAssistantMessage, "format" | "isStreaming" | "label" | "tone"> & {
+      proposal?: EditorAIDraftProposal | null;
+      canUndoApply?: boolean;
+      isCompareOpen?: boolean;
+      statusText?: string | null;
+    },
   ) => {
     upsertAssistantMessage({
       id: messageId,
@@ -273,6 +315,144 @@ export function EditorPage({ app }: AppPageProps) {
     });
   };
 
+  const toggleAssistantProposalCompare = (messageId: string) => {
+    startTransition(() => {
+      setAssistantMessages((current) =>
+        current.map((message) =>
+          message.id === messageId
+            ? {
+                ...message,
+                isCompareOpen: !message.isCompareOpen,
+              }
+            : message,
+        ),
+      );
+    });
+  };
+
+  const copyAssistantProposal = async (messageId: string) => {
+    const message = assistantMessages.find((entry) => entry.id === messageId);
+    const draftMarkdown = message?.proposal?.draftMarkdown;
+
+    if (!draftMarkdown) {
+      return;
+    }
+
+    const clipboard = globalThis.navigator?.clipboard;
+
+    if (!clipboard?.writeText) {
+      startTransition(() => {
+        setAssistantMessages((current) =>
+          current.map((entry) =>
+            entry.id === messageId
+              ? {
+                  ...entry,
+                  statusText: "이 환경에서는 클립보드 복사를 사용할 수 없습니다.",
+                }
+              : entry,
+          ),
+        );
+      });
+      return;
+    }
+
+    try {
+      await clipboard.writeText(draftMarkdown);
+      startTransition(() => {
+        setAssistantMessages((current) =>
+          current.map((entry) =>
+            entry.id === messageId
+              ? {
+                  ...entry,
+                  statusText: "제안 초안을 클립보드에 복사했습니다.",
+                }
+              : entry,
+          ),
+        );
+      });
+    } catch {
+      startTransition(() => {
+        setAssistantMessages((current) =>
+          current.map((entry) =>
+            entry.id === messageId
+              ? {
+                  ...entry,
+                  statusText: "클립보드 복사에 실패했습니다.",
+                }
+              : entry,
+          ),
+        );
+      });
+    }
+  };
+
+  const applyAssistantProposal = (messageId: string) => {
+    if (!document || !isLockedByActiveMember) {
+      return;
+    }
+
+    const message = assistantMessages.find((entry) => entry.id === messageId);
+    const proposal = message?.proposal;
+
+    if (!proposal) {
+      return;
+    }
+
+    const previousSource = app.activeDocumentSource;
+
+    app.handleDocumentSourceChange(document, proposal.draftMarkdown);
+    setLastAppliedDraft({
+      messageId,
+      previousSource,
+      appliedSource: proposal.draftMarkdown,
+    });
+    startTransition(() => {
+      setAssistantMessages((current) =>
+        current.map((entry) =>
+          entry.role === "assistant"
+            ? {
+                ...entry,
+                canUndoApply: entry.id === messageId,
+                statusText:
+                  entry.id === messageId
+                    ? "AI 초안을 현재 세션 초안에 반영했습니다."
+                    : entry.canUndoApply
+                      ? null
+                      : entry.statusText,
+              }
+            : entry,
+        ),
+      );
+    });
+  };
+
+  const undoAssistantProposalApply = (messageId: string) => {
+    if (
+      !document ||
+      !isLockedByActiveMember ||
+      lastAppliedDraft?.messageId !== messageId ||
+      app.activeDocumentSource !== lastAppliedDraft.appliedSource
+    ) {
+      return;
+    }
+
+    app.handleDocumentSourceChange(document, lastAppliedDraft.previousSource);
+    setLastAppliedDraft(null);
+    startTransition(() => {
+      setAssistantMessages((current) =>
+        current.map((entry) =>
+          entry.id === messageId
+            ? {
+                ...entry,
+                canUndoApply: false,
+                statusText: "직전 AI 초안 적용을 되돌렸습니다.",
+              }
+            : entry,
+        ),
+      );
+    });
+  };
+
   const assistantMutation = useMutation({
     mutationKey: desktopMutationKeys.ai.runEntryPoint(),
     mutationFn: async ({
@@ -304,7 +484,17 @@ export function EditorPage({ app }: AppPageProps) {
             "# User Request",
             prompt,
             "",
-            "Return a practical answer for an in-editor assistant. Explain the change, propose markdown when helpful, and keep it easy to apply manually.",
+            "Return a practical answer for an in-editor assistant. Explain the change and keep it easy to apply manually.",
+            "When you are proposing replacement document content, use exactly this structure:",
+            "## Recommendation",
+            "A short explanation of the change.",
+            "## Draft Markdown",
+            "```md",
+            "Full replacement markdown draft here.",
+            "```",
+            "## Notes",
+            "Optional implementation or review notes.",
+            "If you are not proposing replacement markdown, omit the Draft Markdown section entirely.",
           ].join("\n"),
         },
         {
@@ -446,23 +636,31 @@ export function EditorPage({ app }: AppPageProps) {
       >
         {(field) => (
           <EditorAIAssistantDock
+            canApplyDrafts={isLockedByActiveMember}
             canSubmit={
               !!selectedAssistantEntry &&
               !assistantMutation.isPending &&
               field.state.value.trim().length > 0
             }
+            currentDocumentSource={app.activeDocumentSource}
             entries={assistantEntries}
             emptyStateMessage={assistantEmptyStateMessage}
             isOpen={isAssistantOpen}
             isPending={assistantMutation.isPending}
             isVisible={activeTab === "edit"}
             messages={assistantMessages}
+            onApplyDraft={applyAssistantProposal}
             onClose={() => setIsAssistantOpen(false)}
+            onCopyDraft={(messageId) => {
+              void copyAssistantProposal(messageId);
+            }}
             onPromptBlur={field.handleBlur}
             onPromptChange={field.handleChange}
             onSelectEntry={setSelectedAssistantEntryId}
             onSubmit={() => void assistantForm.handleSubmit()}
+            onToggleCompare={toggleAssistantProposalCompare}
             onToggleOpen={() => setIsAssistantOpen((current) => !current)}
+            onUndoDraftApply={undoAssistantProposalApply}
             prompt={field.state.value}
             promptError={field.state.meta.isTouched ? getFieldError(field.state.meta.errors) : null}
             selectedEntry={selectedAssistantEntry}
