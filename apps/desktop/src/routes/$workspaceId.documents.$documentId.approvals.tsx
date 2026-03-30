@@ -11,14 +11,21 @@ export const Route = createFileRoute("/$workspaceId/documents/$documentId/approv
 
 function WorkspaceDocumentApprovalsRoute() {
   const shell = useWorkspaceRouteShell();
-  const approvals = useApprovalsPage(shell);
+  const approvalsPage = useApprovalsPage(shell);
 
   return (
     <ApprovalsPage
       app={shell}
-      approvals={approvals.approvals}
+      approvals={approvalsPage.approvals}
+      canCurrentMemberDecide={approvalsPage.canCurrentMemberDecide}
+      isDecisionPendingFor={approvalsPage.isDecisionPendingFor}
+      isRequestingApproval={approvalsPage.isRequestingApproval}
+      onApprovalDecision={approvalsPage.handleApprovalDecision}
       onGoToComments={() => shell.handleAreaChange("comments")}
       onGoToDocuments={() => shell.handleAreaChange("documents")}
+      onRequestApproval={approvalsPage.handleRequestApproval}
+      requestApprovalDisabledReason={approvalsPage.requestApprovalDisabledReason}
+      requestApprovalLabel={approvalsPage.requestApprovalLabel}
     />
   );
 }

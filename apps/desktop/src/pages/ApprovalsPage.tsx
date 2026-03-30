@@ -9,13 +9,32 @@ import { EmptyStateCard, formatDateTime, statusBadgeVariant, translateLabel } fr
 export function ApprovalsPage({
   app,
   approvals,
+  canCurrentMemberDecide,
+  isDecisionPendingFor,
+  isRequestingApproval,
+  onApprovalDecision,
   onGoToDocuments,
   onGoToComments,
+  onRequestApproval,
+  requestApprovalDisabledReason,
+  requestApprovalLabel,
 }: {
   app: WorkspaceShellModel;
   approvals: Array<NonNullable<WorkspaceShellModel["activeWorkspaceGraph"]>["approvals"][number]>;
+  canCurrentMemberDecide: (
+    approval: NonNullable<WorkspaceShellModel["activeWorkspaceGraph"]>["approvals"][number],
+  ) => boolean;
+  isDecisionPendingFor: (approvalId: string) => boolean;
+  isRequestingApproval: boolean;
+  onApprovalDecision: (
+    approvalId: string,
+    decision: "approved" | "changes_requested",
+  ) => Promise<void>;
   onGoToDocuments: () => void;
   onGoToComments: () => void;
+  onRequestApproval: () => Promise<void>;
+  requestApprovalDisabledReason: string | null;
+  requestApprovalLabel: string;
 }) {
   const { logEvent } = useClientActivityLog();
   const graph = app.activeWorkspaceGraph;
@@ -107,41 +126,62 @@ export function ApprovalsPage({
               />
             ) : (
               pendingApprovals.map((approval) => (
-                <button
-                  className="flex w-full items-start gap-4 px-5 py-4 text-left transition-colors hover:bg-[var(--secondary)]/55"
-                  key={approval.id}
-                  onClick={() => {
-                    if (!approval.documentId) {
-                      return;
-                    }
+                <div className="px-5 py-4" key={approval.id}>
+                  <div className="flex flex-col gap-3 xl:flex-row xl:items-start xl:justify-between">
+                    <button
+                      className="flex min-w-0 flex-1 items-start gap-4 text-left transition-colors hover:text-[var(--foreground)]"
+                      onClick={() => {
+                        if (!approval.documentId) {
+                          return;
+                        }
 
-                    logEvent({
-                      action: "승인 큐 항목 CTA 클릭",
-                      description: approval.reviewerLabel,
-                      source: "approvals-page",
-                    });
-                    app.handleDocumentSelect(approval.documentId);
-                  }}
-                  type="button"
-                >
-                  <div className="min-w-0 flex-1">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <p className="font-medium text-[var(--foreground)]">
-                        {approval.reviewerLabel}
-                      </p>
-                      <Badge variant="outline">{translateLabel(approval.authority)}</Badge>
-                      <Badge variant="secondary">{translateLabel(approval.source)}</Badge>
-                      <Badge variant={statusBadgeVariant(approval.lifecycle.state)}>
-                        {translateLabel(approval.lifecycle.state)}
-                      </Badge>
-                    </div>
-                    <p className="mt-2 text-sm text-[var(--muted-foreground)]">
-                      요청 {formatDateTime(approval.lifecycle.requestedAt)} · 결정{" "}
-                      {translateLabel(approval.decision ?? "pending")}
-                    </p>
+                        logEvent({
+                          action: "승인 큐 항목 CTA 클릭",
+                          description: approval.reviewerLabel,
+                          source: "approvals-page",
+                        });
+                        app.handleDocumentSelect(approval.documentId);
+                      }}
+                      type="button"
+                    >
+                      <div className="min-w-0 flex-1">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <p className="font-medium text-[var(--foreground)]">
+                            {approval.reviewerLabel}
+                          </p>
+                          <Badge variant="outline">{translateLabel(approval.authority)}</Badge>
+                          <Badge variant="secondary">{translateLabel(approval.source)}</Badge>
+                          <Badge variant={statusBadgeVariant(approval.lifecycle.state)}>
+                            {translateLabel(approval.lifecycle.state)}
+                          </Badge>
+                        </div>
+                        <p className="mt-2 text-sm text-[var(--muted-foreground)]">
+                          요청 {formatDateTime(approval.lifecycle.requestedAt)} · 결정{" "}
+                          {translateLabel(approval.decision ?? "pending")}
+                        </p>
+                      </div>
+                      <ArrowRight className="mt-1 size-4 text-[var(--muted-foreground)]" />
+                    </button>
+                    {canCurrentMemberDecide(approval) ? (
+                      <div className="flex shrink-0 flex-wrap gap-2">
+                        <CompactPrimaryPageAction
+                          clientLog="승인 큐에서 승인"
+                          disabled={isDecisionPendingFor(approval.id)}
+                          onClick={() => void onApprovalDecision(approval.id, "approved")}
+                        >
+                          승인
+                        </CompactPrimaryPageAction>
+                        <CompactSecondaryPageAction
+                          clientLog="승인 큐에서 수정 요청"
+                          disabled={isDecisionPendingFor(approval.id)}
+                          onClick={() => void onApprovalDecision(approval.id, "changes_requested")}
+                        >
+                          수정 요청
+                        </CompactSecondaryPageAction>
+                      </div>
+                    ) : null}
                   </div>
-                  <ArrowRight className="mt-1 size-4 text-[var(--muted-foreground)]" />
-                </button>
+                </div>
               ))
             )}
           </div>
@@ -183,11 +223,27 @@ export function ApprovalsPage({
           </PanelCard>
 
           <PanelCard>
-            <PanelCardHeader>
-              <h2 className="flex items-center gap-2 text-lg font-semibold text-[var(--foreground)]">
-                <ShieldCheck className="size-4" />
-                집중 문서
-              </h2>
+            <PanelCardHeader className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+              <div>
+                <h2 className="flex items-center gap-2 text-lg font-semibold text-[var(--foreground)]">
+                  <ShieldCheck className="size-4" />
+                  집중 문서
+                </h2>
+                {selectedDocument && requestApprovalDisabledReason ? (
+                  <p className="mt-2 text-sm text-[var(--muted-foreground)]">
+                    {requestApprovalDisabledReason}
+                  </p>
+                ) : null}
+              </div>
+              <CompactPrimaryPageAction
+                clientLog="집중 문서 승인 요청"
+                disabled={
+                  !selectedDocument || isRequestingApproval || !!requestApprovalDisabledReason
+                }
+                onClick={() => void onRequestApproval()}
+              >
+                {requestApprovalLabel}
+              </CompactPrimaryPageAction>
             </PanelCardHeader>
             <div className="divide-y divide-[var(--border)]">
               {!selectedDocument ? (
@@ -198,9 +254,16 @@ export function ApprovalsPage({
               ) : approvals.length === 0 ? (
                 <PanelEmptyState
                   title="문서 승인 항목 없음"
-                  description="현재 문서에는 남은 승인 항목이 없습니다. 리뷰 스레드나 문서 개요에서 다음 액션을 확인하세요."
+                  description="현재 문서에는 남은 승인 항목이 없습니다. 바로 승인 요청을 보내면 이 문서의 reviewer 상태가 여기에 쌓입니다."
                   actions={
                     <>
+                      <CompactPrimaryPageAction
+                        clientLog="집중 문서에서 승인 요청"
+                        disabled={isRequestingApproval || !!requestApprovalDisabledReason}
+                        onClick={() => void onRequestApproval()}
+                      >
+                        {requestApprovalLabel}
+                      </CompactPrimaryPageAction>
                       <CompactPrimaryPageAction clientLog="리뷰 보기" onClick={onGoToComments}>
                         리뷰 보기
                       </CompactPrimaryPageAction>
@@ -213,17 +276,44 @@ export function ApprovalsPage({
               ) : (
                 approvals.map((approval) => (
                   <div className="px-5 py-4" key={approval.id}>
-                    <div className="flex flex-wrap items-center gap-2">
-                      <p className="font-medium text-[var(--foreground)]">
-                        {approval.reviewerLabel}
-                      </p>
-                      <Badge variant="outline">{translateLabel(approval.authority)}</Badge>
-                      <Badge variant="secondary">{translateLabel(approval.source)}</Badge>
+                    <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+                      <div>
+                        <div className="flex flex-wrap items-center gap-2">
+                          <p className="font-medium text-[var(--foreground)]">
+                            {approval.reviewerLabel}
+                          </p>
+                          <Badge variant="outline">{translateLabel(approval.authority)}</Badge>
+                          <Badge variant="secondary">{translateLabel(approval.source)}</Badge>
+                          <Badge variant={statusBadgeVariant(approval.lifecycle.state)}>
+                            {translateLabel(approval.lifecycle.state)}
+                          </Badge>
+                        </div>
+                        <p className="mt-2 text-sm text-[var(--muted-foreground)]">
+                          요청 {formatDateTime(approval.lifecycle.requestedAt)} · 상태{" "}
+                          {translateLabel(approval.lifecycle.state)}
+                        </p>
+                      </div>
+                      {canCurrentMemberDecide(approval) ? (
+                        <div className="flex shrink-0 flex-wrap gap-2">
+                          <CompactPrimaryPageAction
+                            clientLog="집중 문서 승인"
+                            disabled={isDecisionPendingFor(approval.id)}
+                            onClick={() => void onApprovalDecision(approval.id, "approved")}
+                          >
+                            승인
+                          </CompactPrimaryPageAction>
+                          <CompactSecondaryPageAction
+                            clientLog="집중 문서 수정 요청"
+                            disabled={isDecisionPendingFor(approval.id)}
+                            onClick={() =>
+                              void onApprovalDecision(approval.id, "changes_requested")
+                            }
+                          >
+                            수정 요청
+                          </CompactSecondaryPageAction>
+                        </div>
+                      ) : null}
                     </div>
-                    <p className="mt-2 text-sm text-[var(--muted-foreground)]">
-                      요청 {formatDateTime(approval.lifecycle.requestedAt)} · 상태{" "}
-                      {translateLabel(approval.lifecycle.state)}
-                    </p>
                   </div>
                 ))
               )}

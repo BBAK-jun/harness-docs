@@ -1,10 +1,11 @@
 import type {
   ApprovalService,
+  ApprovalMutationResult,
   DocumentApprovalBundle,
   WorkspaceApprovalPolicy,
 } from "../domain/approvals";
-import type { WorkspaceGraph } from "../types/contracts";
-import type { DocumentId, WorkspaceId } from "../types/domain-ui";
+import type { ApprovalDecisionDto, ApprovalRequestDto, WorkspaceGraph } from "../types/contracts";
+import type { ApprovalId, DocumentId, WorkspaceId } from "../types/domain-ui";
 
 interface SessionBackedApprovalServiceOptions {
   getWorkspaceGraph: (
@@ -81,6 +82,20 @@ export function createSessionBackedApprovalService({
       }
 
       return buildApprovalBundle(graph, documentId);
+    },
+    async requestApproval(
+      _workspaceId: WorkspaceId,
+      _documentId: DocumentId,
+      _input: ApprovalRequestDto,
+    ): Promise<ApprovalMutationResult> {
+      throw new Error("requestApproval must be provided by the runtime approval service.");
+    },
+    async decideApproval(
+      _workspaceId: WorkspaceId,
+      _approvalId: ApprovalId,
+      _input: ApprovalDecisionDto,
+    ): Promise<ApprovalMutationResult> {
+      throw new Error("decideApproval must be provided by the runtime approval service.");
     },
   };
 }

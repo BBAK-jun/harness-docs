@@ -27,6 +27,7 @@ import type {
   WorkspaceSessionService,
   WorkspaceSessionSnapshot,
 } from "./contracts";
+import { createRpcApprovalService } from "./rpcApprovalService";
 import { createRpcPublishingService } from "./rpcPublishing";
 import { createSessionBackedApprovalService } from "./sessionBackedApprovalService";
 import { createSessionBackedPublishingService } from "./sessionBackedPublishingService";
@@ -467,8 +468,12 @@ export function createTauriHarnessDocsServices(
     listWorkspaceGraphsForUser: sessionReaders.listWorkspaceGraphsForUser,
     getCurrentSessionUser: sessionReaders.getCurrentSessionUser,
   });
-  const approvals = createSessionBackedApprovalService({
+  const sessionBackedApprovals = createSessionBackedApprovalService({
     getWorkspaceGraph: sessionReaders.getWorkspaceGraph,
+  });
+  const approvals = createRpcApprovalService({
+    fallbackService: sessionBackedApprovals,
+    getSessionToken: () => readAppSessionToken(desktopInfrastructure.storage),
   });
   const publishing = createTauriPublishingService(desktopInfrastructure, {
     getWorkspaceGraph: sessionReaders.getWorkspaceGraph,
