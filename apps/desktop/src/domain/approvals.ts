@@ -1,12 +1,15 @@
 import type {
+  ApprovalDecisionDto,
+  ApprovalRequestDto,
   ApprovalCandidateSource,
   DocumentApproval,
   DocumentApprovalAuthority,
   DocumentInvalidation,
   DocumentReviewState,
   UnresolvedApprovalSnapshot,
+  WorkspaceGraph,
 } from "../types/contracts";
-import type { DocumentId, MembershipId, WorkspaceId } from "../types/domain-ui";
+import type { ApprovalId, DocumentId, MembershipId, WorkspaceId } from "../types/domain-ui";
 
 export interface ApprovalAuthorityRestorationPolicy {
   restoredBy: DocumentApprovalAuthority;
@@ -32,6 +35,11 @@ export interface DocumentApprovalBundle {
   unresolvedApprovals: UnresolvedApprovalSnapshot[];
 }
 
+export interface ApprovalMutationResult {
+  approval: DocumentApproval;
+  workspaceGraph: WorkspaceGraph;
+}
+
 export interface ApprovalService {
   getWorkspacePolicy: (workspaceId: WorkspaceId) => Promise<WorkspaceApprovalPolicy>;
   listDocumentApprovalBundles: (workspaceId: WorkspaceId) => Promise<DocumentApprovalBundle[]>;
@@ -39,4 +47,14 @@ export interface ApprovalService {
     workspaceId: WorkspaceId,
     documentId: DocumentId,
   ) => Promise<DocumentApprovalBundle | null>;
+  requestApproval: (
+    workspaceId: WorkspaceId,
+    documentId: DocumentId,
+    input: ApprovalRequestDto,
+  ) => Promise<ApprovalMutationResult>;
+  decideApproval: (
+    workspaceId: WorkspaceId,
+    approvalId: ApprovalId,
+    input: ApprovalDecisionDto,
+  ) => Promise<ApprovalMutationResult>;
 }

@@ -1628,6 +1628,14 @@ export function createPostgresWorkspaceSessionSource(
           return null;
         }
 
+        if (
+          input.membershipId &&
+          input.requestedByMembershipId &&
+          input.membershipId === input.requestedByMembershipId
+        ) {
+          return null;
+        }
+
         const timestamp = nowIso();
         const nextApprovalId = buildId("apr");
 
@@ -1712,7 +1720,12 @@ export function createPostgresWorkspaceSessionSource(
           .limit(1)
           .then((rows: MembershipRow[]) => rows[0] ?? null);
 
-        if (!approvalRow || !decisionMembership) {
+        if (
+          !approvalRow ||
+          !decisionMembership ||
+          !approvalRow.membershipId ||
+          approvalRow.membershipId !== input.decisionByMembershipId
+        ) {
           return null;
         }
 

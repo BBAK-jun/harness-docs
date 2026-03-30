@@ -39,6 +39,18 @@ export function createApprovalUseCases({ dataSource }: ApprovalUseCaseDependenci
         return documentNotFoundFailure(documentId);
       }
 
+      if (
+        input.membershipId &&
+        input.requestedByMembershipId &&
+        input.membershipId === input.requestedByMembershipId
+      ) {
+        return fail(
+          422,
+          "approval_self_request_not_allowed",
+          "Approval requester and reviewer must be different memberships.",
+        );
+      }
+
       const mutation = await dataSource.requestApproval(workspaceId, documentId, input);
 
       if (!mutation) {
@@ -58,8 +70,21 @@ export function createApprovalUseCases({ dataSource }: ApprovalUseCaseDependenci
         return workspaceNotFoundFailure(workspaceId);
       }
 
-      if (!hasEntityWithId(approvals, approvalId)) {
+      const targetApproval = approvals.find((approval) => approval.id === approvalId);
+
+      if (!targetApproval) {
         return approvalNotFoundFailure(approvalId);
+      }
+
+      if (
+        !targetApproval.membershipId ||
+        targetApproval.membershipId !== input.decisionByMembershipId
+      ) {
+        return fail(
+          422,
+          "approval_decision_forbidden",
+          "Only the assigned reviewer membership can record this approval decision.",
+        );
       }
 
       const mutation = await dataSource.decideApproval(workspaceId, approvalId, input);
