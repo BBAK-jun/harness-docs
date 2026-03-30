@@ -26,26 +26,33 @@ const assistantEntry: AITaskEntryPoint = {
 
 function renderDock(overrides?: Partial<ComponentProps<typeof EditorAIAssistantDock>>) {
   const onSubmit = overrides?.onSubmit ?? vi.fn();
+  const props: ComponentProps<typeof EditorAIAssistantDock> = {
+    canApplyDrafts: true,
+    canSubmit: true,
+    currentDocumentSource: "# 현재 본문",
+    entries: [assistantEntry],
+    isOpen: true,
+    isPending: false,
+    isVisible: true,
+    messages: [],
+    onApplyDraft: vi.fn(),
+    onClose: vi.fn(),
+    onCopyDraft: vi.fn(),
+    onPromptBlur: vi.fn(),
+    onPromptChange: vi.fn(),
+    onSelectEntry: vi.fn(),
+    onSubmit,
+    onToggleCompare: vi.fn(),
+    onToggleOpen: vi.fn(),
+    onUndoDraftApply: vi.fn(),
+    prompt: "한글 입력",
+    selectedEntry: assistantEntry,
+    ...overrides,
+  };
 
   render(
     <FloatingDockProvider>
-      <EditorAIAssistantDock
-        canSubmit
-        entries={[assistantEntry]}
-        isOpen
-        isPending={false}
-        isVisible
-        messages={[]}
-        onClose={vi.fn()}
-        onPromptBlur={vi.fn()}
-        onPromptChange={vi.fn()}
-        onSelectEntry={vi.fn()}
-        onSubmit={onSubmit}
-        onToggleOpen={vi.fn()}
-        prompt="한글 입력"
-        selectedEntry={assistantEntry}
-        {...overrides}
-      />
+      <EditorAIAssistantDock {...props} />
     </FloatingDockProvider>,
   );
 
@@ -101,5 +108,80 @@ describe("EditorAIAssistantDock", () => {
     });
 
     expect(screen.getByText("길어진 답변").parentElement?.className).toContain("overflow-y-auto");
+  });
+
+  it("renders proposal actions for assistant messages with an applyable draft", () => {
+    const onCopyDraft = vi.fn();
+
+    renderDock({
+      messages: [
+        {
+          id: "assistant-1",
+          role: "assistant",
+          content: "## Recommendation\n\n요약",
+          format: "markdown",
+          proposal: {
+            recommendation: "문서 구조를 더 명확히 정리합니다.",
+            draftMarkdown: "## Architecture\n\n정리된 본문",
+            notes: null,
+          },
+          isStreaming: false,
+        },
+      ],
+      onCopyDraft,
+    });
+
+    expect(screen.getByRole("button", { name: "초안 적용" })).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "복사" }));
+    expect(screen.getByRole("button", { name: "비교 보기" })).toBeTruthy();
+    expect(onCopyDraft).toHaveBeenCalledWith("assistant-1");
+  });
+
+  it("disables the apply action when the edit lock is unavailable", () => {
+    renderDock({
+      canApplyDrafts: false,
+      messages: [
+        {
+          id: "assistant-1",
+          role: "assistant",
+          content: "## Recommendation\n\n요약",
+          format: "markdown",
+          proposal: {
+            recommendation: "문서 구조를 더 명확히 정리합니다.",
+            draftMarkdown: "## Architecture\n\n정리된 본문",
+            notes: null,
+          },
+          isStreaming: false,
+        },
+      ],
+    });
+
+    expect(screen.getByRole("button", { name: "초안 적용" }).hasAttribute("disabled")).toBe(true);
+    expect(screen.getByText("편집 잠금을 보유 중일 때만 초안을 적용할 수 있습니다.")).toBeTruthy();
+  });
+
+  it("toggles compare content when requested by the parent", () => {
+    renderDock({
+      messages: [
+        {
+          id: "assistant-1",
+          role: "assistant",
+          content: "## Recommendation\n\n요약",
+          format: "markdown",
+          proposal: {
+            recommendation: "문서 구조를 더 명확히 정리합니다.",
+            draftMarkdown: "## Architecture\n\n정리된 본문",
+            notes: "메모",
+          },
+          isStreaming: false,
+          isCompareOpen: true,
+        },
+      ],
+    });
+
+    expect(screen.getByText("현재 본문")).toBeTruthy();
+    expect(screen.getByText("제안 초안")).toBeTruthy();
+    expect(screen.getAllByText("메모").length).toBe(2);
+    expect(screen.getByRole("button", { name: "비교 닫기" })).toBeTruthy();
   });
 });

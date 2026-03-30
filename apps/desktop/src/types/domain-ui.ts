@@ -26,6 +26,12 @@ export type PublishRecordId = string;
 
 export type AIDraftSuggestionStatus = "proposed" | "reviewed" | "accepted" | "rejected";
 
+export interface EditorAIDraftProposal {
+  recommendation: string;
+  draftMarkdown: string;
+  notes: string | null;
+}
+
 export type AITaskEntryPointScope = "workspace" | "document" | "publish";
 export type AITaskEntryPointContext =
   | "workspace_overview"

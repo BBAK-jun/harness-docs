@@ -1,5 +1,5 @@
 import { useRef, type FocusEventHandler, type KeyboardEventHandler } from "react";
-import { Bot, LoaderCircle, SendHorizontal, X } from "lucide-react";
+import { Bot, Copy, LoaderCircle, RefreshCcw, SendHorizontal, WandSparkles, X } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { useFloatingDockItem } from "@/components/FloatingDockProvider";
@@ -8,7 +8,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Textarea } from "@/components/ui/textarea";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { cn } from "@/lib/utils";
-import type { AITaskEntryPoint } from "../types/domain-ui";
+import type { AITaskEntryPoint, EditorAIDraftProposal } from "../types/domain-ui";
 
 export type EditorAIAssistantMessage = {
   id: string;
@@ -18,6 +18,10 @@ export type EditorAIAssistantMessage = {
   format?: "markdown" | "plain";
   isStreaming?: boolean;
   tone?: "default" | "warning" | "danger";
+  proposal?: EditorAIDraftProposal | null;
+  isCompareOpen?: boolean;
+  canUndoApply?: boolean;
+  statusText?: string | null;
 };
 
 function normalizeStreamingMarkdown(content: string, isStreaming: boolean) {
@@ -39,16 +43,22 @@ export function EditorAIAssistantDock({
   isPending,
   isVisible,
   messages,
+  currentDocumentSource,
   prompt,
   promptError,
   selectedEntry,
   canSubmit,
+  canApplyDrafts,
   onClose,
+  onApplyDraft,
+  onCopyDraft,
   onPromptBlur,
   onPromptChange,
   onSelectEntry,
   onSubmit,
+  onToggleCompare,
   onToggleOpen,
+  onUndoDraftApply,
 }: {
   entries: AITaskEntryPoint[];
   emptyStateMessage?: string;
@@ -56,16 +66,22 @@ export function EditorAIAssistantDock({
   isPending: boolean;
   isVisible: boolean;
   messages: EditorAIAssistantMessage[];
+  currentDocumentSource: string;
   prompt: string;
   promptError?: string | null;
   selectedEntry: AITaskEntryPoint | null;
   canSubmit: boolean;
+  canApplyDrafts: boolean;
   onClose: () => void;
+  onApplyDraft: (messageId: string) => void;
+  onCopyDraft: (messageId: string) => void;
   onPromptBlur: FocusEventHandler<HTMLTextAreaElement>;
   onPromptChange: (value: string) => void;
   onSelectEntry: (id: string) => void;
   onSubmit: () => void;
+  onToggleCompare: (messageId: string) => void;
   onToggleOpen: () => void;
+  onUndoDraftApply: (messageId: string) => void;
 }) {
   const isPromptComposingRef = useRef(false);
 
@@ -215,6 +231,105 @@ export function EditorAIAssistantDock({
                             </div>
                           )}
                         </div>
+                        {message.role === "assistant" &&
+                        message.proposal &&
+                        !message.isStreaming ? (
+                          <div className="mt-4 space-y-3 border-t border-[var(--border)]/80 pt-3">
+                            {message.proposal.recommendation ? (
+                              <div className="rounded-[calc(var(--radius)-2px)] bg-[var(--secondary)]/55 px-3 py-2 text-xs leading-5 text-[var(--muted-foreground)]">
+                                {message.proposal.recommendation}
+                              </div>
+                            ) : null}
+                            <div className="flex flex-wrap gap-2">
+                              <Button
+                                className="h-8"
+                                clientLog="AI 초안 적용"
+                                disabled={!canApplyDrafts || isPending}
+                                onClick={() => onApplyDraft(message.id)}
+                                size="sm"
+                                type="button"
+                                variant="softOutline"
+                              >
+                                <WandSparkles className="size-3.5" />
+                                초안 적용
+                              </Button>
+                              <Button
+                                className="h-8"
+                                clientLog="AI 초안 복사"
+                                onClick={() => onCopyDraft(message.id)}
+                                size="sm"
+                                type="button"
+                                variant="quiet"
+                              >
+                                <Copy className="size-3.5" />
+                                복사
+                              </Button>
+                              <Button
+                                className="h-8"
+                                clientLog="AI 초안 비교 보기"
+                                onClick={() => onToggleCompare(message.id)}
+                                size="sm"
+                                type="button"
+                                variant="quiet"
+                              >
+                                {message.isCompareOpen ? "비교 닫기" : "비교 보기"}
+                              </Button>
+                              {message.canUndoApply ? (
+                                <Button
+                                  className="h-8"
+                                  clientLog="AI 초안 적용 되돌리기"
+                                  onClick={() => onUndoDraftApply(message.id)}
+                                  size="sm"
+                                  type="button"
+                                  variant="quiet"
+                                >
+                                  <RefreshCcw className="size-3.5" />
+                                  되돌리기
+                                </Button>
+                              ) : null}
+                            </div>
+                            {!canApplyDrafts ? (
+                              <p className="text-xs text-[var(--muted-foreground)]">
+                                편집 잠금을 보유 중일 때만 초안을 적용할 수 있습니다.
+                              </p>
+                            ) : null}
+                            {message.statusText ? (
+                              <p className="text-xs text-[var(--muted-foreground)]">
+                                {message.statusText}
+                              </p>
+                            ) : null}
+                            {message.isCompareOpen ? (
+                              <div className="grid gap-3 rounded-[calc(var(--radius)-2px)] border border-[var(--border)] bg-[var(--secondary)]/35 p-3">
+                                <div className="space-y-2">
+                                  <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--muted-foreground)]">
+                                    현재 본문
+                                  </p>
+                                  <pre className="max-h-48 overflow-auto whitespace-pre-wrap rounded-[calc(var(--radius)-4px)] bg-[var(--background)] px-3 py-2 text-xs leading-5 text-[var(--foreground)]">
+                                    {currentDocumentSource}
+                                  </pre>
+                                </div>
+                                <div className="space-y-2">
+                                  <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--muted-foreground)]">
+                                    제안 초안
+                                  </p>
+                                  <pre className="max-h-48 overflow-auto whitespace-pre-wrap rounded-[calc(var(--radius)-4px)] bg-[var(--background)] px-3 py-2 text-xs leading-5 text-[var(--foreground)]">
+                                    {message.proposal.draftMarkdown}
+                                  </pre>
+                                </div>
+                                {message.proposal.notes ? (
+                                  <div className="space-y-2">
+                                    <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--muted-foreground)]">
+                                      메모
+                                    </p>
+                                    <div className="rounded-[calc(var(--radius)-4px)] bg-[var(--background)] px-3 py-2 text-xs leading-5 text-[var(--muted-foreground)]">
+                                      {message.proposal.notes}
+                                    </div>
+                                  </div>
+                                ) : null}
+                              </div>
+                            ) : null}
+                          </div>
+                        ) : null}
                       </div>
                     ))}
                     {isPending ? (
