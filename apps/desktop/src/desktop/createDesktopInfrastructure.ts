@@ -83,10 +83,11 @@ function createWindowingService(): DesktopWindowService {
 
 export function createDesktopInfrastructure(): DesktopInfrastructure {
   const runtime: DesktopInfrastructureRuntime = canUseTauriRuntime() ? "tauri" : "browser";
+  const commands = createCommandClient(runtime);
 
   return {
     runtime,
-    commands: createCommandClient(runtime),
+    commands,
     storage: createKeyValueStore(),
     windowing: createWindowingService(),
   };

@@ -1,8 +1,7 @@
 import { createFileRoute, useRouter } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
-import { buildHarnessDocsNavigation } from "../lib/appNavigation";
 import { usePublishPage } from "../hooks/usePublishPage";
-import { useWorkspaceShell } from "../hooks/useWorkspaceShell";
+import { useWorkspaceRouteShell } from "../hooks/useWorkspaceRouteShell";
 import { PublishPage } from "../pages/PublishPage";
 import { RouteErrorStateCard } from "../pages/pageUtils";
 
@@ -12,16 +11,7 @@ export const Route = createFileRoute("/$workspaceId/publish")({
 });
 
 function WorkspacePublishRoute() {
-  const { workspaceId } = Route.useParams();
-  const routeState = {
-    activeArea: "publish" as const,
-    activeWorkspaceId: workspaceId,
-    selectedDocumentId: null,
-  };
-  const shell = useWorkspaceShell(
-    routeState,
-    buildHarnessDocsNavigation(Route.useNavigate(), routeState),
-  );
+  const shell = useWorkspaceRouteShell();
   const publish = usePublishPage(shell);
 
   if (publish.preflightState.status === "error" && publish.publishRecord) {

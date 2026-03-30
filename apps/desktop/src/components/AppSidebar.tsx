@@ -13,7 +13,12 @@ import {
   Sidebar,
   SidebarContent,
   SidebarFooter,
+  SidebarGroup,
+  SidebarGroupContent,
   SidebarHeader,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar";
 import { cn } from "@/lib/utils";
@@ -94,53 +99,51 @@ export function AppSidebar({
       </SidebarHeader>
 
       <SidebarContent className="gap-0 bg-[var(--sidebar-background)] px-3 py-3 text-[var(--sidebar-foreground)]">
-        <nav className="flex-1 space-y-0.5">
-          {navItems.map((item) => {
-            const active = item.activeAreas.some((area) => area === app.activeArea);
+        <SidebarGroup className="flex-1 p-0">
+          <SidebarGroupContent>
+            <SidebarMenu>
+              {navItems.map((item) => {
+                const active = item.activeAreas.some((area) => area === app.activeArea);
 
-            return (
-              <button
-                aria-label={item.title}
-                className={cn(
-                  "flex w-full items-center gap-2.5 rounded px-2.5 py-2 text-sm transition-colors",
-                  isCollapsed && "justify-center px-2",
-                  active
-                    ? "bg-[var(--sidebar-accent)] font-medium text-[var(--sidebar-accent-foreground)]"
-                    : "text-[var(--sidebar-foreground)] hover:bg-[color:color-mix(in_srgb,var(--sidebar-accent)_50%,transparent)] hover:text-[var(--sidebar-accent-foreground)]",
-                )}
-                key={item.area}
-                onClick={() => {
-                  logEvent({ action: `${item.title} 사이드바 CTA 클릭`, source: "app-sidebar" });
-                  app.handleAreaChange(item.area);
-                }}
-                title={item.title}
-                type="button"
-              >
-                <item.icon className="h-4 w-4 shrink-0" />
-                {!isCollapsed ? <span>{item.title}</span> : null}
-              </button>
-            );
-          })}
-        </nav>
+                return (
+                  <SidebarMenuItem key={item.area}>
+                    <SidebarMenuButton
+                      isActive={active}
+                      onClick={() => {
+                        logEvent({
+                          action: `${item.title} 사이드바 CTA 클릭`,
+                          source: "app-sidebar",
+                        });
+                        app.handleAreaChange(item.area);
+                      }}
+                      tooltip={item.title}
+                    >
+                      <item.icon className="h-4 w-4 shrink-0" />
+                      <span>{item.title}</span>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                );
+              })}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
       </SidebarContent>
 
       <SidebarFooter className="gap-0 border-t border-[var(--sidebar-border)] bg-[var(--sidebar-background)] p-3 text-[var(--sidebar-foreground)]">
-        <button
-          aria-label="워크스페이스 목록"
-          className={cn(
-            "flex w-full items-center gap-2.5 rounded px-2.5 py-2 text-sm transition-colors hover:bg-[color:color-mix(in_srgb,var(--sidebar-accent)_50%,transparent)] hover:text-[var(--sidebar-accent-foreground)]",
-            isCollapsed && "justify-center px-2",
-          )}
-          onClick={() => {
-            logEvent({ action: "워크스페이스 목록 CTA 클릭", source: "app-sidebar" });
-            app.handleWorkspaceLeave();
-          }}
-          title="워크스페이스 목록"
-          type="button"
-        >
-          <Settings className="h-4 w-4 shrink-0" />
-          {!isCollapsed ? <span>워크스페이스</span> : null}
-        </button>
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <SidebarMenuButton
+              onClick={() => {
+                logEvent({ action: "워크스페이스 목록 CTA 클릭", source: "app-sidebar" });
+                app.handleWorkspaceLeave();
+              }}
+              tooltip="워크스페이스 목록"
+            >
+              <Settings className="h-4 w-4 shrink-0" />
+              <span>워크스페이스</span>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        </SidebarMenu>
 
         <div
           className={cn(
@@ -165,22 +168,20 @@ export function AppSidebar({
           ) : null}
         </div>
 
-        <button
-          aria-label="로그아웃"
-          className={cn(
-            "mt-2 flex w-full items-center gap-2.5 rounded px-2.5 py-2 text-sm transition-colors hover:bg-[color:color-mix(in_srgb,var(--sidebar-accent)_50%,transparent)] hover:text-[var(--sidebar-accent-foreground)]",
-            isCollapsed && "justify-center px-2",
-          )}
-          onClick={() => {
-            logEvent({ action: "로그아웃 CTA 클릭", source: "app-sidebar" });
-            onSignOutRequest();
-          }}
-          title="로그아웃"
-          type="button"
-        >
-          <LogOut className="h-4 w-4 shrink-0" />
-          {!isCollapsed ? <span>로그아웃</span> : null}
-        </button>
+        <SidebarMenu className="mt-2">
+          <SidebarMenuItem>
+            <SidebarMenuButton
+              onClick={() => {
+                logEvent({ action: "로그아웃 CTA 클릭", source: "app-sidebar" });
+                onSignOutRequest();
+              }}
+              tooltip="로그아웃"
+            >
+              <LogOut className="h-4 w-4 shrink-0" />
+              <span>로그아웃</span>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        </SidebarMenu>
       </SidebarFooter>
     </Sidebar>
   );

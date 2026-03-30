@@ -1,7 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { buildHarnessDocsNavigation } from "../lib/appNavigation";
 import { useApprovalsPage } from "../hooks/useApprovalsPage";
-import { useWorkspaceShell } from "../hooks/useWorkspaceShell";
+import { useWorkspaceRouteShell } from "../hooks/useWorkspaceRouteShell";
 import { ApprovalsPage } from "../pages/ApprovalsPage";
 import { WorkspaceRouteErrorBoundary } from "./$workspaceId.ai";
 
@@ -11,16 +10,7 @@ export const Route = createFileRoute("/$workspaceId/documents/$documentId/approv
 });
 
 function WorkspaceDocumentApprovalsRoute() {
-  const { documentId, workspaceId } = Route.useParams();
-  const routeState = {
-    activeArea: "approvals" as const,
-    activeWorkspaceId: workspaceId,
-    selectedDocumentId: documentId,
-  };
-  const shell = useWorkspaceShell(
-    routeState,
-    buildHarnessDocsNavigation(Route.useNavigate(), routeState),
-  );
+  const shell = useWorkspaceRouteShell();
   const approvals = useApprovalsPage(shell);
 
   return (

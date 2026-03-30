@@ -1,4 +1,5 @@
-import { useEffect, useMemo } from "react";
+import { useMemo } from "react";
+import { useDocumentLockHeartbeat } from "./useDocumentLockHeartbeat";
 import type { NavigationArea } from "../types/contracts";
 import { useAppBootstrap } from "./useAppBootstrap";
 import { useWorkspaceLocalState } from "./useWorkspaceLocalState";
@@ -69,44 +70,14 @@ export function useWorkspaceShell(
 
   const activeDocumentId = localState.activeDocument?.id ?? null;
   const currentActiveMembershipId = activeMembership?.id ?? null;
-  const activeDocumentLockStatus = localState.activeDocumentLock?.lifecycle.status ?? null;
-  const activeDocumentLockedByMembershipId =
-    localState.activeDocumentLock?.lockedByMembershipId ?? null;
 
-  useEffect(() => {
-    if (
-      !activeDocumentId ||
-      !currentActiveMembershipId ||
-      activeDocumentLockStatus !== "active" ||
-      activeDocumentLockedByMembershipId !== currentActiveMembershipId
-    ) {
-      return;
-    }
-
-    const touchActiveLock = () => {
-      const now = Date.now();
-
-      if (now - localState.lastInteractionTouchMsRef.current < 60_000) {
-        return;
-      }
-
-      localState.lastInteractionTouchMsRef.current = now;
-      localState.touchDocumentEditingLock({
-        documentId: activeDocumentId,
-        membershipId: currentActiveMembershipId,
-      });
-    };
-
-    return services.desktopWindow.subscribeToUserActivity(touchActiveLock);
-  }, [
+  useDocumentLockHeartbeat({
     activeDocumentId,
-    activeDocumentLockStatus,
-    activeDocumentLockedByMembershipId,
-    currentActiveMembershipId,
-    localState.lastInteractionTouchMsRef,
-    localState.touchDocumentEditingLock,
-    services,
-  ]);
+    activeLock: localState.activeDocumentLock,
+    activeMembershipId: currentActiveMembershipId,
+    desktopWindow: services.desktopWindow,
+    touchDocumentEditingLock: localState.touchDocumentEditingLock,
+  });
 
   return {
     services,
@@ -135,6 +106,9 @@ export function useWorkspaceShell(
     handleWorkspaceLeave: navigation.onWorkspaceLeave,
     handleDocumentSelect: localState.handleDocumentSelect,
     handleDocumentSourceChange: localState.handleDocumentSourceChange,
+    handleDocumentTitleChange: localState.handleDocumentTitleChange,
+    handleDocumentLinkedDocumentsChange: localState.handleDocumentLinkedDocumentsChange,
+    handleResetDocumentDraft: localState.handleResetDocumentDraft,
     handleStartEditing: localState.handleStartEditing,
     handleReleaseEditing: localState.handleReleaseEditing,
     handleCreateBlockComment: localState.handleCreateBlockComment,

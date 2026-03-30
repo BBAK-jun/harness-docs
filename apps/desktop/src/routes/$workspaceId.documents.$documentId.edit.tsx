@@ -1,6 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { buildHarnessDocsNavigation } from "../lib/appNavigation";
-import { useWorkspaceShell } from "../hooks/useWorkspaceShell";
+import { useWorkspaceRouteShell } from "../hooks/useWorkspaceRouteShell";
 import { EditorPage } from "../pages/EditorPage";
 import { WorkspaceRouteErrorBoundary } from "./$workspaceId.ai";
 
@@ -10,16 +9,7 @@ export const Route = createFileRoute("/$workspaceId/documents/$documentId/edit")
 });
 
 function WorkspaceDocumentEditRoute() {
-  const { documentId, workspaceId } = Route.useParams();
-  const routeState = {
-    activeArea: "editor" as const,
-    activeWorkspaceId: workspaceId,
-    selectedDocumentId: documentId,
-  };
-  const shell = useWorkspaceShell(
-    routeState,
-    buildHarnessDocsNavigation(Route.useNavigate(), routeState),
-  );
+  const shell = useWorkspaceRouteShell();
 
   return <EditorPage app={shell} />;
 }

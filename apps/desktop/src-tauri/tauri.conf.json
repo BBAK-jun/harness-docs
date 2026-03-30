@@ -12,6 +12,7 @@
   "app": {
     "windows": [
       {
+        "label": "main",
         "title": "Harness Docs",
         "width": 1440,
         "height": 920,

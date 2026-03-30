@@ -29,6 +29,7 @@ const BIOME_EXTENSIONS = new Set([
 const scriptDir = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.resolve(scriptDir, "..");
 const biomeConfigPath = path.join(repoRoot, "biome.json");
+const rustfmtConfigPath = findRustfmtConfig(repoRoot);
 
 main();
 
@@ -212,14 +213,17 @@ function checkRust(entries) {
       writeFileSync(tempFile, content);
 
       const edition = resolveRustEdition(entry.file);
-      const result = run(
-        "rustfmt",
-        ["--check", "--color", "never", "--edition", edition, "--config-path", repoRoot, tempFile],
-        {
-          cwd: repoRoot,
-          allowFailure: true,
-        },
-      );
+      const rustfmtArgs = ["--check", "--color", "never", "--edition", edition];
+
+      if (rustfmtConfigPath) {
+        rustfmtArgs.push("--config-path", rustfmtConfigPath);
+      }
+
+      rustfmtArgs.push(tempFile);
+      const result = run("rustfmt", rustfmtArgs, {
+        cwd: repoRoot,
+        allowFailure: true,
+      });
 
       if (result.status !== 0) {
         failures.push(entry);
@@ -251,6 +255,18 @@ function resolveRustEdition(file) {
   }
 
   return "2021";
+}
+
+function findRustfmtConfig(root) {
+  for (const fileName of ["rustfmt.toml", ".rustfmt.toml"]) {
+    const candidate = path.join(root, fileName);
+
+    if (existsSync(candidate)) {
+      return candidate;
+    }
+  }
+
+  return null;
 }
 
 function isBiomeFile(file) {

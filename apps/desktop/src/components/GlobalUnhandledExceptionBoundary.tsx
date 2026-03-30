@@ -14,7 +14,7 @@ export class GlobalUnhandledExceptionBoundary extends Component<Props, State> {
     hasError: false,
   };
 
-  private resetTimer: ReturnType<typeof window.setTimeout> | null = null;
+  private resetTimer: number | null = null;
 
   componentDidMount() {
     window.addEventListener("error", this.handleWindowError);

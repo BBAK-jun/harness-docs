@@ -21,7 +21,9 @@ import { Route as WorkspaceIdPublishRouteImport } from './routes/$workspaceId.pu
 import { Route as WorkspaceIdDocumentsRouteImport } from './routes/$workspaceId.documents'
 import { Route as WorkspaceIdDashboardRouteImport } from './routes/$workspaceId.dashboard'
 import { Route as WorkspaceIdAiRouteImport } from './routes/$workspaceId.ai'
+import { Route as WorkspaceIdDocumentsIndexRouteImport } from './routes/$workspaceId.documents.index'
 import { Route as WorkspaceIdDocumentsDocumentIdRouteImport } from './routes/$workspaceId.documents.$documentId'
+import { Route as WorkspaceIdDocumentsDocumentIdIndexRouteImport } from './routes/$workspaceId.documents.$documentId.index'
 import { Route as WorkspaceIdDocumentsDocumentIdEditRouteImport } from './routes/$workspaceId.documents.$documentId.edit'
 import { Route as WorkspaceIdDocumentsDocumentIdCommentsRouteImport } from './routes/$workspaceId.documents.$documentId.comments'
 import { Route as WorkspaceIdDocumentsDocumentIdApprovalsRouteImport } from './routes/$workspaceId.documents.$documentId.approvals'
@@ -86,11 +88,23 @@ const WorkspaceIdAiRoute = WorkspaceIdAiRouteImport.update({
   path: '/ai',
   getParentRoute: () => WorkspaceIdRoute,
 } as any)
+const WorkspaceIdDocumentsIndexRoute =
+  WorkspaceIdDocumentsIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => WorkspaceIdDocumentsRoute,
+  } as any)
 const WorkspaceIdDocumentsDocumentIdRoute =
   WorkspaceIdDocumentsDocumentIdRouteImport.update({
     id: '/$documentId',
     path: '/$documentId',
     getParentRoute: () => WorkspaceIdDocumentsRoute,
+  } as any)
+const WorkspaceIdDocumentsDocumentIdIndexRoute =
+  WorkspaceIdDocumentsDocumentIdIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => WorkspaceIdDocumentsDocumentIdRoute,
   } as any)
 const WorkspaceIdDocumentsDocumentIdEditRoute =
   WorkspaceIdDocumentsDocumentIdEditRouteImport.update({
@@ -125,9 +139,11 @@ export interface FileRoutesByFullPath {
   '/$workspaceId/publish': typeof WorkspaceIdPublishRoute
   '/$workspaceId/': typeof WorkspaceIdIndexRoute
   '/$workspaceId/documents/$documentId': typeof WorkspaceIdDocumentsDocumentIdRouteWithChildren
+  '/$workspaceId/documents/': typeof WorkspaceIdDocumentsIndexRoute
   '/$workspaceId/documents/$documentId/approvals': typeof WorkspaceIdDocumentsDocumentIdApprovalsRoute
   '/$workspaceId/documents/$documentId/comments': typeof WorkspaceIdDocumentsDocumentIdCommentsRoute
   '/$workspaceId/documents/$documentId/edit': typeof WorkspaceIdDocumentsDocumentIdEditRoute
+  '/$workspaceId/documents/$documentId/': typeof WorkspaceIdDocumentsDocumentIdIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -138,13 +154,13 @@ export interface FileRoutesByTo {
   '/workspaces': typeof WorkspacesRoute
   '/$workspaceId/ai': typeof WorkspaceIdAiRoute
   '/$workspaceId/dashboard': typeof WorkspaceIdDashboardRoute
-  '/$workspaceId/documents': typeof WorkspaceIdDocumentsRouteWithChildren
   '/$workspaceId/publish': typeof WorkspaceIdPublishRoute
   '/$workspaceId': typeof WorkspaceIdIndexRoute
-  '/$workspaceId/documents/$documentId': typeof WorkspaceIdDocumentsDocumentIdRouteWithChildren
+  '/$workspaceId/documents': typeof WorkspaceIdDocumentsIndexRoute
   '/$workspaceId/documents/$documentId/approvals': typeof WorkspaceIdDocumentsDocumentIdApprovalsRoute
   '/$workspaceId/documents/$documentId/comments': typeof WorkspaceIdDocumentsDocumentIdCommentsRoute
   '/$workspaceId/documents/$documentId/edit': typeof WorkspaceIdDocumentsDocumentIdEditRoute
+  '/$workspaceId/documents/$documentId': typeof WorkspaceIdDocumentsDocumentIdIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -161,9 +177,11 @@ export interface FileRoutesById {
   '/$workspaceId/publish': typeof WorkspaceIdPublishRoute
   '/$workspaceId/': typeof WorkspaceIdIndexRoute
   '/$workspaceId/documents/$documentId': typeof WorkspaceIdDocumentsDocumentIdRouteWithChildren
+  '/$workspaceId/documents/': typeof WorkspaceIdDocumentsIndexRoute
   '/$workspaceId/documents/$documentId/approvals': typeof WorkspaceIdDocumentsDocumentIdApprovalsRoute
   '/$workspaceId/documents/$documentId/comments': typeof WorkspaceIdDocumentsDocumentIdCommentsRoute
   '/$workspaceId/documents/$documentId/edit': typeof WorkspaceIdDocumentsDocumentIdEditRoute
+  '/$workspaceId/documents/$documentId/': typeof WorkspaceIdDocumentsDocumentIdIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -181,9 +199,11 @@ export interface FileRouteTypes {
     | '/$workspaceId/publish'
     | '/$workspaceId/'
     | '/$workspaceId/documents/$documentId'
+    | '/$workspaceId/documents/'
     | '/$workspaceId/documents/$documentId/approvals'
     | '/$workspaceId/documents/$documentId/comments'
     | '/$workspaceId/documents/$documentId/edit'
+    | '/$workspaceId/documents/$documentId/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -194,13 +214,13 @@ export interface FileRouteTypes {
     | '/workspaces'
     | '/$workspaceId/ai'
     | '/$workspaceId/dashboard'
-    | '/$workspaceId/documents'
     | '/$workspaceId/publish'
     | '/$workspaceId'
-    | '/$workspaceId/documents/$documentId'
+    | '/$workspaceId/documents'
     | '/$workspaceId/documents/$documentId/approvals'
     | '/$workspaceId/documents/$documentId/comments'
     | '/$workspaceId/documents/$documentId/edit'
+    | '/$workspaceId/documents/$documentId'
   id:
     | '__root__'
     | '/'
@@ -216,9 +236,11 @@ export interface FileRouteTypes {
     | '/$workspaceId/publish'
     | '/$workspaceId/'
     | '/$workspaceId/documents/$documentId'
+    | '/$workspaceId/documents/'
     | '/$workspaceId/documents/$documentId/approvals'
     | '/$workspaceId/documents/$documentId/comments'
     | '/$workspaceId/documents/$documentId/edit'
+    | '/$workspaceId/documents/$documentId/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -317,12 +339,26 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof WorkspaceIdAiRouteImport
       parentRoute: typeof WorkspaceIdRoute
     }
+    '/$workspaceId/documents/': {
+      id: '/$workspaceId/documents/'
+      path: '/'
+      fullPath: '/$workspaceId/documents/'
+      preLoaderRoute: typeof WorkspaceIdDocumentsIndexRouteImport
+      parentRoute: typeof WorkspaceIdDocumentsRoute
+    }
     '/$workspaceId/documents/$documentId': {
       id: '/$workspaceId/documents/$documentId'
       path: '/$documentId'
       fullPath: '/$workspaceId/documents/$documentId'
       preLoaderRoute: typeof WorkspaceIdDocumentsDocumentIdRouteImport
       parentRoute: typeof WorkspaceIdDocumentsRoute
+    }
+    '/$workspaceId/documents/$documentId/': {
+      id: '/$workspaceId/documents/$documentId/'
+      path: '/'
+      fullPath: '/$workspaceId/documents/$documentId/'
+      preLoaderRoute: typeof WorkspaceIdDocumentsDocumentIdIndexRouteImport
+      parentRoute: typeof WorkspaceIdDocumentsDocumentIdRoute
     }
     '/$workspaceId/documents/$documentId/edit': {
       id: '/$workspaceId/documents/$documentId/edit'
@@ -352,6 +388,7 @@ interface WorkspaceIdDocumentsDocumentIdRouteChildren {
   WorkspaceIdDocumentsDocumentIdApprovalsRoute: typeof WorkspaceIdDocumentsDocumentIdApprovalsRoute
   WorkspaceIdDocumentsDocumentIdCommentsRoute: typeof WorkspaceIdDocumentsDocumentIdCommentsRoute
   WorkspaceIdDocumentsDocumentIdEditRoute: typeof WorkspaceIdDocumentsDocumentIdEditRoute
+  WorkspaceIdDocumentsDocumentIdIndexRoute: typeof WorkspaceIdDocumentsDocumentIdIndexRoute
 }
 
 const WorkspaceIdDocumentsDocumentIdRouteChildren: WorkspaceIdDocumentsDocumentIdRouteChildren =
@@ -362,6 +399,8 @@ const WorkspaceIdDocumentsDocumentIdRouteChildren: WorkspaceIdDocumentsDocumentI
       WorkspaceIdDocumentsDocumentIdCommentsRoute,
     WorkspaceIdDocumentsDocumentIdEditRoute:
       WorkspaceIdDocumentsDocumentIdEditRoute,
+    WorkspaceIdDocumentsDocumentIdIndexRoute:
+      WorkspaceIdDocumentsDocumentIdIndexRoute,
   }
 
 const WorkspaceIdDocumentsDocumentIdRouteWithChildren =
@@ -371,11 +410,13 @@ const WorkspaceIdDocumentsDocumentIdRouteWithChildren =
 
 interface WorkspaceIdDocumentsRouteChildren {
   WorkspaceIdDocumentsDocumentIdRoute: typeof WorkspaceIdDocumentsDocumentIdRouteWithChildren
+  WorkspaceIdDocumentsIndexRoute: typeof WorkspaceIdDocumentsIndexRoute
 }
 
 const WorkspaceIdDocumentsRouteChildren: WorkspaceIdDocumentsRouteChildren = {
   WorkspaceIdDocumentsDocumentIdRoute:
     WorkspaceIdDocumentsDocumentIdRouteWithChildren,
+  WorkspaceIdDocumentsIndexRoute: WorkspaceIdDocumentsIndexRoute,
 }
 
 const WorkspaceIdDocumentsRouteWithChildren =

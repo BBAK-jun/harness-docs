@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "@tanstack/react-router";
+import { resolvePreferredAIProvider } from "../lib/aiProviderAvailability";
 import { defaultAppPreferences } from "../lib/appPreferences";
 import { desktopMutationKeys, desktopQueryKeys } from "../queries/queryKeys";
 import { useHarnessDocsServices } from "../services/HarnessDocsServicesProvider";
@@ -130,15 +131,21 @@ export function useAppBootstrap() {
     writePreferencesMutation.mutate(nextPreferences);
   };
 
+  const desktopShell = bootstrapQuery.data?.desktopShell ?? null;
+  const preferredAIProvider = resolvePreferredAIProvider(
+    preferences.preferredAIProvider,
+    desktopShell,
+  );
+
   return {
     services,
     isReady: bootstrapQuery.isSuccess,
-    desktopShell: bootstrapQuery.data?.desktopShell ?? null,
+    desktopShell,
     authentication: bootstrapQuery.data?.appSession?.authentication ?? null,
     session: bootstrapQuery.data?.appSession?.workspace ?? null,
     preferences,
     appearanceMode: preferences.appearanceMode,
-    preferredAIProvider: preferences.preferredAIProvider,
+    preferredAIProvider,
     handleSignIn,
     handleSignOut,
     handlePreferredAIProviderChange,

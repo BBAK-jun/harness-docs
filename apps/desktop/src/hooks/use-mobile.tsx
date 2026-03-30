@@ -1,4 +1,5 @@
 import * as React from "react";
+import { useMountEffect } from "./useMountEffect";
 
 const MOBILE_BREAKPOINT = 768;
 
@@ -11,14 +12,14 @@ export function useIsMobile() {
     return window.innerWidth < MOBILE_BREAKPOINT;
   });
 
-  React.useEffect(() => {
+  useMountEffect(() => {
     const mediaQuery = window.matchMedia(`(max-width: ${MOBILE_BREAKPOINT - 1}px)`);
     const handleChange = () => setIsMobile(mediaQuery.matches);
 
     handleChange();
     mediaQuery.addEventListener("change", handleChange);
     return () => mediaQuery.removeEventListener("change", handleChange);
-  }, []);
+  });
 
   return isMobile;
 }

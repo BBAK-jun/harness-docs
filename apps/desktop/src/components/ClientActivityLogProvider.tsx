@@ -1,6 +1,8 @@
 import * as React from "react";
 import { Clock3, PanelRightClose, PanelRightOpen, Trash2 } from "lucide-react";
+import { useFloatingDockItem } from "@/components/FloatingDockProvider";
 import { Button } from "@/components/ui/button";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 export type ClientActivityEntry = {
   id: string;
@@ -92,9 +94,57 @@ function ClientActivityDock({
   onClear: () => void;
   onToggle: () => void;
 }) {
-  return (
-    <div className="pointer-events-none fixed bottom-4 right-4 z-50 flex max-w-[min(24rem,calc(100vw-2rem))] flex-col items-end gap-2">
-      <div className="pointer-events-auto flex items-center gap-2">
+  useFloatingDockItem({
+    id: "client-activity-log",
+    order: 100,
+    panel: isOpen ? (
+      <section className="w-[min(24rem,calc(100vw-2rem))] overflow-hidden rounded-[calc(var(--radius)+0.35rem)] border border-[var(--border)] bg-[rgba(255,255,255,0.96)] shadow-[0_30px_90px_-60px_rgba(15,23,42,0.7)] backdrop-blur-xl">
+        <header className="border-b border-[var(--border)] px-4 py-3">
+          <p className="text-sm font-semibold text-[var(--foreground)]">클라이언트 활동 로그</p>
+          <p className="text-xs leading-5 text-[var(--muted-foreground)]">
+            CTA 클릭과 클라이언트 상호작용이 최근순으로 기록됩니다.
+          </p>
+        </header>
+
+        {entries.length === 0 ? (
+          <div className="px-4 py-6 text-sm text-[var(--muted-foreground)]">
+            아직 기록된 활동이 없습니다.
+          </div>
+        ) : (
+          <ScrollArea className="h-80">
+            <ul className="divide-y divide-[var(--border)]">
+              {entries.map((entry) => (
+                <li className="px-4 py-3" key={entry.id}>
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <p className="text-sm font-medium text-[var(--foreground)]">{entry.action}</p>
+                      {entry.description ? (
+                        <p className="mt-1 text-xs leading-5 text-[var(--muted-foreground)]">
+                          {entry.description}
+                        </p>
+                      ) : null}
+                      {entry.source ? (
+                        <p className="mt-1 text-[11px] uppercase tracking-[0.14em] text-[var(--muted-foreground)]">
+                          {entry.source}
+                        </p>
+                      ) : null}
+                    </div>
+                    <time
+                      className="shrink-0 text-[11px] tabular-nums text-[var(--muted-foreground)]"
+                      dateTime={entry.createdAt}
+                    >
+                      {formatTimestamp(entry.createdAt)}
+                    </time>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </ScrollArea>
+        )}
+      </section>
+    ) : undefined,
+    trigger: (
+      <div className="flex items-center gap-2">
         {isOpen ? (
           <Button
             aria-label="클라이언트 로그 비우기"
@@ -128,57 +178,10 @@ function ClientActivityDock({
           {isOpen ? <PanelRightClose /> : <PanelRightOpen />}
         </Button>
       </div>
+    ),
+  });
 
-      {isOpen ? (
-        <section className="pointer-events-auto w-full overflow-hidden rounded-[calc(var(--radius)+0.35rem)] border border-[var(--border)] bg-[rgba(255,255,255,0.96)] shadow-[0_30px_90px_-60px_rgba(15,23,42,0.7)] backdrop-blur-xl">
-          <header className="border-b border-[var(--border)] px-4 py-3">
-            <p className="text-sm font-semibold text-[var(--foreground)]">클라이언트 활동 로그</p>
-            <p className="text-xs leading-5 text-[var(--muted-foreground)]">
-              CTA 클릭과 클라이언트 상호작용이 최근순으로 기록됩니다.
-            </p>
-          </header>
-
-          <div className="max-h-80 overflow-y-auto">
-            {entries.length === 0 ? (
-              <div className="px-4 py-6 text-sm text-[var(--muted-foreground)]">
-                아직 기록된 활동이 없습니다.
-              </div>
-            ) : (
-              <ul className="divide-y divide-[var(--border)]">
-                {entries.map((entry) => (
-                  <li className="px-4 py-3" key={entry.id}>
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="min-w-0">
-                        <p className="text-sm font-medium text-[var(--foreground)]">
-                          {entry.action}
-                        </p>
-                        {entry.description ? (
-                          <p className="mt-1 text-xs leading-5 text-[var(--muted-foreground)]">
-                            {entry.description}
-                          </p>
-                        ) : null}
-                        {entry.source ? (
-                          <p className="mt-1 text-[11px] uppercase tracking-[0.14em] text-[var(--muted-foreground)]">
-                            {entry.source}
-                          </p>
-                        ) : null}
-                      </div>
-                      <time
-                        className="shrink-0 text-[11px] tabular-nums text-[var(--muted-foreground)]"
-                        dateTime={entry.createdAt}
-                      >
-                        {formatTimestamp(entry.createdAt)}
-                      </time>
-                    </div>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </div>
-        </section>
-      ) : null}
-    </div>
-  );
+  return null;
 }
 
 function formatTimestamp(value: string) {

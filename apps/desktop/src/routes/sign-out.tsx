@@ -2,7 +2,7 @@ import { Navigate, createFileRoute, useRouter } from "@tanstack/react-router";
 import { useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { useAppBootstrap } from "../hooks/useAppBootstrap";
-import { RouteErrorStateCard } from "../pages/pageUtils";
+import { EmptyStateCard, RouteErrorStateCard } from "../pages/pageUtils";
 
 export const Route = createFileRoute("/sign-out")({
   component: SignOutRoute,
@@ -30,7 +30,16 @@ function SignOutRoute() {
     return <Navigate to="/sign-in" />;
   }
 
-  return null;
+  return (
+    <main className="app-frame min-h-screen p-4 sm:p-6">
+      <div className="mx-auto max-w-4xl">
+        <EmptyStateCard
+          description="세션을 정리한 뒤 로그인 화면으로 이동합니다."
+          title="로그아웃 중입니다"
+        />
+      </div>
+    </main>
+  );
 }
 
 function SignOutRouteErrorBoundary({

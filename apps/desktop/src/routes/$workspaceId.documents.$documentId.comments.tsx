@@ -1,7 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { buildHarnessDocsNavigation } from "../lib/appNavigation";
 import { useCommentsPage } from "../hooks/useCommentsPage";
-import { useWorkspaceShell } from "../hooks/useWorkspaceShell";
+import { useWorkspaceRouteShell } from "../hooks/useWorkspaceRouteShell";
 import { CommentsPage } from "../pages/CommentsPage";
 import { WorkspaceRouteErrorBoundary } from "./$workspaceId.ai";
 
@@ -11,16 +10,7 @@ export const Route = createFileRoute("/$workspaceId/documents/$documentId/commen
 });
 
 function WorkspaceDocumentCommentsRoute() {
-  const { documentId, workspaceId } = Route.useParams();
-  const routeState = {
-    activeArea: "comments" as const,
-    activeWorkspaceId: workspaceId,
-    selectedDocumentId: documentId,
-  };
-  const shell = useWorkspaceShell(
-    routeState,
-    buildHarnessDocsNavigation(Route.useNavigate(), routeState),
-  );
+  const shell = useWorkspaceRouteShell();
   const comments = useCommentsPage(shell);
 
   return (

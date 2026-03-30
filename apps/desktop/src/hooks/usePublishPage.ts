@@ -13,7 +13,9 @@ import {
 } from "../lib/publishGovernanceView";
 import { buildPublishExecutionInput } from "../lib/runtimePayloads";
 import { desktopMutationKeys, desktopQueryKeys } from "../queries/queryKeys";
-import type { WorkspaceShellModel } from "./useWorkspaceShell";
+import type { HarnessDocsServices } from "../services/contracts";
+import type { MembershipId } from "../types/domain-ui";
+import type { NavigationArea, WorkspaceDocument, WorkspaceGraph } from "../types/contracts";
 
 type AsyncTaskState<TResult> = {
   status: "idle" | "running" | "succeeded" | "failed";
@@ -32,7 +34,17 @@ type StalePublishRationaleDraft = {
   acknowledgedReasonCodes: StaleReasonCode[];
 };
 
-export function usePublishPage(shell: WorkspaceShellModel) {
+interface PublishPageModel {
+  activeDocument: WorkspaceDocument | null;
+  activeMembershipId: MembershipId | null;
+  activeWorkspaceGraph: WorkspaceGraph | null;
+  activeWorkspaceId: string | null;
+  documentDrafts: Record<string, string>;
+  handleAreaChange: (area: NavigationArea) => void;
+  services: Pick<HarnessDocsServices, "publishing">;
+}
+
+export function usePublishPage(shell: PublishPageModel) {
   const fallbackSnapshot = useMemo(() => {
     if (!shell.activeWorkspaceGraph) {
       return null;
@@ -128,7 +140,7 @@ export function usePublishPage(shell: WorkspaceShellModel) {
       drafts,
       membershipId,
     }: {
-      workspaceGraph: NonNullable<WorkspaceShellModel["activeWorkspaceGraph"]>;
+      workspaceGraph: WorkspaceGraph;
       drafts: Record<string, string>;
       membershipId: string | null;
     }) => {

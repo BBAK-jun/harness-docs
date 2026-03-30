@@ -1,8 +1,7 @@
 import { createFileRoute, useRouter } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
-import { buildHarnessDocsNavigation } from "../lib/appNavigation";
 import { useAIPage } from "../hooks/useAIPage";
-import { useWorkspaceShell } from "../hooks/useWorkspaceShell";
+import { useWorkspaceRouteShell } from "../hooks/useWorkspaceRouteShell";
 import { AIPage } from "../pages/AIPage";
 import { RouteErrorStateCard } from "../pages/pageUtils";
 
@@ -12,21 +11,13 @@ export const Route = createFileRoute("/$workspaceId/ai")({
 });
 
 function WorkspaceAIRoute() {
-  const { workspaceId } = Route.useParams();
-  const routeState = {
-    activeArea: "ai" as const,
-    activeWorkspaceId: workspaceId,
-    selectedDocumentId: null,
-  };
-  const shell = useWorkspaceShell(
-    routeState,
-    buildHarnessDocsNavigation(Route.useNavigate(), routeState),
-  );
+  const shell = useWorkspaceRouteShell();
   const ai = useAIPage(shell);
 
   return (
     <AIPage
       aiEntryPoints={ai.aiEntryPoints}
+      providerStatuses={shell.desktopShell?.aiProviderStatuses ?? null}
       onGoToDocuments={() => shell.handleAreaChange("documents")}
       onGoToEditor={() => shell.handleAreaChange("editor")}
       onLaunch={ai.handleLaunchAITaskEntryPoint}

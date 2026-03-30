@@ -79,9 +79,11 @@ export function AuthenticatedOnboardingShell({
 
   return (
     <AppShellFrame
+      headerVariant="compact"
       navigationMeta={{
+        breadcrumbItems: ["워크스페이스 접근", active.label],
         eyebrow: "워크스페이스 접근",
-        title: `워크스페이스 > ${active.label}`,
+        title: active.label,
         description: active.description,
       }}
       sidebar={sidebar}

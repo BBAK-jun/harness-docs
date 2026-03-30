@@ -1,4 +1,5 @@
 import { FileText, GitPullRequest, Search, Sparkles } from "lucide-react";
+import { useNavigate } from "@tanstack/react-router";
 import { useClientActivityLog } from "@/components/ClientActivityLogProvider";
 import { CompactPrimaryPageAction, CompactSecondaryPageAction } from "@/components/pageActions";
 import { PanelCard, PanelCardHeader, SignalPanel } from "@/components/pagePanels";
@@ -82,13 +83,7 @@ export function DocumentsPage({
       </section>
 
       <PanelCard>
-        <PanelCardHeader className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-          <div>
-            <h2 className="text-xl font-semibold text-[var(--foreground)]">문서</h2>
-            <p className="mt-1 text-sm text-[var(--muted-foreground)]">
-              문서 라이브러리에서 작업 대상을 고르고, 이어지는 리뷰와 발행 흐름으로 이동합니다.
-            </p>
-          </div>
+        <PanelCardHeader className="flex justify-end">
           <div className="flex flex-wrap gap-2">
             <CompactPrimaryPageAction clientLog="AI 화면 보기" onClick={onGoToAI}>
               AI 화면 보기
@@ -124,6 +119,8 @@ function DocumentRow({
   document: WorkspaceDocument;
 }) {
   const { logEvent } = useClientActivityLog();
+  const navigate = useNavigate();
+
   return (
     <button
       className={cn(
@@ -138,7 +135,13 @@ function DocumentRow({
           description: document.title,
           source: "documents-page",
         });
-        app.handleDocumentSelect(document.id);
+        void navigate({
+          to: "/$workspaceId/documents/$documentId/edit",
+          params: {
+            workspaceId: document.workspaceId,
+            documentId: document.id,
+          },
+        });
       }}
       type="button"
     >

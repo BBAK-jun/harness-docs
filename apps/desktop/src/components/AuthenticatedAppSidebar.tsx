@@ -5,7 +5,12 @@ import {
   Sidebar,
   SidebarContent,
   SidebarFooter,
+  SidebarGroup,
+  SidebarGroupContent,
   SidebarHeader,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar";
 import { cn } from "@/lib/utils";
@@ -109,77 +114,69 @@ export function AuthenticatedAppSidebar({
       </SidebarHeader>
 
       <SidebarContent className="gap-0 bg-[var(--sidebar-background)] px-3 py-3 text-[var(--sidebar-foreground)]">
-        <div className="space-y-4">
-          <div className="space-y-1">
-            {navItems.map((item) => {
-              const active = activeArea === item.area;
+        <SidebarGroup className="p-0">
+          <SidebarGroupContent>
+            <SidebarMenu>
+              {navItems.map((item) => {
+                const active = activeArea === item.area;
 
-              return (
-                <button
-                  aria-label={item.title}
-                  className={cn(
-                    "flex w-full items-start gap-2.5 rounded px-2.5 py-2.5 text-left transition-colors",
-                    isCollapsed && "justify-center px-2",
-                    active
-                      ? "bg-[var(--sidebar-accent)] text-[var(--sidebar-accent-foreground)]"
-                      : "text-[var(--sidebar-foreground)] hover:bg-[color:color-mix(in_srgb,var(--sidebar-accent)_50%,transparent)] hover:text-[var(--sidebar-accent-foreground)]",
-                  )}
-                  key={item.area}
-                  onClick={() => {
-                    logEvent({
-                      action: `${item.title} 사이드바 CTA 클릭`,
-                      source: "authenticated-sidebar",
-                    });
-                    if (item.area === "workspaces" && !hasWorkspaces) {
-                      toast("아직 워크스페이스가 없습니다.", {
-                        description:
-                          "먼저 워크스페이스를 만들거나 초대를 수락한 뒤 목록으로 돌아오세요.",
-                        duration: 5000,
-                        id: "workspace-list-empty-guide",
+                return (
+                  <SidebarMenuItem key={item.area}>
+                    <SidebarMenuButton
+                      className="h-auto items-start py-2.5"
+                      isActive={active}
+                      onClick={() => {
+                        logEvent({
+                          action: `${item.title} 사이드바 CTA 클릭`,
+                          source: "authenticated-sidebar",
+                        });
+                        if (item.area === "workspaces" && !hasWorkspaces) {
+                          toast("아직 워크스페이스가 없습니다.", {
+                            description:
+                              "먼저 워크스페이스를 만들거나 초대를 수락한 뒤 목록으로 돌아오세요.",
+                            duration: 5000,
+                            id: "workspace-list-empty-guide",
+                          });
+                        }
+
+                        onOpenArea(item.area);
+                      }}
+                      size="lg"
+                      tooltip={item.title}
+                    >
+                      <item.icon className="mt-0.5 h-4 w-4 shrink-0" />
+                      {!isCollapsed ? (
+                        <span className="flex min-w-0 flex-col text-left">
+                          <span className="text-sm font-medium">{item.title}</span>
+                          <span className="mt-1 text-[11px] leading-5 text-[var(--sidebar-muted)]">
+                            {item.description}
+                          </span>
+                        </span>
+                      ) : null}
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                );
+              })}
+              {hasWorkspaces ? (
+                <SidebarMenuItem>
+                  <SidebarMenuButton
+                    onClick={() => {
+                      logEvent({
+                        action: "최근 워크스페이스 열기 CTA 클릭",
+                        source: "authenticated-sidebar",
                       });
-                    }
-
-                    onOpenArea(item.area);
-                  }}
-                  title={item.title}
-                  type="button"
-                >
-                  <item.icon className="mt-0.5 h-4 w-4 shrink-0" />
-                  {!isCollapsed ? (
-                    <span className="flex min-w-0 flex-col">
-                      <span className="text-sm font-medium">{item.title}</span>
-                      <span className="mt-1 text-[11px] leading-5 text-[var(--sidebar-muted)]">
-                        {item.description}
-                      </span>
-                    </span>
-                  ) : null}
-                </button>
-              );
-            })}
-          </div>
-
-          {hasWorkspaces ? (
-            <button
-              aria-label="최근 워크스페이스 열기"
-              className={cn(
-                "flex w-full items-center gap-2.5 rounded px-2.5 py-2 text-sm text-[var(--sidebar-foreground)] transition-colors hover:bg-[color:color-mix(in_srgb,var(--sidebar-accent)_50%,transparent)] hover:text-[var(--sidebar-accent-foreground)]",
-                isCollapsed && "justify-center px-2",
-              )}
-              onClick={() => {
-                logEvent({
-                  action: "최근 워크스페이스 열기 CTA 클릭",
-                  source: "authenticated-sidebar",
-                });
-                onOpenLastWorkspace();
-              }}
-              title="최근 워크스페이스 열기"
-              type="button"
-            >
-              <FolderKanban className="h-4 w-4 shrink-0" />
-              {!isCollapsed ? <span>최근 워크스페이스 열기</span> : null}
-            </button>
-          ) : null}
-        </div>
+                      onOpenLastWorkspace();
+                    }}
+                    tooltip="최근 워크스페이스 열기"
+                  >
+                    <FolderKanban className="h-4 w-4 shrink-0" />
+                    <span>최근 워크스페이스 열기</span>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              ) : null}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
       </SidebarContent>
 
       <SidebarFooter className="gap-0 border-t border-[var(--sidebar-border)] bg-[var(--sidebar-background)] p-3 text-[var(--sidebar-foreground)]">
@@ -206,22 +203,20 @@ export function AuthenticatedAppSidebar({
           ) : null}
         </div>
 
-        <button
-          aria-label="로그아웃"
-          className={cn(
-            "mt-2 flex w-full items-center gap-2.5 rounded px-2.5 py-2 text-sm text-[var(--sidebar-foreground)] transition-colors hover:bg-[color:color-mix(in_srgb,var(--sidebar-accent)_50%,transparent)] hover:text-[var(--sidebar-accent-foreground)]",
-            isCollapsed && "justify-center px-2",
-          )}
-          onClick={() => {
-            logEvent({ action: "로그아웃 CTA 클릭", source: "authenticated-sidebar" });
-            onSignOutRequest();
-          }}
-          title="로그아웃"
-          type="button"
-        >
-          <LogOut className="h-4 w-4 shrink-0" />
-          {!isCollapsed ? <span>로그아웃</span> : null}
-        </button>
+        <SidebarMenu className="mt-2">
+          <SidebarMenuItem>
+            <SidebarMenuButton
+              onClick={() => {
+                logEvent({ action: "로그아웃 CTA 클릭", source: "authenticated-sidebar" });
+                onSignOutRequest();
+              }}
+              tooltip="로그아웃"
+            >
+              <LogOut className="h-4 w-4 shrink-0" />
+              <span>로그아웃</span>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        </SidebarMenu>
       </SidebarFooter>
     </Sidebar>
   );

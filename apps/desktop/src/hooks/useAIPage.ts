@@ -1,11 +1,18 @@
 import { useMemo } from "react";
 import { useMutation } from "@tanstack/react-query";
 import type { AITaskExecutionResult } from "../domain/aiTasks";
+import { isAIProviderAvailable } from "../lib/aiProviderAvailability";
 import { buildAITaskEntryPoints } from "../lib/aiTaskEntryPoints";
 import { buildAITaskExecutionInput } from "../lib/runtimePayloads";
 import { desktopMutationKeys } from "../queries/queryKeys";
+import type { DesktopShellMetadata, HarnessDocsServices } from "../services/contracts";
+import type {
+  AIProvider,
+  NavigationArea,
+  WorkspaceDocument,
+  WorkspaceGraph,
+} from "../types/contracts";
 import type { AITaskEntryPoint } from "../types/domain-ui";
-import type { WorkspaceShellModel } from "./useWorkspaceShell";
 
 type AsyncTaskState<TResult> = {
   status: "idle" | "running" | "succeeded" | "failed";
@@ -14,7 +21,20 @@ type AsyncTaskState<TResult> = {
   entryId?: string | null;
 };
 
-export function useAIPage(shell: WorkspaceShellModel) {
+interface AIPageModel {
+  activeDocument: WorkspaceDocument | null;
+  activeMembershipId: string | null;
+  activeWorkspaceGraph: WorkspaceGraph | null;
+  desktopShell: DesktopShellMetadata | null;
+  documentDrafts: Record<string, string>;
+  handleAreaChange: (area: NavigationArea) => void;
+  handleDocumentSelect: (documentId: string) => void;
+  handlePreferredAIProviderChange: (preferredAIProvider: AIProvider) => void;
+  preferredAIProvider: AIProvider;
+  services: Pick<HarnessDocsServices, "aiTasks">;
+}
+
+export function useAIPage(shell: AIPageModel) {
   const aiTaskMutation = useMutation({
     mutationKey: desktopMutationKeys.ai.runEntryPoint(),
     mutationFn: async ({
@@ -23,7 +43,7 @@ export function useAIPage(shell: WorkspaceShellModel) {
       drafts,
     }: {
       entry: AITaskEntryPoint;
-      workspaceGraph: NonNullable<WorkspaceShellModel["activeWorkspaceGraph"]>;
+      workspaceGraph: WorkspaceGraph;
       drafts: Record<string, string>;
     }) =>
       shell.services.aiTasks.runEntryPoint(
@@ -39,10 +59,11 @@ export function useAIPage(shell: WorkspaceShellModel) {
             activeDocument: shell.activeDocument,
             preferredProvider: shell.preferredAIProvider,
             activeMembershipId: shell.activeMembershipId,
-          })
+          }).filter((entry) => isAIProviderAvailable(shell.desktopShell, entry.provider))
         : [],
     [
       shell.activeDocument,
+      shell.desktopShell,
       shell.activeMembershipId,
       shell.activeWorkspaceGraph,
       shell.preferredAIProvider,
@@ -59,6 +80,10 @@ export function useAIPage(shell: WorkspaceShellModel) {
 
     if (!shell.activeWorkspaceGraph) {
       return;
+    }
+
+    if (!isAIProviderAvailable(shell.desktopShell, entry.provider)) {
+      throw new Error(`${entry.provider} CLI를 이 시스템에서 사용할 수 없습니다.`);
     }
 
     await aiTaskMutation.mutateAsync({

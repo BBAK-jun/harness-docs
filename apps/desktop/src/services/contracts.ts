@@ -17,6 +17,15 @@ export type VersionControlProvider = "github";
 export type AuthenticationProvider = AuthProvider;
 export type AuthenticationSessionStatus = "authenticated" | "signed_out";
 export type AppearanceMode = "dark" | "light";
+export type AIProviderRuntimeAvailability = "available" | "unavailable";
+
+export interface AIProviderRuntimeStatus {
+  status: AIProviderRuntimeAvailability;
+  command: string;
+  detail: string | null;
+}
+
+export type AIProviderRuntimeStatusMap = Record<AIProvider, AIProviderRuntimeStatus>;
 
 export interface AppPreferences {
   preferredAIProvider: AIProvider;
@@ -38,6 +47,8 @@ export interface DesktopShellMetadata {
   versionControlProvider: VersionControlProvider;
   authenticationProvider: AuthenticationProvider;
   supportedAIProviders: AIProvider[];
+  aiProviderStatuses: AIProviderRuntimeStatusMap;
+  aiTaskProbeIntervalMs: number;
   editingLockTimeoutMinutes: number;
   supportsOutboundWebhooks: boolean;
   supportsGitHubPublishAutomation: boolean;

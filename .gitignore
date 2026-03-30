@@ -1,4 +1,5 @@
 **/.omx/
+**/.omc/
 **/.pnpm-store/
 path/
 .DS_Store

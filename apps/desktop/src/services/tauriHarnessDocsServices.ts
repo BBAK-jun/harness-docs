@@ -1,6 +1,15 @@
 import type { DesktopInfrastructure } from "../desktop/contracts";
+import { listen } from "@tauri-apps/api/event";
 import { openUrl } from "@tauri-apps/plugin-opener";
-import type { AITaskExecutionInput, AITaskExecutionResult, AITaskService } from "../domain/aiTasks";
+import type {
+  AITaskExecutionEvent,
+  AITaskExecutionHandle,
+  AITaskExecutionInput,
+  AITaskExecutionObserver,
+  AITaskExecutionResult,
+  AITaskRunningExecution,
+  AITaskService,
+} from "../domain/aiTasks";
 import type {
   PublishExecutionInput,
   PublishExecutionResult,
@@ -47,6 +56,7 @@ const githubAuthProvider: AuthenticationProviderDescriptor = {
   kind: "oauth",
   loginCtaLabel: "Sign in with GitHub",
 };
+const aiTaskEventName = "ai-task-event";
 
 function mapApiAuthenticationSession(
   session: Awaited<ReturnType<typeof getApiSession>>,
@@ -251,29 +261,198 @@ function createTauriPublishingService(
 }
 
 function createTauriAITaskService(desktopInfrastructure: DesktopInfrastructure): AITaskService {
-  return {
-    async runEntryPoint(input: AITaskExecutionInput): Promise<AITaskExecutionResult> {
+  const createBrowserPreviewResult = (input: AITaskExecutionInput): AITaskExecutionResult => ({
+    provider: input.entry.provider,
+    command: "browser-preview",
+    promptLabel: input.entry.title,
+    output: "AI task execution requires the Tauri runtime.",
+    workingDirectory: "/browser-preview",
+    startedAt: new Date().toISOString(),
+    completedAt: new Date().toISOString(),
+    suggestion: null,
+  });
+
+  const createTaskId = () => `ai-task-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+  const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+  let probeIntervalPromise: Promise<number> | null = null;
+  const getProbeIntervalMs = () => {
+    if (probeIntervalPromise) {
+      return probeIntervalPromise;
+    }
+
+    probeIntervalPromise = (async () => {
       if (desktopInfrastructure.runtime !== "tauri") {
-        return {
-          provider: input.entry.provider,
-          command: "browser-preview",
-          promptLabel: input.entry.title,
-          output: "AI task execution requires the Tauri runtime.",
-          workingDirectory: "/browser-preview",
-          startedAt: new Date().toISOString(),
-          completedAt: new Date().toISOString(),
-          suggestion: null,
-        };
+        return 750;
       }
 
-      return desktopInfrastructure.commands.invoke<AITaskExecutionResult>("run_ai_task", {
+      try {
+        const metadata = await desktopInfrastructure.commands.invoke<{
+          aiTaskProbeIntervalMs?: number;
+        }>("get_desktop_shell_metadata");
+        const interval = metadata.aiTaskProbeIntervalMs;
+
+        if (typeof interval === "number" && interval >= 100) {
+          return interval;
+        }
+      } catch {
+        // Fall through to the default interval.
+      }
+
+      return 750;
+    })();
+
+    return probeIntervalPromise;
+  };
+
+  const startEntryPoint = async (
+    input: AITaskExecutionInput,
+    observer?: AITaskExecutionObserver,
+  ): Promise<AITaskRunningExecution> => {
+    if (desktopInfrastructure.runtime !== "tauri") {
+      const taskId = createTaskId();
+      const result = createBrowserPreviewResult(input);
+
+      observer?.onEvent?.({
+        type: "completed",
+        taskId,
+        result,
+      });
+
+      return {
+        taskId,
+        provider: result.provider,
+        command: result.command,
+        promptLabel: result.promptLabel,
+        workingDirectory: result.workingDirectory,
+        startedAt: result.startedAt,
+        result: Promise.resolve(result),
+        cancel: async () => {},
+      };
+    }
+
+    const taskId = createTaskId();
+    let resolveResult: ((result: AITaskExecutionResult) => void) | null = null;
+    let rejectResult: ((error: Error) => void) | null = null;
+    const result = new Promise<AITaskExecutionResult>((resolve, reject) => {
+      resolveResult = resolve;
+      rejectResult = reject;
+    });
+    const unlisten = await listen<AITaskExecutionEvent>(aiTaskEventName, (event) => {
+      const payload = event.payload;
+
+      if (payload.taskId !== taskId) {
+        return;
+      }
+
+      observer?.onEvent?.(payload);
+
+      if (payload.type === "completed") {
+        resolveResult?.(payload.result);
+        return;
+      }
+
+      if (payload.type === "failed") {
+        rejectResult?.(new Error(payload.error));
+        return;
+      }
+
+      if (payload.type === "cancelled") {
+        rejectResult?.(new Error("AI 요청이 취소되었습니다."));
+      }
+    });
+
+    let didCleanup = false;
+    const cleanup = () => {
+      if (didCleanup) {
+        return;
+      }
+
+      didCleanup = true;
+      unlisten();
+    };
+
+    let handle: AITaskExecutionHandle;
+
+    try {
+      handle = await desktopInfrastructure.commands.invoke<AITaskExecutionHandle>("start_ai_task", {
+        taskId,
         input: {
           provider: input.entry.provider,
           promptLabel: input.entry.title,
           prompt: input.prompt,
         },
       });
+    } catch (error) {
+      cleanup();
+      throw error;
+    }
+
+    let shouldStopPolling = false;
+    const stopPolling = () => {
+      shouldStopPolling = true;
+    };
+
+    const eventResult = result.finally(() => {
+      stopPolling();
+      cleanup();
+    });
+    const codexProbeResult =
+      handle.provider === "Codex"
+        ? (async (): Promise<AITaskExecutionResult> => {
+            const probeIntervalMs = await getProbeIntervalMs();
+
+            while (!shouldStopPolling) {
+              const probed =
+                await desktopInfrastructure.commands.invoke<AITaskExecutionResult | null>(
+                  "probe_ai_task_result",
+                  {
+                    input: {
+                      taskId,
+                      provider: handle.provider,
+                      command: handle.command,
+                      promptLabel: handle.promptLabel,
+                      workingDirectory: handle.workingDirectory,
+                      startedAt: handle.startedAt,
+                    },
+                  },
+                );
+
+              if (probed) {
+                stopPolling();
+                cleanup();
+                return probed;
+              }
+
+              await delay(probeIntervalMs);
+            }
+
+            throw new Error("AI 요청이 취소되었습니다.");
+          })()
+        : null;
+
+    return {
+      ...handle,
+      result: (codexProbeResult
+        ? Promise.race([eventResult, codexProbeResult])
+        : eventResult
+      ).finally(() => {
+        stopPolling();
+        cleanup();
+      }),
+      cancel: async () => {
+        stopPolling();
+        cleanup();
+        await desktopInfrastructure.commands.invoke<void>("cancel_ai_task", { taskId });
+      },
+    };
+  };
+
+  return {
+    async runEntryPoint(input: AITaskExecutionInput): Promise<AITaskExecutionResult> {
+      const execution = await startEntryPoint(input);
+      return execution.result;
     },
+    startEntryPoint,
   };
 }
 

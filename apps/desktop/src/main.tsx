@@ -1,4 +1,6 @@
 import { ClientActivityLogProvider } from "./components/ClientActivityLogProvider";
+import { FloatingDockProvider } from "./components/FloatingDockProvider";
+import { AppLaunchBoundary } from "./components/AppLaunchLifecycle";
 import React from "react";
 import ReactDOM from "react-dom/client";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -20,10 +22,14 @@ ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
       <OverlayProvider>
         <HarnessDocsServicesProvider services={services}>
           <QueryClientProvider client={queryClient}>
-            <ClientActivityLogProvider>
-              <RouterProvider router={router} />
-              <Toaster />
-            </ClientActivityLogProvider>
+            <FloatingDockProvider>
+              <ClientActivityLogProvider>
+                <AppLaunchBoundary>
+                  <RouterProvider router={router} />
+                </AppLaunchBoundary>
+                <Toaster />
+              </ClientActivityLogProvider>
+            </FloatingDockProvider>
           </QueryClientProvider>
         </HarnessDocsServicesProvider>
       </OverlayProvider>
